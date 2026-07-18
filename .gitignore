@@ -1,0 +1,20 @@
+# Generated outputs
+logs/
+work/
+workdir/
+output/
+
+# Downloaded ISO artifacts
+downloads/iso/
+downloads/sha256/
+assets/iso/
+
+# Common temporary files
+*.log
+*.tmp
+*.swp
+*.swo
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
