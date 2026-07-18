@@ -80,21 +80,19 @@ install_emacs() {
 
 # Funcion para instalar Antigravity
 install_antigravity() {
-    echo ">>> Instalando Antigravity (App e IDE) mediante script..."
-    
-    # Ruta o URL del script de instalacion de Antigravity
-    # Cambia esto por la ubicacion real de tu script (ej. "./scripts/install_antigravity.sh" o "https://...")
-    ANTIGRAVITY_SCRIPT="URL_O_RUTA_DEL_SCRIPT"
-    
-    if [[ "$ANTIGRAVITY_SCRIPT" == http* ]]; then
-        echo "Descargando y ejecutando script remoto..."
-        curl -fsSL "$ANTIGRAVITY_SCRIPT" | bash
-    elif [ -f "$ANTIGRAVITY_SCRIPT" ]; then
-        echo "Ejecutando script local..."
-        bash "$ANTIGRAVITY_SCRIPT"
-    else
-        echo "[!] Por favor, actualiza la variable ANTIGRAVITY_SCRIPT en ide.sh con la ruta o URL correcta."
-    fi
+    echo ">>> Instalando Antigravity..."
+    case "$OS" in
+        ubuntu|linuxmint|pop)
+            sudo mkdir -p /etc/apt/keyrings
+            curl -fsSL https://us-central1-apt.pkg.dev/doc/repo-signing-key.gpg | sudo gpg --dearmor -o /etc/apt/keyrings/antigravity-repo-key.gpg
+            echo "deb [signed-by=/etc/apt/keyrings/antigravity-repo-key.gpg] https://us-central1-apt.pkg.dev/projects/antigravity-auto-updater-dev/ antigravity-debian main" | sudo tee /etc/apt/sources.list.d/antigravity.list > /dev/null
+            sudo apt-get update
+            sudo apt-get install -y antigravity
+            ;;
+        fedora)
+            echo "[!] Antigravity actualmente usa un repositorio APT. No disponible en Fedora."
+            ;;
+    esac
 }
 
 # Ejecutar las funciones
