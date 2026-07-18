@@ -17,6 +17,9 @@ chmod +x "$SCRIPT_DIR/update.sh"
 chmod +x "$SCRIPT_DIR/ide.sh"
 chmod +x "$SCRIPT_DIR/database_tools.sh"
 chmod +x "$SCRIPT_DIR/c_cpp.sh"
+chmod +x "$SCRIPT_DIR/java.sh"
+chmod +x "$SCRIPT_DIR/python.sh"
+chmod +x "$SCRIPT_DIR/dotnet.sh"
 
 # Ejecutar script de actualizacion y dependencias
 echo "-> Paso 1: Actualizando el sistema..."
@@ -33,6 +36,18 @@ echo "-> Paso 3: Instalando herramientas de Base de Datos..."
 # Ejecutar script de herramientas C/C++
 echo "-> Paso 4: Instalando compiladores y herramientas C/C++..."
 "$SCRIPT_DIR/c_cpp.sh"
+
+# Ejecutar script de ecosistema Java
+echo "-> Paso 5: Instalando ecosistema Java..."
+"$SCRIPT_DIR/java.sh"
+
+# Ejecutar script de ecosistema Python
+echo "-> Paso 6: Instalando ecosistema Python..."
+"$SCRIPT_DIR/python.sh"
+
+# Ejecutar script de .NET SDK
+echo "-> Paso 7: Instalando .NET SDK..."
+"$SCRIPT_DIR/dotnet.sh"
 
 echo "=========================================="
 echo "Todo el proceso de instalacion ha finalizado exitosamente!"
