@@ -45,7 +45,7 @@ install_pgadmin4() {
     echo ">>> Instalando pgAdmin4 (Escritorio)..."
     case "$OS" in
         ubuntu|linuxmint|pop)
-            curl -fsS https://www.pgadmin.org/static/packages_pgadmin_org.pub | sudo gpg --dearmor -y -o /usr/share/keyrings/packages-pgadmin-org.gpg
+            curl -fsS https://www.pgadmin.org/static/packages_pgadmin_org.pub | sudo gpg --dearmor --yes -o /usr/share/keyrings/packages-pgadmin-org.gpg
             echo "deb [signed-by=/usr/share/keyrings/packages-pgadmin-org.gpg] https://ftp.postgresql.org/pub/pgadmin/pgadmin4/apt/$CODENAME pgadmin4 main" | sudo tee /etc/apt/sources.list.d/pgadmin4.list > /dev/null
             sudo apt-get update
             sudo apt-get install -y pgadmin4-desktop

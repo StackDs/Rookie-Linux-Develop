@@ -73,7 +73,7 @@ install_emacs() {
     echo ">>> Instalando Emacs..."
     case "$OS" in
         ubuntu|linuxmint|pop)
-            sudo apt-get install -y emacs
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y emacs
             echo "  [OK] Emacs instalado exitosamente."
             ;;
         fedora)
