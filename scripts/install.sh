@@ -24,6 +24,13 @@ chmod +x "$SCRIPT_DIR/node.sh"
 chmod +x "$SCRIPT_DIR/databases.sh"
 chmod +x "$SCRIPT_DIR/docker.sh"
 chmod +x "$SCRIPT_DIR/git.sh"
+chmod +x "$SCRIPT_DIR/terminal.sh"
+chmod +x "$SCRIPT_DIR/editors.sh"
+chmod +x "$SCRIPT_DIR/browsers.sh"
+chmod +x "$SCRIPT_DIR/multimedia.sh"
+chmod +x "$SCRIPT_DIR/cpp_libraries.sh"
+chmod +x "$SCRIPT_DIR/frameworks.sh"
+chmod +x "$SCRIPT_DIR/extras.sh"
 
 # Ejecutar script de actualizacion y dependencias
 echo "-> Paso 1: Actualizando el sistema..."
@@ -68,6 +75,34 @@ echo "-> Paso 10: Instalando Docker y utilidades..."
 # Ejecutar script de Git y GitHub
 echo "-> Paso 11: Instalando Git, Git LFS y GitHub CLI..."
 "$SCRIPT_DIR/git.sh"
+
+# Ejecutar script de Utilidades de Terminal
+echo "-> Paso 12: Instalando utilidades de terminal..."
+"$SCRIPT_DIR/terminal.sh"
+
+# Ejecutar script de Editores CLI
+echo "-> Paso 13: Instalando editores de texto CLI..."
+"$SCRIPT_DIR/editors.sh"
+
+# Ejecutar script de Navegadores
+echo "-> Paso 14: Instalando navegadores web..."
+"$SCRIPT_DIR/browsers.sh"
+
+# Ejecutar script de Multimedia
+echo "-> Paso 15: Instalando multimedia (VLC, OBS)..."
+"$SCRIPT_DIR/multimedia.sh"
+
+# Ejecutar script de Bibliotecas C/C++
+echo "-> Paso 16: Instalando bibliotecas C/C++ (SDL2, OpenGL, SFML)..."
+"$SCRIPT_DIR/cpp_libraries.sh"
+
+# Ejecutar script de Frameworks y Motores
+echo "-> Paso 17: Instalando frameworks (Flutter, Dart, Unity)..."
+"$SCRIPT_DIR/frameworks.sh"
+
+# Ejecutar script de Programas Adicionales
+echo "-> Paso 18: Instalando programas adicionales..."
+"$SCRIPT_DIR/extras.sh"
 
 echo "=========================================="
 echo "Todo el proceso de instalacion ha finalizado exitosamente!"
