@@ -123,7 +123,7 @@ download_file(){
 
 
     wget \
-        --progress=bar \
+        -q --show-progress \
         -O "$OUTPUT" \
         "$URL"
 
