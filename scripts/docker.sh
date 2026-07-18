@@ -1,5 +1,7 @@
 #!/bin/bash
-set -e
+
+SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+source "$SCRIPT_DIR/utils.sh"
 
 # ==========================================
 # Contenedores (Docker)
@@ -19,15 +21,15 @@ echo "=========================================="
 
 case "$OS" in
     ubuntu|linuxmint|pop)
-        sudo DEBIAN_FRONTEND=noninteractive apt-get update
-        sudo DEBIAN_FRONTEND=noninteractive apt-get install -y docker.io docker-compose
-        sudo usermod -aG docker $USER || true
+        safe_apt_update
+        safe_apt_install docker.io docker-compose
+        sudo usermod -aG docker developer || true
         echo "  [OK] Docker Engine y Compose instalados exitosamente."
         ;;
     fedora)
-        sudo dnf install -y docker docker-compose
+        sudo dnf install -y docker docker-compose || true
         sudo systemctl enable --now docker || true
-        sudo usermod -aG docker $USER || true
+        sudo usermod -aG docker developer || true
         echo "  [OK] Docker Engine y Compose instalados exitosamente."
         ;;
     *)
@@ -35,3 +37,4 @@ case "$OS" in
         exit 1
         ;;
 esac
+

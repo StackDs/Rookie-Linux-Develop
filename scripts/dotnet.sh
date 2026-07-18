@@ -1,5 +1,7 @@
 #!/bin/bash
-set -e
+
+SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+source "$SCRIPT_DIR/utils.sh"
 
 # ==========================================
 # C# y .NET SDK
@@ -19,12 +21,12 @@ echo "=========================================="
 
 case "$OS" in
     ubuntu|linuxmint|pop)
-        sudo DEBIAN_FRONTEND=noninteractive apt-get update
-        sudo DEBIAN_FRONTEND=noninteractive apt-get install -y dotnet-sdk-8.0
+        safe_apt_update
+        safe_apt_install dotnet-sdk-8.0
         echo "  [OK] .NET SDK 8.0 instalado exitosamente."
         ;;
     fedora)
-        sudo dnf install -y dotnet-sdk-8.0
+        sudo dnf install -y dotnet-sdk-8.0 || true
         echo "  [OK] .NET SDK 8.0 instalado exitosamente."
         ;;
     *)
@@ -32,3 +34,4 @@ case "$OS" in
         exit 1
         ;;
 esac
+

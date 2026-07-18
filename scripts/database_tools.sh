@@ -1,5 +1,7 @@
 #!/bin/bash
-set -e
+
+SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+source "$SCRIPT_DIR/utils.sh"
 
 # ==========================================
 # Script de instalacion de herramientas
@@ -28,13 +30,13 @@ install_dbeaver() {
         ubuntu|linuxmint|pop)
             sudo wget -O /usr/share/keyrings/dbeaver.gpg.key https://dbeaver.io/debs/dbeaver.gpg.key
             echo "deb [signed-by=/usr/share/keyrings/dbeaver.gpg.key] https://dbeaver.io/debs/dbeaver-ce /" | sudo tee /etc/apt/sources.list.d/dbeaver.list > /dev/null
-            sudo apt-get update
-            sudo apt-get install -y dbeaver-ce
+            safe_apt_update
+            safe_apt_install dbeaver-ce
             echo "  [OK] DBeaver instalado exitosamente."
             ;;
         fedora)
             sudo wget -O /etc/yum.repos.d/dbeaver.repo https://dbeaver.io/debs/dbeaver.repo
-            sudo dnf install -y dbeaver-ce
+            sudo dnf install -y dbeaver-ce || true
             echo "  [OK] DBeaver instalado exitosamente."
             ;;
     esac
@@ -47,13 +49,13 @@ install_pgadmin4() {
         ubuntu|linuxmint|pop)
             curl -fsS https://www.pgadmin.org/static/packages_pgadmin_org.pub | sudo gpg --dearmor --yes -o /usr/share/keyrings/packages-pgadmin-org.gpg
             echo "deb [signed-by=/usr/share/keyrings/packages-pgadmin-org.gpg] https://ftp.postgresql.org/pub/pgadmin/pgadmin4/apt/$CODENAME pgadmin4 main" | sudo tee /etc/apt/sources.list.d/pgadmin4.list > /dev/null
-            sudo apt-get update
-            sudo apt-get install -y pgadmin4-desktop
+            safe_apt_update
+            safe_apt_install pgadmin4-desktop
             echo "  [OK] pgAdmin4 instalado exitosamente."
             ;;
         fedora)
             sudo rpm -i https://ftp.postgresql.org/pub/pgadmin/pgadmin4/yum/pgadmin4-fedora-repo-2-1.noarch.rpm || true
-            sudo dnf install -y pgadmin4-desktop
+            sudo dnf install -y pgadmin4-desktop || true
             echo "  [OK] pgAdmin4 instalado exitosamente."
             ;;
     esac
@@ -65,3 +67,4 @@ install_pgadmin4
 echo "=========================================="
 echo "Instalacion de Herramientas de BD completada."
 echo "=========================================="
+

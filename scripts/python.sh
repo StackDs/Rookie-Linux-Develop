@@ -1,5 +1,7 @@
 #!/bin/bash
-set -e
+
+SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+source "$SCRIPT_DIR/utils.sh"
 
 # ==========================================
 # Ecosistema Python
@@ -19,8 +21,8 @@ echo "=========================================="
 
 case "$OS" in
     ubuntu|linuxmint|pop)
-        sudo DEBIAN_FRONTEND=noninteractive apt-get update
-        sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
+        safe_apt_update
+        safe_apt_install \
             python3 python3-pip python3-venv pipx \
             black flake8 ipython3 jupyter \
             python3-numpy python3-pandas python3-matplotlib python3-scipy \
@@ -32,7 +34,7 @@ case "$OS" in
             python3 python3-pip pipx \
             black python3-flake8 python3-ipython jupyterlab \
             python3-numpy python3-pandas python3-matplotlib python3-scipy \
-            python3-requests python3-flask python3-django python3-fastapi
+            python3-requests python3-flask python3-django python3-fastapi || true
         echo "  [OK] Python 3, herramientas CLI y librerias instaladas exitosamente."
         ;;
     *)

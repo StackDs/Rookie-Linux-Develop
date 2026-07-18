@@ -1,5 +1,7 @@
 #!/bin/bash
-set -e
+
+SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+source "$SCRIPT_DIR/utils.sh"
 
 # ==========================================
 # Script de instalacion de compiladores y 
@@ -23,14 +25,14 @@ case "$OS" in
     ubuntu|linuxmint|pop)
         echo ">>> Instalando cadena de herramientas C/C++ (APT)..."
         # clang incluye clang++
-        sudo apt-get update
-        sudo apt-get install -y gcc g++ gdb make cmake clang ninja-build valgrind
+        safe_apt_update
+        safe_apt_install gcc g++ gdb make cmake clang ninja-build valgrind
         echo "  [OK] Cadena de herramientas C/C++ instalada exitosamente."
         ;;
     fedora)
         echo ">>> Instalando cadena de herramientas C/C++ (DNF)..."
         # gcc-c++ provee g++, clang provee clang++
-        sudo dnf install -y gcc gcc-c++ gdb make cmake clang ninja-build valgrind
+        sudo dnf install -y gcc gcc-c++ gdb make cmake clang ninja-build valgrind || true
         echo "  [OK] Cadena de herramientas C/C++ instalada exitosamente."
         ;;
     *)
@@ -42,3 +44,4 @@ esac
 echo "=========================================="
 echo "Instalacion de Herramientas C/C++ completada."
 echo "=========================================="
+

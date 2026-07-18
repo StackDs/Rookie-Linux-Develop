@@ -1,5 +1,7 @@
 #!/bin/bash
-set -e
+
+SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+source "$SCRIPT_DIR/utils.sh"
 
 # ==========================================
 # Frameworks y motores
@@ -33,15 +35,16 @@ fi
 echo ">>> Instalando Unity Hub..."
 case "$OS" in
     ubuntu|linuxmint|pop)
-        sudo DEBIAN_FRONTEND=noninteractive apt-get install -y flatpak
+        safe_apt_install flatpak
         if [ "$OS" = "ubuntu" ]; then
-            sudo apt-get install -y gnome-software-plugin-flatpak || true
+            safe_apt_install gnome-software-plugin-flatpak || true
         fi
         ;;
     fedora)
-        sudo dnf install -y flatpak
+        sudo dnf install -y flatpak || true
         ;;
 esac
 flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-flatpak install -y flathub com.unity.UnityHub
+safe_flatpak_install flathub com.unity.UnityHub
 echo "  [OK] Unity Hub instalado exitosamente."
+

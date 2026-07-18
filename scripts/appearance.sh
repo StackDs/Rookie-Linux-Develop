@@ -1,5 +1,7 @@
 #!/bin/bash
-set -e
+
+SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+source "$SCRIPT_DIR/utils.sh"
 
 # Asegurarse de que el script se esta ejecutando desde el directorio correcto
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -34,3 +36,4 @@ EOF
 glib-compile-schemas /usr/share/glib-2.0/schemas/
 
 echo "[OK] Apariencia (Modo Oscuro + Wallpaper) configurada exitosamente."
+

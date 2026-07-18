@@ -1,5 +1,7 @@
 #!/bin/bash
-set -e
+
+SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+source "$SCRIPT_DIR/utils.sh"
 
 # ==========================================
 # Programas adicionales
@@ -33,3 +35,4 @@ if [ ! -f "/opt/jflap/JFLAP.jar" ]; then
 else
     echo "  [-] JFLAP ya se encuentra instalado."
 fi
+

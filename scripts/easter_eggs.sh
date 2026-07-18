@@ -1,5 +1,7 @@
 #!/bin/bash
-set -e
+
+SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+source "$SCRIPT_DIR/utils.sh"
 
 echo "=========================================="
 echo "Instalando Comandos Personalizados"
@@ -8,6 +10,9 @@ echo "=========================================="
 # Crear el script doc-stack en el path global
 cat << 'EOF' > /usr/local/bin/doc-stack
 #!/bin/bash
+
+SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+source "$SCRIPT_DIR/utils.sh"
 echo "> ./stack-doctor"
 echo ""
 echo "Initializing diagnostics..."
@@ -54,3 +59,4 @@ EOF
 chmod +x /usr/local/bin/doc-stack
 
 echo "[OK] Comando 'doc-stack' instalado exitosamente."
+

@@ -1,5 +1,7 @@
 #!/bin/bash
-set -e
+
+SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+source "$SCRIPT_DIR/utils.sh"
 
 # ==========================================
 # Multimedia
@@ -19,13 +21,13 @@ echo "=========================================="
 
 case "$OS" in
     ubuntu|linuxmint|pop)
-        sudo DEBIAN_FRONTEND=noninteractive apt-get update
-        sudo DEBIAN_FRONTEND=noninteractive apt-get install -y vlc obs-studio
+        safe_apt_update
+        safe_apt_install vlc obs-studio
         echo "  [OK] VLC y OBS Studio instalados exitosamente."
         ;;
     fedora)
         # Pueden requerir RPM Fusion (non-free), si no lo encuentra, continua
-        sudo dnf install -y vlc obs-studio || true
+        sudo dnf install -y vlc obs-studio || true || true
         echo "  [OK] VLC y OBS Studio instalados exitosamente."
         ;;
     *)
@@ -33,3 +35,4 @@ case "$OS" in
         exit 1
         ;;
 esac
+

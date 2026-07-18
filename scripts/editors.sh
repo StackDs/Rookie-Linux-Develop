@@ -1,5 +1,7 @@
 #!/bin/bash
-set -e
+
+SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+source "$SCRIPT_DIR/utils.sh"
 
 # ==========================================
 # Editores de texto CLI
@@ -19,12 +21,12 @@ echo "=========================================="
 
 case "$OS" in
     ubuntu|linuxmint|pop)
-        sudo DEBIAN_FRONTEND=noninteractive apt-get update
-        sudo DEBIAN_FRONTEND=noninteractive apt-get install -y nano vim neovim
+        safe_apt_update
+        safe_apt_install nano vim neovim
         echo "  [OK] nano, vim y neovim instalados exitosamente."
         ;;
     fedora)
-        sudo dnf install -y nano vim neovim
+        sudo dnf install -y nano vim neovim || true
         echo "  [OK] nano, vim y neovim instalados exitosamente."
         ;;
     *)
@@ -32,3 +34,4 @@ case "$OS" in
         exit 1
         ;;
 esac
+

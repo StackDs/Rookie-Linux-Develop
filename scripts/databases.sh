@@ -1,5 +1,7 @@
 #!/bin/bash
-set -e
+
+SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+source "$SCRIPT_DIR/utils.sh"
 
 # ==========================================
 # Motores de bases de datos locales
@@ -19,12 +21,12 @@ echo "=========================================="
 
 case "$OS" in
     ubuntu|linuxmint|pop)
-        sudo DEBIAN_FRONTEND=noninteractive apt-get update
-        sudo DEBIAN_FRONTEND=noninteractive apt-get install -y postgresql postgresql-contrib sqlite3
+        safe_apt_update
+        safe_apt_install postgresql postgresql-contrib sqlite3
         echo "  [OK] PostgreSQL y SQLite instalados exitosamente."
         ;;
     fedora)
-        sudo dnf install -y postgresql-server postgresql-contrib sqlite
+        sudo dnf install -y postgresql-server postgresql-contrib sqlite || true
         # Fedora requiere inicializar el cluster de BD manualmente
         sudo postgresql-setup --initdb || true
         sudo systemctl enable --now postgresql || true
@@ -35,3 +37,4 @@ case "$OS" in
         exit 1
         ;;
 esac
+

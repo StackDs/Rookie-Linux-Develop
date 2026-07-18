@@ -1,5 +1,7 @@
 #!/bin/bash
-set -e
+
+SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+source "$SCRIPT_DIR/utils.sh"
 
 # ==========================================
 # Utilidades de terminal
@@ -19,16 +21,16 @@ echo "=========================================="
 
 case "$OS" in
     ubuntu|linuxmint|pop)
-        sudo DEBIAN_FRONTEND=noninteractive apt-get update
+        safe_apt_update
         # fd = fd-find, 7zip = p7zip-full
-        sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
+        safe_apt_install \
             zsh tmux htop btop tree curl wget unzip zip p7zip-full \
             rar unrar jq ripgrep fd-find bat fzf ncdu
         echo "  [OK] Utilidades de terminal instaladas exitosamente."
         ;;
     fedora)
         # unrar puede requerir rpm-fusion, se permite fallo silencioso con || true
-        sudo dnf install -y \
+        sudo dnf install -y \ || true
             zsh tmux htop btop tree curl wget unzip zip p7zip p7zip-plugins \
             unrar jq ripgrep fd-find bat fzf ncdu || true
         echo "  [OK] Utilidades de terminal instaladas exitosamente."
@@ -38,3 +40,4 @@ case "$OS" in
         exit 1
         ;;
 esac
+

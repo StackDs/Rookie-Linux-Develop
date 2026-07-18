@@ -1,5 +1,7 @@
 #!/bin/bash
-set -e
+
+SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+source "$SCRIPT_DIR/utils.sh"
 
 # ==========================================
 # Navegadores Web
@@ -23,17 +25,17 @@ case "$OS" in
         sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
         echo "deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg] https://brave-browser-apt-release.s3.brave.com/ stable main" | sudo tee /etc/apt/sources.list.d/brave-browser-release.list > /dev/null
         
-        sudo DEBIAN_FRONTEND=noninteractive apt-get update
-        sudo DEBIAN_FRONTEND=noninteractive apt-get install -y firefox chromium-browser brave-browser
+        safe_apt_update
+        safe_apt_install firefox chromium-browser brave-browser
         echo "  [OK] Firefox, Chromium y Brave instalados exitosamente."
         ;;
     fedora)
         # Repositorio de Brave
-        sudo dnf install -y dnf-plugins-core
+        sudo dnf install -y dnf-plugins-core || true
         sudo dnf config-manager --add-repo https://brave-browser-rpm-release.s3.brave.com/brave-browser.repo || true
         sudo rpm --import https://brave-browser-rpm-release.s3.brave.com/brave-core.asc || true
         
-        sudo dnf install -y firefox chromium brave-browser
+        sudo dnf install -y firefox chromium brave-browser || true
         echo "  [OK] Firefox, Chromium y Brave instalados exitosamente."
         ;;
     *)
@@ -41,3 +43,4 @@ case "$OS" in
         exit 1
         ;;
 esac
+

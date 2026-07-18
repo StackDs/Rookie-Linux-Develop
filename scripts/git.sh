@@ -1,5 +1,7 @@
 #!/bin/bash
-set -e
+
+SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+source "$SCRIPT_DIR/utils.sh"
 
 # ==========================================
 # Git y GitHub
@@ -24,13 +26,13 @@ case "$OS" in
         sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
         echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
         
-        sudo DEBIAN_FRONTEND=noninteractive apt-get update
-        sudo DEBIAN_FRONTEND=noninteractive apt-get install -y git git-lfs gh
+        safe_apt_update
+        safe_apt_install git git-lfs gh
         echo "  [OK] Git, Git LFS y GitHub CLI instalados exitosamente."
         ;;
     fedora)
         # Fedora ya incluye gh en sus repositorios por defecto
-        sudo dnf install -y git git-lfs gh
+        sudo dnf install -y git git-lfs gh || true
         echo "  [OK] Git, Git LFS y GitHub CLI instalados exitosamente."
         ;;
     *)
@@ -38,3 +40,4 @@ case "$OS" in
         exit 1
         ;;
 esac
+

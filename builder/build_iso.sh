@@ -47,6 +47,10 @@ if [ "$ISO_DISTRO" = "ubuntu" ]; then
     cp -r "$WORKSPACE/scripts" "$EXTRACT_DIR/custom_scripts/"
     cp -r "$WORKSPACE/assets" "$EXTRACT_DIR/custom_scripts/"
 
+    echo "=> Convirtiendo finales de linea Windows (CRLF) a Linux (LF)..."
+    find "$EXTRACT_DIR/custom_scripts/scripts/" -type f -name "*.sh" -exec sed -i 's/\r$//' {} + 2>/dev/null || true
+    find "$EXTRACT_DIR/nocloud/" -type f -exec sed -i 's/\r$//' {} + 2>/dev/null || true
+
     echo "=> Extrayendo configuracion GRUB original de la ISO..."
     xorriso -osirrox on -indev "$ISO_PATH" -extract /boot/grub/grub.cfg "$EXTRACT_DIR/grub.cfg" 2>/dev/null || true
     xorriso -osirrox on -indev "$ISO_PATH" -extract /boot/grub/loopback.cfg "$EXTRACT_DIR/loopback.cfg" 2>/dev/null || true
@@ -56,10 +60,12 @@ if [ "$ISO_DISTRO" = "ubuntu" ]; then
     echo "=> Modificando menu de arranque GRUB (autoinstall)..."
     if [ -f "$EXTRACT_DIR/grub.cfg" ]; then
         sed -i 's/set timeout=30/set timeout=2/' "$EXTRACT_DIR/grub.cfg" || true
-        sed -i 's/---\s*$/autoinstall ds=nocloud\\;s=\/cdrom\/nocloud\/ ---/' "$EXTRACT_DIR/grub.cfg" || true
+        sed -i 's/---/autoinstall ds=nocloud\\;s=\/cdrom\/nocloud\/ ---/g' "$EXTRACT_DIR/grub.cfg" || true
+        sed -i 's/"Try or Install Ubuntu"/"Instalador Automatico de Rookie Linux"/g' "$EXTRACT_DIR/grub.cfg" || true
     fi
     if [ -f "$EXTRACT_DIR/loopback.cfg" ]; then
-        sed -i 's/---\s*$/autoinstall ds=nocloud\\;s=\/cdrom\/nocloud\/ ---/' "$EXTRACT_DIR/loopback.cfg" || true
+        sed -i 's/---/autoinstall ds=nocloud\\;s=\/cdrom\/nocloud\/ ---/g' "$EXTRACT_DIR/loopback.cfg" || true
+        sed -i 's/"Try or Install Ubuntu"/"Instalador Automatico de Rookie Linux"/g' "$EXTRACT_DIR/loopback.cfg" || true
     fi
 fi
 
@@ -85,7 +91,7 @@ if [ "$ISO_DISTRO" = "ubuntu" ]; then
     fi
 fi
 
-# Magia arcana: clona el sector de arranque exacto de la ISO original
+# Clona el sector de arranque exacto de la ISO original
 XORRISO_ARGS+=( -boot_image any replay )
 
 xorriso "${XORRISO_ARGS[@]}"

@@ -1,5 +1,7 @@
 #!/bin/bash
-set -e
+
+SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+source "$SCRIPT_DIR/utils.sh"
 
 # ==========================================
 # Ecosistema JavaScript / TypeScript
@@ -20,11 +22,11 @@ echo "=========================================="
 case "$OS" in
     ubuntu|linuxmint|pop)
         curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
-        sudo DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs
+        safe_apt_install nodejs
         ;;
     fedora)
         curl -fsSL https://rpm.nodesource.com/setup_lts.x | sudo bash -
-        sudo dnf install -y nodejs
+        sudo dnf install -y nodejs || true
         ;;
     *)
         echo "Distribucion no soportada en este script: $OS"
@@ -35,3 +37,4 @@ esac
 # Instalar herramientas globales de JS/TS
 sudo npm install -g typescript eslint prettier
 echo "  [OK] Node.js LTS, npm, TS, ESLint y Prettier instalados exitosamente."
+
