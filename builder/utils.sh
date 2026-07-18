@@ -14,7 +14,7 @@ BLUE="\033[0;34m"
 NC="\033[0m"
 
 
-# Directorio raíz del proyecto
+# Directorio raiz del proyecto
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 
@@ -25,8 +25,6 @@ LOG_DIR="$PROJECT_ROOT/logs"
 # Archivo de log principal
 LOG_FILE="$LOG_DIR/build.log"
 
-
-
 # ==========================================
 # Crear directorios necesarios
 # ==========================================
@@ -35,9 +33,6 @@ create_directories(){
 
     mkdir -p "$LOG_DIR"
     mkdir -p "$PROJECT_ROOT/downloads/iso"
-    mkdir -p "$PROJECT_ROOT/downloads/sha256"
-    mkdir -p "$PROJECT_ROOT/work"
-    mkdir -p "$PROJECT_ROOT/output"
 
 }
 
@@ -49,9 +44,11 @@ create_directories(){
 
 write_log(){
 
-    mkdir -p "$LOG_DIR"
+    mkdir -p "$LOG_DIR" 2>/dev/null || true
 
-    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$LOG_FILE"
+    if [ -d "$LOG_DIR" ] 2>/dev/null && [ -w "$LOG_DIR" ] 2>/dev/null; then
+        echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$LOG_FILE" 2>/dev/null || true
+    fi
 
 }
 
@@ -103,7 +100,7 @@ check_command(){
 
     if ! command -v "$1" &> /dev/null
     then
-        error "El comando '$1' no está instalado"
+        error "El comando '$1' no esta instalado"
         exit 1
     fi
 
@@ -135,7 +132,7 @@ download_file(){
     then
         success "Descarga completada"
     else
-        error "Falló la descarga"
+        error "Fallo la descarga"
         exit 1
     fi
 
