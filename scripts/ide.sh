@@ -29,12 +29,14 @@ install_vscode() {
             rm -f packages.microsoft.gpg
             sudo apt-get update
             sudo apt-get install -y code
+            echo "  [OK] Visual Studio Code instalado exitosamente."
             ;;
         fedora)
             sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
             sudo sh -c 'echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/vscode.repo'
             sudo dnf check-update || true
             sudo dnf install -y code
+            echo "  [OK] Visual Studio Code instalado exitosamente."
             ;;
     esac
 }
@@ -63,6 +65,7 @@ install_intellij() {
     
     # Instalar IntelliJ
     flatpak install -y flathub com.jetbrains.IntelliJ-IDEA-Community
+    echo "  [OK] IntelliJ IDEA Community instalado exitosamente."
 }
 
 # Funcion para instalar Emacs
@@ -71,9 +74,11 @@ install_emacs() {
     case "$OS" in
         ubuntu|linuxmint|pop)
             sudo apt-get install -y emacs
+            echo "  [OK] Emacs instalado exitosamente."
             ;;
         fedora)
             sudo dnf install -y emacs
+            echo "  [OK] Emacs instalado exitosamente."
             ;;
     esac
 }
@@ -88,6 +93,7 @@ install_antigravity() {
             echo "deb [signed-by=/etc/apt/keyrings/antigravity-repo-key.gpg] https://us-central1-apt.pkg.dev/projects/antigravity-auto-updater-dev/ antigravity-debian main" | sudo tee /etc/apt/sources.list.d/antigravity.list > /dev/null
             sudo apt-get update
             sudo apt-get install -y antigravity
+            echo "  [OK] Antigravity instalado exitosamente."
             ;;
         fedora)
             echo "[!] Antigravity actualmente usa un repositorio APT. No disponible en Fedora."

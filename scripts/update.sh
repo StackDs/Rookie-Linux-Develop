@@ -27,6 +27,7 @@ case "$OS" in
 
         echo "Instalando dependencias basicas..."
         sudo apt-get install -y curl wget git software-properties-common apt-transport-https gnupg2
+        echo "  [OK] Dependencias basicas instaladas exitosamente."
         ;;
     
     fedora)
@@ -35,6 +36,7 @@ case "$OS" in
 
         echo "Instalando dependencias basicas..."
         sudo dnf install -y curl wget git
+        echo "  [OK] Dependencias basicas instaladas exitosamente."
         ;;
     
     *)
