@@ -20,6 +20,10 @@ chmod +x "$SCRIPT_DIR/c_cpp.sh"
 chmod +x "$SCRIPT_DIR/java.sh"
 chmod +x "$SCRIPT_DIR/python.sh"
 chmod +x "$SCRIPT_DIR/dotnet.sh"
+chmod +x "$SCRIPT_DIR/node.sh"
+chmod +x "$SCRIPT_DIR/databases.sh"
+chmod +x "$SCRIPT_DIR/docker.sh"
+chmod +x "$SCRIPT_DIR/git.sh"
 
 # Ejecutar script de actualizacion y dependencias
 echo "-> Paso 1: Actualizando el sistema..."
@@ -48,6 +52,22 @@ echo "-> Paso 6: Instalando ecosistema Python..."
 # Ejecutar script de .NET SDK
 echo "-> Paso 7: Instalando .NET SDK..."
 "$SCRIPT_DIR/dotnet.sh"
+
+# Ejecutar script de Node.js / TS
+echo "-> Paso 8: Instalando ecosistema JavaScript/TypeScript..."
+"$SCRIPT_DIR/node.sh"
+
+# Ejecutar script de Motores de BD
+echo "-> Paso 9: Instalando motores de Bases de Datos..."
+"$SCRIPT_DIR/databases.sh"
+
+# Ejecutar script de Docker
+echo "-> Paso 10: Instalando Docker y utilidades..."
+"$SCRIPT_DIR/docker.sh"
+
+# Ejecutar script de Git y GitHub
+echo "-> Paso 11: Instalando Git, Git LFS y GitHub CLI..."
+"$SCRIPT_DIR/git.sh"
 
 echo "=========================================="
 echo "Todo el proceso de instalacion ha finalizado exitosamente!"
