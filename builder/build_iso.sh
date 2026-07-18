@@ -43,8 +43,9 @@ if [ "$ISO_DISTRO" = "ubuntu" ]; then
     cp "$TEMPLATES_DIR/user-data" "$EXTRACT_DIR/nocloud/"
     cp "$TEMPLATES_DIR/meta-data" "$EXTRACT_DIR/nocloud/"
     
-    echo "=> Preparando scripts personalizados (Rookie-Linux-Develop)..."
+    echo "=> Preparando scripts y recursos (Rookie-Linux-Develop)..."
     cp -r "$WORKSPACE/scripts" "$EXTRACT_DIR/custom_scripts/"
+    cp -r "$WORKSPACE/assets" "$EXTRACT_DIR/custom_scripts/"
 
     echo "=> Extrayendo configuracion GRUB original de la ISO..."
     xorriso -osirrox on -indev "$ISO_PATH" -extract /boot/grub/grub.cfg "$EXTRACT_DIR/grub.cfg" 2>/dev/null || true

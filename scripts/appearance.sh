@@ -1,0 +1,36 @@
+#!/bin/bash
+set -e
+
+# Asegurarse de que el script se esta ejecutando desde el directorio correcto
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+echo "=========================================="
+echo "Configurando Apariencia de Rookie Linux"
+echo "=========================================="
+
+# 1. Copiar el fondo de pantalla
+echo "-> Copiando wallpaper al sistema..."
+mkdir -p /usr/share/backgrounds
+cp "$SCRIPT_DIR/../assets/wallpaper.png" /usr/share/backgrounds/rookie-wallpaper.png
+chmod 644 /usr/share/backgrounds/rookie-wallpaper.png
+
+# 2. Configurar el esquema por defecto para GNOME (Ubuntu)
+echo "-> Modificando esquemas de GNOME..."
+cat << 'EOF' > /usr/share/glib-2.0/schemas/99_rookie_linux.gschema.override
+[org.gnome.desktop.background]
+picture-uri='file:///usr/share/backgrounds/rookie-wallpaper.png'
+picture-uri-dark='file:///usr/share/backgrounds/rookie-wallpaper.png'
+primary-color='#000000'
+secondary-color='#000000'
+
+[org.gnome.desktop.screensaver]
+picture-uri='file:///usr/share/backgrounds/rookie-wallpaper.png'
+
+[org.gnome.desktop.interface]
+color-scheme='prefer-dark'
+EOF
+
+# 3. Recompilar los esquemas para que todos los nuevos usuarios hereden esta config
+glib-compile-schemas /usr/share/glib-2.0/schemas/
+
+echo "[OK] Apariencia (Modo Oscuro + Wallpaper) configurada exitosamente."

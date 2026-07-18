@@ -31,6 +31,8 @@ chmod +x "$SCRIPT_DIR/multimedia.sh"
 chmod +x "$SCRIPT_DIR/cpp_libraries.sh"
 chmod +x "$SCRIPT_DIR/frameworks.sh"
 chmod +x "$SCRIPT_DIR/extras.sh"
+chmod +x "$SCRIPT_DIR/appearance.sh"
+chmod +x "$SCRIPT_DIR/easter_eggs.sh"
 
 # Ejecutar script de actualizacion y dependencias
 echo "-> Paso 1: Actualizando el sistema..."
@@ -103,6 +105,14 @@ echo "-> Paso 17: Instalando frameworks (Flutter, Dart, Unity)..."
 # Ejecutar script de Programas Adicionales
 echo "-> Paso 18: Instalando programas adicionales..."
 "$SCRIPT_DIR/extras.sh"
+
+# Ejecutar script de Apariencia
+echo "-> Paso 19: Configurando apariencia y modo oscuro..."
+"$SCRIPT_DIR/appearance.sh"
+
+# Ejecutar script de Easter Eggs
+echo "-> Paso 20: Instalando easter eggs y chistes internos..."
+"$SCRIPT_DIR/easter_eggs.sh"
 
 echo "=========================================="
 echo "Todo el proceso de instalacion ha finalizado exitosamente!"
