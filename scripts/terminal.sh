@@ -26,11 +26,16 @@ case "$OS" in
         safe_apt_install \
             zsh tmux htop btop tree curl wget unzip zip p7zip-full \
             rar unrar jq ripgrep fd-find bat fzf ncdu
+            
+        # Ubuntu instala fd como fdfind y bat como batcat, vamos a crear symlinks para ellos
+        sudo ln -sf $(which fdfind) /usr/local/bin/fd || true
+        sudo ln -sf $(which batcat) /usr/local/bin/bat || true
+        
         echo "  [OK] Utilidades de terminal instaladas exitosamente."
         ;;
     fedora)
         # unrar puede requerir rpm-fusion, se permite fallo silencioso con || true
-        sudo dnf install -y \ || true
+        sudo dnf install -y \
             zsh tmux htop btop tree curl wget unzip zip p7zip p7zip-plugins \
             unrar jq ripgrep fd-find bat fzf ncdu || true
         echo "  [OK] Utilidades de terminal instaladas exitosamente."
@@ -40,4 +45,3 @@ case "$OS" in
         exit 1
         ;;
 esac
-

@@ -39,6 +39,7 @@ chmod +x "$SCRIPT_DIR/frameworks.sh"
 chmod +x "$SCRIPT_DIR/extras.sh"
 chmod +x "$SCRIPT_DIR/appearance.sh"
 chmod +x "$SCRIPT_DIR/easter_eggs.sh"
+chmod +x "$SCRIPT_DIR/verify_installation.sh"
 
 # Ejecutar script de actualizacion y dependencias
 echo "-> Paso 1: Actualizando el sistema..."

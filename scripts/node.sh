@@ -21,12 +21,17 @@ echo "=========================================="
 
 case "$OS" in
     ubuntu|linuxmint|pop)
-        curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+        curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash - || true
         safe_apt_install nodejs
+        
+        # En caso de que NodeSource falle, nodejs de Ubuntu no incluye npm
+        if ! command -v npm &> /dev/null; then
+            safe_apt_install npm || true
+        fi
         ;;
     fedora)
         curl -fsSL https://rpm.nodesource.com/setup_lts.x | sudo bash -
-        sudo dnf install -y nodejs || true
+        sudo dnf install -y nodejs || true
         ;;
     *)
         echo "Distribucion no soportada en este script: $OS"
@@ -37,4 +42,3 @@ esac
 # Instalar herramientas globales de JS/TS
 sudo npm install -g typescript eslint prettier
 echo "  [OK] Node.js LTS, npm, TS, ESLint y Prettier instalados exitosamente."
-

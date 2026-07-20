@@ -35,5 +35,13 @@ EOF
 # 3. Recompilar los esquemas para que todos los nuevos usuarios hereden esta config
 glib-compile-schemas /usr/share/glib-2.0/schemas/
 
+# 4. Reemplazar fondo de pantalla de Ubuntu por fuerza bruta
+echo "-> Forzando el fondo de pantalla por defecto de Ubuntu..."
+UBUNTU_DEFAULT="/usr/share/backgrounds/warty-final-ubuntu.png"
+if [ -f "$UBUNTU_DEFAULT" ] || [ -L "$UBUNTU_DEFAULT" ]; then
+    rm -f "$UBUNTU_DEFAULT"
+    ln -s /usr/share/backgrounds/rookie-wallpaper.png "$UBUNTU_DEFAULT"
+fi
+
 echo "[OK] Apariencia (Modo Oscuro + Wallpaper) configurada exitosamente."
 

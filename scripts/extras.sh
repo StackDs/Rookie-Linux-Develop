@@ -19,6 +19,18 @@ echo "=========================================="
 echo "Instalando Programas Adicionales para: $OS"
 echo "=========================================="
 
+# LibreOffice
+echo ">>> Instalando LibreOffice..."
+case "$OS" in
+    ubuntu|linuxmint|pop)
+        safe_apt_install libreoffice
+        ;;
+    fedora)
+        sudo dnf install -y libreoffice || true
+        ;;
+esac
+echo "  [OK] LibreOffice instalado exitosamente."
+
 # JFLAP
 echo ">>> Instalando JFLAP..."
 if [ ! -f "/opt/jflap/JFLAP.jar" ]; then
@@ -36,3 +48,19 @@ else
     echo "  [-] JFLAP ya se encuentra instalado."
 fi
 
+# Verificador de Instalación (Primer Inicio)
+echo ">>> Configurando verificador interactivo..."
+sudo cp "$SCRIPT_DIR/verify_installation.sh" /usr/local/bin/verify-rookie
+sudo chmod +x /usr/local/bin/verify-rookie
+
+sudo mkdir -p /etc/xdg/autostart
+cat << 'EOF' | sudo tee /etc/xdg/autostart/verify-rookie.desktop > /dev/null
+[Desktop Entry]
+Type=Application
+Name=Rookie Verifier
+Exec=gnome-terminal -- bash -c "/usr/local/bin/verify-rookie"
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true
+EOF
+echo "  [OK] Verificador configurado exitosamente."

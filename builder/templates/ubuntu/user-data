@@ -6,15 +6,10 @@ autoinstall:
   interactive-sections:
     - network
     - storage
+    - identity
   locale: en_US.UTF-8
   keyboard:
     layout: us
-  identity:
-    hostname: rookie-linux
-    username: developer
-    realname: Developer
-    # Hash SHA-512 de la palabra "password" (mkpasswd -m sha-512 password)
-    password: "$6$ex$K1/6y.eGk6uN.xMv5zYwA/g3f5O/v6uM1fH7g4sE1aV8yI.uE2p3wZ5X4uN/p.G4p/H0u2f3s4/O7u6n4p"
 
   late-commands:
     # 1. Mover nuestros scripts desde la ISO (/cdrom) al disco duro instalado (/target/opt/)
