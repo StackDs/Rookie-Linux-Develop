@@ -8,17 +8,6 @@ source "$SCRIPT_DIR/utils.sh"
 # para administrar bases de datos
 # ==========================================
 
-# Detectar la distribucion de Linux
-if [ -f /etc/os-release ]; then
-    . /etc/os-release
-    OS=$ID
-    # Mint usa su propio CODENAME, pero proporciona UBUNTU_CODENAME para repositorios
-    CODENAME=${UBUNTU_CODENAME:-$VERSION_CODENAME}
-else
-    echo "No se pudo detectar el sistema operativo."
-    exit 1
-fi
-
 echo "=========================================="
 echo "Instalando Herramientas de BD para: $OS"
 echo "=========================================="
@@ -26,39 +15,38 @@ echo "=========================================="
 # Funcion para instalar DBeaver
 install_dbeaver() {
     echo ">>> Instalando DBeaver Community Edition..."
-    case "$OS" in
-        ubuntu|linuxmint|pop)
-            sudo wget -O /usr/share/keyrings/dbeaver.gpg.key https://dbeaver.io/debs/dbeaver.gpg.key
-            echo "deb [signed-by=/usr/share/keyrings/dbeaver.gpg.key] https://dbeaver.io/debs/dbeaver-ce /" | sudo tee /etc/apt/sources.list.d/dbeaver.list > /dev/null
-            safe_apt_update
-            safe_apt_install dbeaver-ce
-            echo "  [OK] DBeaver instalado exitosamente."
-            ;;
-        fedora)
-            sudo wget -O /etc/yum.repos.d/dbeaver.repo https://dbeaver.io/debs/dbeaver.repo
-            sudo dnf install -y dbeaver-ce || true
-            echo "  [OK] DBeaver instalado exitosamente."
-            ;;
-    esac
+    if is_debian; then
+        sudo wget -O /usr/share/keyrings/dbeaver.gpg.key https://dbeaver.io/debs/dbeaver.gpg.key
+        echo "deb [signed-by=/usr/share/keyrings/dbeaver.gpg.key] https://dbeaver.io/debs/dbeaver-ce /" | sudo tee /etc/apt/sources.list.d/dbeaver.list > /dev/null
+        pkg_update
+        pkg_install dbeaver-ce
+    elif is_fedora; then
+        sudo wget -O /etc/yum.repos.d/dbeaver.repo https://dbeaver.io/debs/dbeaver.repo
+        pkg_update
+        pkg_install dbeaver-ce
+    else
+        echo "[!] Instalacion automatica de DBeaver no soportada en $OS_FAMILY"
+    fi
+    echo "  [OK] DBeaver instalado exitosamente."
 }
 
 # Funcion para instalar pgAdmin4 (Modo Escritorio)
 install_pgadmin4() {
     echo ">>> Instalando pgAdmin4 (Escritorio)..."
-    case "$OS" in
-        ubuntu|linuxmint|pop)
-            curl -fsS https://www.pgadmin.org/static/packages_pgadmin_org.pub | sudo gpg --dearmor --yes -o /usr/share/keyrings/packages-pgadmin-org.gpg
-            echo "deb [signed-by=/usr/share/keyrings/packages-pgadmin-org.gpg] https://ftp.postgresql.org/pub/pgadmin/pgadmin4/apt/$CODENAME pgadmin4 main" | sudo tee /etc/apt/sources.list.d/pgadmin4.list > /dev/null
-            safe_apt_update
-            safe_apt_install pgadmin4-desktop
-            echo "  [OK] pgAdmin4 instalado exitosamente."
-            ;;
-        fedora)
-            sudo rpm -i https://ftp.postgresql.org/pub/pgadmin/pgadmin4/yum/pgadmin4-fedora-repo-2-1.noarch.rpm || true
-            sudo dnf install -y pgadmin4-desktop || true
-            echo "  [OK] pgAdmin4 instalado exitosamente."
-            ;;
-    esac
+    if is_debian; then
+        CODENAME=${UBUNTU_CODENAME:-$VERSION_CODENAME}
+        curl -fsS https://www.pgadmin.org/static/packages_pgadmin_org.pub | sudo gpg --dearmor --yes -o /usr/share/keyrings/packages-pgadmin-org.gpg
+        echo "deb [signed-by=/usr/share/keyrings/packages-pgadmin-org.gpg] https://ftp.postgresql.org/pub/pgadmin/pgadmin4/apt/$CODENAME pgadmin4 main" | sudo tee /etc/apt/sources.list.d/pgadmin4.list > /dev/null
+        pkg_update
+        pkg_install pgadmin4-desktop
+    elif is_fedora; then
+        sudo rpm -i https://ftp.postgresql.org/pub/pgadmin/pgadmin4/yum/pgadmin4-fedora-repo-2-1.noarch.rpm || true
+        pkg_update
+        pkg_install pgadmin4-desktop
+    else
+        echo "[!] Instalacion automatica de pgAdmin4 no soportada en $OS_FAMILY"
+    fi
+    echo "  [OK] pgAdmin4 instalado exitosamente."
 }
 
 install_dbeaver
@@ -67,4 +55,3 @@ install_pgadmin4
 echo "=========================================="
 echo "Instalacion de Herramientas de BD completada."
 echo "=========================================="
-

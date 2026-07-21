@@ -7,15 +7,6 @@ source "$SCRIPT_DIR/utils.sh"
 # Script de instalacion de IDEs y Editores
 # ==========================================
 
-# Detectar la distribucion de Linux
-if [ -f /etc/os-release ]; then
-    . /etc/os-release
-    OS=$ID
-else
-    echo "No se pudo detectar el sistema operativo."
-    exit 1
-fi
-
 echo "=========================================="
 echo "Instalando IDEs para: $OS"
 echo "=========================================="
@@ -23,44 +14,32 @@ echo "=========================================="
 # Funcion para instalar Visual Studio Code
 install_vscode() {
     echo ">>> Instalando Visual Studio Code..."
-    case "$OS" in
-        ubuntu|linuxmint|pop)
-            wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
-            sudo install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg
-            sudo sh -c 'echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list'
-            rm -f packages.microsoft.gpg
-            safe_apt_update
-            safe_apt_install code
-            echo "  [OK] Visual Studio Code instalado exitosamente."
-            ;;
-        fedora)
-            sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
-            sudo sh -c 'echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/vscode.repo'
-            sudo dnf check-update || true
-            sudo dnf install -y code || true
-            echo "  [OK] Visual Studio Code instalado exitosamente."
-            ;;
-    esac
+    if is_debian; then
+        wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
+        sudo install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg
+        sudo sh -c 'echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list'
+        rm -f packages.microsoft.gpg
+        pkg_update
+        pkg_install code
+    elif is_fedora || is_suse; then
+        sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
+        sudo sh -c 'echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/vscode.repo'
+        pkg_update
+        pkg_install code
+    elif is_arch; then
+        pkg_install code
+    fi
+    echo "  [OK] Visual Studio Code instalado exitosamente."
 }
 
 # Funcion para instalar IntelliJ IDEA Community
 install_intellij() {
     echo ">>> Instalando IntelliJ IDEA Community..."
     # Usaremos Flatpak para una instalacion universal y limpia en todas estas distros.
-    case "$OS" in
-        ubuntu|linuxmint|pop)
-            # Asegurarse de que flatpak este instalado
-            safe_apt_install flatpak
-            # En Ubuntu puede ser necesario el plugin de software
-            if [ "$OS" = "ubuntu" ]; then
-                safe_apt_install gnome-software-plugin-flatpak || true
-            fi
-            ;;
-        fedora)
-            # Flatpak suele venir preinstalado en Fedora, pero por si acaso
-            sudo dnf install -y flatpak || true
-            ;;
-    esac
+    pkg_install flatpak
+    if is_debian; then
+        pkg_install gnome-software-plugin-flatpak || true
+    fi
 
     # Anadir repositorio de Flathub
     flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
@@ -73,34 +52,23 @@ install_intellij() {
 # Funcion para instalar Emacs
 install_emacs() {
     echo ">>> Instalando Emacs..."
-    case "$OS" in
-        ubuntu|linuxmint|pop)
-            safe_apt_install emacs
-            echo "  [OK] Emacs instalado exitosamente."
-            ;;
-        fedora)
-            sudo dnf install -y emacs || true
-            echo "  [OK] Emacs instalado exitosamente."
-            ;;
-    esac
+    pkg_install emacs
+    echo "  [OK] Emacs instalado exitosamente."
 }
 
 # Funcion para instalar Antigravity
 install_antigravity() {
     echo ">>> Instalando Antigravity..."
-    case "$OS" in
-        ubuntu|linuxmint|pop)
-            sudo mkdir -p /etc/apt/keyrings
-            curl -fsSL https://us-central1-apt.pkg.dev/doc/repo-signing-key.gpg | sudo gpg --dearmor -o /etc/apt/keyrings/antigravity-repo-key.gpg
-            echo "deb [signed-by=/etc/apt/keyrings/antigravity-repo-key.gpg] https://us-central1-apt.pkg.dev/projects/antigravity-auto-updater-dev/ antigravity-debian main" | sudo tee /etc/apt/sources.list.d/antigravity.list > /dev/null
-            safe_apt_update
-            safe_apt_install antigravity
-            echo "  [OK] Antigravity instalado exitosamente."
-            ;;
-        fedora)
-            echo "[!] Antigravity actualmente usa un repositorio APT. No disponible en Fedora."
-            ;;
-    esac
+    if is_debian; then
+        sudo mkdir -p /etc/apt/keyrings
+        curl -fsSL https://us-central1-apt.pkg.dev/doc/repo-signing-key.gpg | sudo gpg --dearmor -o /etc/apt/keyrings/antigravity-repo-key.gpg
+        echo "deb [signed-by=/etc/apt/keyrings/antigravity-repo-key.gpg] https://us-central1-apt.pkg.dev/projects/antigravity-auto-updater-dev/ antigravity-debian main" | sudo tee /etc/apt/sources.list.d/antigravity.list > /dev/null
+        pkg_update
+        pkg_install antigravity
+        echo "  [OK] Antigravity instalado exitosamente."
+    else
+        echo "[!] Antigravity actualmente usa un repositorio APT. No soportado nativamente en $OS."
+    fi
 }
 
 # Ejecutar las funciones
@@ -112,4 +80,3 @@ install_antigravity
 echo "=========================================="
 echo "Instalacion de IDEs completada."
 echo "=========================================="
-

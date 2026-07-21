@@ -8,6 +8,78 @@ export DEBIAN_FRONTEND=noninteractive
 export NEEDRESTART_MODE=a
 export NEEDRESTART_SUSPEND=1
 
+# ==========================================
+# Deteccion de Sistema Operativo
+# ==========================================
+if [ -f /etc/os-release ]; then
+    . /etc/os-release
+    export OS=$ID
+else
+    echo "No se pudo detectar el sistema operativo."
+    export OS="unknown"
+fi
+
+# Detectar la "familia" del SO para usar el gestor de paquetes correcto
+case "$OS" in
+    ubuntu|debian|linuxmint|pop)
+        export OS_FAMILY="debian"
+        ;;
+    fedora|rhel|centos|rocky|almalinux)
+        export OS_FAMILY="redhat"
+        ;;
+    arch|manjaro|endeavouros)
+        export OS_FAMILY="arch"
+        ;;
+    opensuse*)
+        export OS_FAMILY="suse"
+        ;;
+    *)
+        export OS_FAMILY="unknown"
+        ;;
+esac
+
+# Helpers para chequeos rapidos
+is_debian() { [ "$OS_FAMILY" = "debian" ]; }
+is_fedora() { [ "$OS_FAMILY" = "redhat" ]; }
+is_arch() { [ "$OS_FAMILY" = "arch" ]; }
+is_suse() { [ "$OS_FAMILY" = "suse" ]; }
+
+# ==========================================
+# Gestor de Paquetes Generico
+# ==========================================
+
+pkg_update() {
+    if is_debian; then
+        safe_apt_update
+    elif is_fedora; then
+        sudo dnf check-update || true
+    elif is_arch; then
+        sudo pacman -Sy --noconfirm
+    elif is_suse; then
+        sudo zypper refresh
+    else
+        echo "[!] OS_FAMILY $OS_FAMILY no soportado para pkg_update"
+    fi
+}
+
+pkg_install() {
+    local packages="$*"
+    if is_debian; then
+        safe_apt_install $packages
+    elif is_fedora; then
+        echo ">>> Intentando instalar (DNF): $packages"
+        sudo dnf install -y $packages || true
+    elif is_arch; then
+        echo ">>> Intentando instalar (Pacman): $packages"
+        sudo pacman -S --noconfirm --needed $packages || true
+    elif is_suse; then
+        echo ">>> Intentando instalar (Zypper): $packages"
+        sudo zypper install -y $packages || true
+    else
+        echo "[!] OS_FAMILY $OS_FAMILY no soportado para pkg_install ($packages)"
+    fi
+}
+
 wait_for_network() {
     echo ">>> Verificando conectividad a internet..."
     for i in {1..15}; do

@@ -38,17 +38,17 @@ rm -rf "$EXTRACT_DIR"
 mkdir -p "$EXTRACT_DIR/nocloud"
 mkdir -p "$EXTRACT_DIR/custom_scripts"
 
+echo "=> Preparando scripts y recursos (Rookie-Linux-Develop)..."
+cp -r "$WORKSPACE/scripts" "$EXTRACT_DIR/custom_scripts/"
+cp -r "$WORKSPACE/assets" "$EXTRACT_DIR/custom_scripts/"
+
+echo "=> Convirtiendo finales de linea Windows (CRLF) a Linux (LF)..."
+find "$EXTRACT_DIR/custom_scripts/scripts/" -type f -name "*.sh" -exec sed -i 's/\r$//' {} + 2>/dev/null || true
+
 if [ "$ISO_DISTRO" = "ubuntu" ]; then
     echo "=> Preparando configuracion Cloud-Init (Subiquity)..."
     cp "$TEMPLATES_DIR/user-data" "$EXTRACT_DIR/nocloud/"
     cp "$TEMPLATES_DIR/meta-data" "$EXTRACT_DIR/nocloud/"
-    
-    echo "=> Preparando scripts y recursos (Rookie-Linux-Develop)..."
-    cp -r "$WORKSPACE/scripts" "$EXTRACT_DIR/custom_scripts/"
-    cp -r "$WORKSPACE/assets" "$EXTRACT_DIR/custom_scripts/"
-
-    echo "=> Convirtiendo finales de linea Windows (CRLF) a Linux (LF)..."
-    find "$EXTRACT_DIR/custom_scripts/scripts/" -type f -name "*.sh" -exec sed -i 's/\r$//' {} + 2>/dev/null || true
     find "$EXTRACT_DIR/nocloud/" -type f -exec sed -i 's/\r$//' {} + 2>/dev/null || true
 
     echo "=> Extrayendo configuracion GRUB original de la ISO..."
@@ -66,6 +66,46 @@ if [ "$ISO_DISTRO" = "ubuntu" ]; then
         sed -i 's/---/autoinstall ds=nocloud\\;s=\/cdrom\/nocloud\/ ---/g' "$EXTRACT_DIR/loopback.cfg" || true
         sed -i 's/"Try or Install Ubuntu"/"Instalador Automatico de Rookie Linux"/g' "$EXTRACT_DIR/loopback.cfg" || true
     fi
+elif [ "$ISO_DISTRO" = "fedora" ]; then
+    echo "=> Preparando configuracion Kickstart (Anaconda)..."
+    cp "$TEMPLATES_DIR/ks.cfg" "$EXTRACT_DIR/ks.cfg"
+    sed -i 's/\r$//' "$EXTRACT_DIR/ks.cfg"
+
+    echo "=> Extrayendo configuracion GRUB original de la ISO..."
+    xorriso -osirrox on -indev "$ISO_PATH" -extract /EFI/BOOT/grub.cfg "$EXTRACT_DIR/grub.cfg" 2>/dev/null || true
+    xorriso -osirrox on -indev "$ISO_PATH" -extract /isolinux/isolinux.cfg "$EXTRACT_DIR/isolinux.cfg" 2>/dev/null || true
+    
+    chmod +w "$EXTRACT_DIR/grub.cfg" "$EXTRACT_DIR/isolinux.cfg" 2>/dev/null || true
+
+    echo "=> Modificando menu de arranque GRUB (autoinstall)..."
+    if [ -f "$EXTRACT_DIR/grub.cfg" ]; then
+        sed -i 's/quiet/quiet inst.ks=cdrom:\/ks.cfg/g' "$EXTRACT_DIR/grub.cfg" || true
+        sed -i 's/Start Fedora/Instalador Automatico Rookie Fedora/g' "$EXTRACT_DIR/grub.cfg" || true
+    fi
+    if [ -f "$EXTRACT_DIR/isolinux.cfg" ]; then
+        sed -i 's/quiet/quiet inst.ks=cdrom:\/ks.cfg/g' "$EXTRACT_DIR/isolinux.cfg" || true
+        sed -i 's/Start Fedora/Instalador Automatico Rookie Fedora/g' "$EXTRACT_DIR/isolinux.cfg" || true
+    fi
+elif [ "$ISO_DISTRO" = "mint" ]; then
+    echo "=> Preparando configuracion Preseed (Ubiquity)..."
+    cp "$TEMPLATES_DIR/preseed.cfg" "$EXTRACT_DIR/preseed.cfg"
+    sed -i 's/\r$//' "$EXTRACT_DIR/preseed.cfg"
+
+    echo "=> Extrayendo configuracion GRUB original de la ISO..."
+    xorriso -osirrox on -indev "$ISO_PATH" -extract /boot/grub/grub.cfg "$EXTRACT_DIR/grub.cfg" 2>/dev/null || true
+    xorriso -osirrox on -indev "$ISO_PATH" -extract /boot/grub/loopback.cfg "$EXTRACT_DIR/loopback.cfg" 2>/dev/null || true
+    
+    chmod +w "$EXTRACT_DIR/grub.cfg" "$EXTRACT_DIR/loopback.cfg" 2>/dev/null || true
+
+    echo "=> Modificando menu de arranque GRUB (autoinstall)..."
+    if [ -f "$EXTRACT_DIR/grub.cfg" ]; then
+        sed -i 's/--/file=\/cdrom\/preseed.cfg --/g' "$EXTRACT_DIR/grub.cfg" || true
+        sed -i 's/"Start Linux Mint"/"Instalador Automatico Rookie Mint"/g' "$EXTRACT_DIR/grub.cfg" || true
+    fi
+    if [ -f "$EXTRACT_DIR/loopback.cfg" ]; then
+        sed -i 's/--/file=\/cdrom\/preseed.cfg --/g' "$EXTRACT_DIR/loopback.cfg" || true
+        sed -i 's/"Start Linux Mint"/"Instalador Automatico Rookie Mint"/g' "$EXTRACT_DIR/loopback.cfg" || true
+    fi
 fi
 
 # 3. Reempaquetar inyectando los archivos directamente en la ISO clonada
@@ -77,11 +117,26 @@ XORRISO_ARGS=(
     -outdev "$OUTPUT_ISO"
 )
 
+XORRISO_ARGS+=( -map "$EXTRACT_DIR/custom_scripts" "/custom_scripts" )
+
 if [ "$ISO_DISTRO" = "ubuntu" ]; then
-    XORRISO_ARGS+=(
-        -map "$EXTRACT_DIR/nocloud" "/nocloud"
-        -map "$EXTRACT_DIR/custom_scripts" "/custom_scripts"
-    )
+    XORRISO_ARGS+=( -map "$EXTRACT_DIR/nocloud" "/nocloud" )
+    if [ -f "$EXTRACT_DIR/grub.cfg" ]; then
+        XORRISO_ARGS+=( -map "$EXTRACT_DIR/grub.cfg" "/boot/grub/grub.cfg" )
+    fi
+    if [ -f "$EXTRACT_DIR/loopback.cfg" ]; then
+        XORRISO_ARGS+=( -map "$EXTRACT_DIR/loopback.cfg" "/boot/grub/loopback.cfg" )
+    fi
+elif [ "$ISO_DISTRO" = "fedora" ]; then
+    XORRISO_ARGS+=( -map "$EXTRACT_DIR/ks.cfg" "/ks.cfg" )
+    if [ -f "$EXTRACT_DIR/grub.cfg" ]; then
+        XORRISO_ARGS+=( -map "$EXTRACT_DIR/grub.cfg" "/EFI/BOOT/grub.cfg" )
+    fi
+    if [ -f "$EXTRACT_DIR/isolinux.cfg" ]; then
+        XORRISO_ARGS+=( -map "$EXTRACT_DIR/isolinux.cfg" "/isolinux/isolinux.cfg" )
+    fi
+elif [ "$ISO_DISTRO" = "mint" ]; then
+    XORRISO_ARGS+=( -map "$EXTRACT_DIR/preseed.cfg" "/preseed.cfg" )
     if [ -f "$EXTRACT_DIR/grub.cfg" ]; then
         XORRISO_ARGS+=( -map "$EXTRACT_DIR/grub.cfg" "/boot/grub/grub.cfg" )
     fi

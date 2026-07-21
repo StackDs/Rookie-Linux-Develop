@@ -7,28 +7,13 @@ source "$SCRIPT_DIR/utils.sh"
 # Programas adicionales
 # ==========================================
 
-if [ -f /etc/os-release ]; then
-    . /etc/os-release
-    OS=$ID
-else
-    echo "No se pudo detectar el sistema operativo."
-    exit 1
-fi
-
 echo "=========================================="
 echo "Instalando Programas Adicionales para: $OS"
 echo "=========================================="
 
 # LibreOffice
 echo ">>> Instalando LibreOffice..."
-case "$OS" in
-    ubuntu|linuxmint|pop)
-        safe_apt_install libreoffice
-        ;;
-    fedora)
-        sudo dnf install -y libreoffice || true
-        ;;
-esac
+pkg_install libreoffice
 echo "  [OK] LibreOffice instalado exitosamente."
 
 # JFLAP

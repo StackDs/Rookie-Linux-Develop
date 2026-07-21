@@ -7,14 +7,6 @@ source "$SCRIPT_DIR/utils.sh"
 # Frameworks y motores
 # ==========================================
 
-if [ -f /etc/os-release ]; then
-    . /etc/os-release
-    OS=$ID
-else
-    echo "No se pudo detectar el sistema operativo."
-    exit 1
-fi
-
 echo "=========================================="
 echo "Instalando Frameworks y Motores para: $OS"
 echo "=========================================="
@@ -33,18 +25,11 @@ fi
 
 # Unity Hub (Via Flatpak universal)
 echo ">>> Instalando Unity Hub..."
-case "$OS" in
-    ubuntu|linuxmint|pop)
-        safe_apt_install flatpak
-        if [ "$OS" = "ubuntu" ]; then
-            safe_apt_install gnome-software-plugin-flatpak || true
-        fi
-        ;;
-    fedora)
-        sudo dnf install -y flatpak || true
-        ;;
-esac
+pkg_install flatpak
+if is_debian; then
+    pkg_install gnome-software-plugin-flatpak || true
+fi
+
 flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 safe_flatpak_install flathub com.unity.UnityHub
 echo "  [OK] Unity Hub instalado exitosamente."
-

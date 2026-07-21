@@ -60,10 +60,12 @@ echo ""
 echo -e "\e[1;33m--- Bibliotecas C/C++ ---\e[0m"
 cpp_libs=("libsdl2-dev" "libsfml-dev" "libgl1-mesa-dev" "libglfw3-dev" "libglew-dev")
 for lib in "${cpp_libs[@]}"; do
-    if dpkg -l | grep -q "^ii  $lib"; then
+    if command -v dpkg &> /dev/null && dpkg -l | grep -q "^ii  $lib"; then
+        echo -e "[\e[1;32m OK \e[0m] $lib"
+    elif command -v rpm &> /dev/null && rpm -qa | grep -iq "${lib%-dev}"; then
         echo -e "[\e[1;32m OK \e[0m] $lib"
     else
-        echo -e "[\e[1;31mFALLO\e[0m] $lib"
+        echo -e "[\e[1;31mFALLO\e[0m] $lib (o nombre diferente en esta distro)"
     fi
 done
 

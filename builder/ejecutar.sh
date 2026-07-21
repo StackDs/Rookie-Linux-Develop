@@ -8,7 +8,8 @@ echo "=========================================="
 echo "Bienvenido al ISO Builder de Rookie Linux"
 echo "=========================================="
 
-ISO_DISTRO="${ISO_DISTRO:-ubuntu}"
+# Aceptar parametro o variable de entorno (por defecto ubuntu)
+export ISO_DISTRO="${1:-${ISO_DISTRO:-ubuntu}}"
 
 echo "-> Paso 1: Obteniendo ISO original de ${ISO_DISTRO}..."
 "$PROJECT_ROOT/builder/download_iso.sh" "$ISO_DISTRO"
