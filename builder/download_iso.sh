@@ -51,7 +51,7 @@ resolve_iso_source(){
         fedora)
             # Fedora: lee el indice del mirror y elige la ISO Live correcta.
             FEDORA_VERSION="${FEDORA_VERSION:-42}"
-            FEDORA_PRODUCT="${FEDORA_PRODUCT:-Workstation}"
+            FEDORA_PRODUCT="${FEDORA_PRODUCT:-Server}"
             FEDORA_ARCH="${FEDORA_ARCH:-x86_64}"
             FEDORA_MIRROR="${FEDORA_MIRROR:-https://download.fedoraproject.org/pub/fedora/linux/releases/${FEDORA_VERSION}/${FEDORA_PRODUCT}/${FEDORA_ARCH}/iso/}"
 
@@ -61,7 +61,7 @@ resolve_iso_source(){
                     | grep -oE 'href="[^"]+\.iso"' \
                     | sed -E 's/^href="//; s/"$//' \
                     | grep -E "Fedora-${FEDORA_PRODUCT}.*${FEDORA_VERSION}.*${FEDORA_ARCH}\\.iso$" \
-                    | grep -E "Live|Workstation" \
+                    | grep -E "netinst|Live|Workstation" \
                     | sort -V \
                     | tail -n1)"
             fi

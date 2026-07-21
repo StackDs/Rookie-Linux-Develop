@@ -72,16 +72,20 @@ elif [ "$ISO_DISTRO" = "fedora" ]; then
     sed -i 's/\r$//' "$EXTRACT_DIR/ks.cfg"
 
     echo "=> Extrayendo configuracion GRUB original de la ISO..."
-    xorriso -osirrox on -indev "$ISO_PATH" -extract /EFI/BOOT/grub.cfg "$EXTRACT_DIR/grub.cfg" 2>/dev/null || true
+    xorriso -osirrox on -indev "$ISO_PATH" -extract /EFI/BOOT/grub.cfg "$EXTRACT_DIR/efi_grub.cfg" 2>/dev/null || true
+    xorriso -osirrox on -indev "$ISO_PATH" -extract /boot/grub2/grub.cfg "$EXTRACT_DIR/grub2_grub.cfg" 2>/dev/null || true
     xorriso -osirrox on -indev "$ISO_PATH" -extract /isolinux/isolinux.cfg "$EXTRACT_DIR/isolinux.cfg" 2>/dev/null || true
     
-    chmod +w "$EXTRACT_DIR/grub.cfg" "$EXTRACT_DIR/isolinux.cfg" 2>/dev/null || true
+    chmod +w "$EXTRACT_DIR/efi_grub.cfg" "$EXTRACT_DIR/grub2_grub.cfg" "$EXTRACT_DIR/isolinux.cfg" 2>/dev/null || true
 
     echo "=> Modificando menu de arranque GRUB (autoinstall)..."
-    if [ -f "$EXTRACT_DIR/grub.cfg" ]; then
-        sed -i 's/quiet/quiet inst.ks=cdrom:\/ks.cfg/g' "$EXTRACT_DIR/grub.cfg" || true
-        sed -E -i "s/Start Fedora[^'\"]*/Instalador Automatico de Rookie Linux/g" "$EXTRACT_DIR/grub.cfg" || true
-    fi
+    for grubfile in "$EXTRACT_DIR/efi_grub.cfg" "$EXTRACT_DIR/grub2_grub.cfg"; do
+        if [ -f "$grubfile" ]; then
+            sed -i 's/quiet/quiet inst.ks=cdrom:\/ks.cfg/g' "$grubfile" || true
+            sed -E -i "s/Start Fedora[^'\"]*/Instalador Automatico de Rookie Linux/g" "$grubfile" || true
+        fi
+    done
+    
     if [ -f "$EXTRACT_DIR/isolinux.cfg" ]; then
         sed -i 's/quiet/quiet inst.ks=cdrom:\/ks.cfg/g' "$EXTRACT_DIR/isolinux.cfg" || true
         sed -E -i "s/Start Fedora[^'\"]*/Instalador Automatico de Rookie Linux/g" "$EXTRACT_DIR/isolinux.cfg" || true
@@ -129,8 +133,11 @@ if [ "$ISO_DISTRO" = "ubuntu" ]; then
     fi
 elif [ "$ISO_DISTRO" = "fedora" ]; then
     XORRISO_ARGS+=( -map "$EXTRACT_DIR/ks.cfg" "/ks.cfg" )
-    if [ -f "$EXTRACT_DIR/grub.cfg" ]; then
-        XORRISO_ARGS+=( -map "$EXTRACT_DIR/grub.cfg" "/EFI/BOOT/grub.cfg" )
+    if [ -f "$EXTRACT_DIR/efi_grub.cfg" ]; then
+        XORRISO_ARGS+=( -map "$EXTRACT_DIR/efi_grub.cfg" "/EFI/BOOT/grub.cfg" )
+    fi
+    if [ -f "$EXTRACT_DIR/grub2_grub.cfg" ]; then
+        XORRISO_ARGS+=( -map "$EXTRACT_DIR/grub2_grub.cfg" "/boot/grub2/grub.cfg" )
     fi
     if [ -f "$EXTRACT_DIR/isolinux.cfg" ]; then
         XORRISO_ARGS+=( -map "$EXTRACT_DIR/isolinux.cfg" "/isolinux/isolinux.cfg" )
