@@ -80,11 +80,11 @@ elif [ "$ISO_DISTRO" = "fedora" ]; then
     echo "=> Modificando menu de arranque GRUB (autoinstall)..."
     if [ -f "$EXTRACT_DIR/grub.cfg" ]; then
         sed -i 's/quiet/quiet inst.ks=cdrom:\/ks.cfg/g' "$EXTRACT_DIR/grub.cfg" || true
-        sed -i 's/Start Fedora/Instalador Automatico Rookie Fedora/g' "$EXTRACT_DIR/grub.cfg" || true
+        sed -E -i "s/Start Fedora[^'\"]*/Instalador Automatico de Rookie Linux/g" "$EXTRACT_DIR/grub.cfg" || true
     fi
     if [ -f "$EXTRACT_DIR/isolinux.cfg" ]; then
         sed -i 's/quiet/quiet inst.ks=cdrom:\/ks.cfg/g' "$EXTRACT_DIR/isolinux.cfg" || true
-        sed -i 's/Start Fedora/Instalador Automatico Rookie Fedora/g' "$EXTRACT_DIR/isolinux.cfg" || true
+        sed -E -i "s/Start Fedora[^'\"]*/Instalador Automatico de Rookie Linux/g" "$EXTRACT_DIR/isolinux.cfg" || true
     fi
 elif [ "$ISO_DISTRO" = "mint" ]; then
     echo "=> Preparando configuracion Preseed (Ubiquity)..."
@@ -100,11 +100,11 @@ elif [ "$ISO_DISTRO" = "mint" ]; then
     echo "=> Modificando menu de arranque GRUB (autoinstall)..."
     if [ -f "$EXTRACT_DIR/grub.cfg" ]; then
         sed -i 's/--/file=\/cdrom\/preseed.cfg --/g' "$EXTRACT_DIR/grub.cfg" || true
-        sed -i 's/"Start Linux Mint"/"Instalador Automatico Rookie Mint"/g' "$EXTRACT_DIR/grub.cfg" || true
+        sed -i 's/"Start Linux Mint"/"Instalador Automatico de Rookie Linux"/g' "$EXTRACT_DIR/grub.cfg" || true
     fi
     if [ -f "$EXTRACT_DIR/loopback.cfg" ]; then
         sed -i 's/--/file=\/cdrom\/preseed.cfg --/g' "$EXTRACT_DIR/loopback.cfg" || true
-        sed -i 's/"Start Linux Mint"/"Instalador Automatico Rookie Mint"/g' "$EXTRACT_DIR/loopback.cfg" || true
+        sed -i 's/"Start Linux Mint"/"Instalador Automatico de Rookie Linux"/g' "$EXTRACT_DIR/loopback.cfg" || true
     fi
 fi
 

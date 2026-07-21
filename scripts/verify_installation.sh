@@ -18,7 +18,7 @@ if command -v gsettings &> /dev/null; then
 fi
 
 echo -e "\e[1;36m====================================================\e[0m"
-echo -e "\e[1;36m  Verificando TODO el software de Rookie Linux\e[0m"
+echo -e "\e[1;36m  Verificando TODO el software instalado\e[0m"
 echo -e "\e[1;36m====================================================\e[0m"
 echo ""
 
@@ -43,7 +43,7 @@ commands=(
     # Terminal
     "zsh" "tmux" "htop" "btop" "tree" "curl" "wget" "unzip" "zip" "7z" "rar" "unrar" "jq" "rg" "fd" "bat" "fzf" "ncdu"
     # Navegadores, Ofimática y Multimedia
-    "brave-browser" "firefox" "chromium-browser" "libreoffice" "evince" "vlc" "obs"
+    "brave-browser" "firefox" "libreoffice" "evince" "vlc" "obs"
     # Frameworks SDK
     "flutter" "dart"
 )
