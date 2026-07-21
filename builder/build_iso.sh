@@ -59,7 +59,6 @@ if [ "$ISO_DISTRO" = "ubuntu" ]; then
 
     echo "=> Modificando menu de arranque GRUB (autoinstall)..."
     if [ -f "$EXTRACT_DIR/grub.cfg" ]; then
-        sed -i 's/set timeout=30/set timeout=2/' "$EXTRACT_DIR/grub.cfg" || true
         sed -i 's/---/autoinstall ds=nocloud\\;s=\/cdrom\/nocloud\/ ---/g' "$EXTRACT_DIR/grub.cfg" || true
         sed -i 's/"Try or Install Ubuntu"/"Instalador Automatico de Rookie Linux"/g' "$EXTRACT_DIR/grub.cfg" || true
     fi

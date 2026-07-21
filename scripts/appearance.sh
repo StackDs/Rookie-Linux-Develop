@@ -22,14 +22,38 @@ cat << 'EOF' > /usr/share/glib-2.0/schemas/99_rookie_linux.gschema.override
 [org.gnome.desktop.background]
 picture-uri='file:///usr/share/backgrounds/rookie-wallpaper.png'
 picture-uri-dark='file:///usr/share/backgrounds/rookie-wallpaper.png'
+picture-options='zoom'
 primary-color='#000000'
 secondary-color='#000000'
+color-shading-type='solid'
 
 [org.gnome.desktop.screensaver]
 picture-uri='file:///usr/share/backgrounds/rookie-wallpaper.png'
+picture-options='zoom'
+primary-color='#000000'
+secondary-color='#000000'
+color-shading-type='solid'
 
 [org.gnome.desktop.interface]
 color-scheme='prefer-dark'
+EOF
+
+# 2.1 Registrar el wallpaper en GNOME (Evita bugs donde GNOME no carga fondos no registrados)
+mkdir -p /usr/share/gnome-background-properties
+cat << 'EOF' > /usr/share/gnome-background-properties/rookie-wallpaper.xml
+<?xml version="1.0"?>
+<!DOCTYPE wallpapers SYSTEM "gnome-wp-list.dtd">
+<wallpapers>
+  <wallpaper deleted="false">
+    <name>Rookie Linux</name>
+    <filename>/usr/share/backgrounds/rookie-wallpaper.png</filename>
+    <filename-dark>/usr/share/backgrounds/rookie-wallpaper.png</filename-dark>
+    <options>zoom</options>
+    <shade_type>solid</shade_type>
+    <pcolor>#000000</pcolor>
+    <scolor>#000000</scolor>
+  </wallpaper>
+</wallpapers>
 EOF
 
 # 3. Recompilar los esquemas para que todos los nuevos usuarios hereden esta config
