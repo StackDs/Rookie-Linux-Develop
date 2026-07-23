@@ -35,18 +35,29 @@ install_vscode() {
 # Funcion para instalar IntelliJ IDEA Community
 install_intellij() {
     echo ">>> Instalando IntelliJ IDEA Community..."
-    # Usaremos Flatpak para una instalacion universal y limpia en todas estas distros.
-    pkg_install flatpak
-    if is_debian; then
-        pkg_install gnome-software-plugin-flatpak || true
-    fi
-
-    # Anadir repositorio de Flathub
-    flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+    sudo mkdir -p /opt/idea
+    safe_curl "https://download.jetbrains.com/product?code=IIC&latest=true&distribution=linux" "/tmp/idea.tar.gz"
+    sudo tar -xzf /tmp/idea.tar.gz -C /opt/idea --strip-components=1
+    rm -f /tmp/idea.tar.gz
     
-    # Instalar IntelliJ
-    safe_flatpak_install flathub com.jetbrains.IntelliJ-IDEA-Community
-    echo "  [OK] IntelliJ IDEA Community instalado exitosamente."
+    # Crear enlace simbolico
+    sudo ln -sf /opt/idea/bin/idea.sh /usr/local/bin/idea
+    
+    # Crear acceso directo de escritorio
+    sudo tee /usr/share/applications/intellij-idea-community.desktop > /dev/null <<EOF
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=IntelliJ IDEA Community Edition
+Icon=/opt/idea/bin/idea.svg
+Exec="/opt/idea/bin/idea.sh" %f
+Comment=Capable and Ergonomic IDE for JVM
+Categories=Development;IDE;
+Terminal=false
+StartupWMClass=jetbrains-idea-ce
+EOF
+
+    echo "  [OK] IntelliJ IDEA Community instalado exitosamente (.tar.gz)."
 }
 
 # Funcion para instalar Emacs

@@ -23,13 +23,23 @@ else
     echo "  [-] Flutter SDK ya esta instalado."
 fi
 
-# Unity Hub (Via Flatpak universal)
+# Unity Hub (Via AppImage universal)
 echo ">>> Instalando Unity Hub..."
-pkg_install flatpak
-if is_debian; then
-    pkg_install gnome-software-plugin-flatpak || true
-fi
+pkg_install fuse libfuse2 || true
+sudo mkdir -p /opt/unity
+safe_curl "https://public-cdn.cloud.unity3d.com/hub/prod/UnityHub.AppImage" "/opt/unity/UnityHub.AppImage"
+sudo chmod +x /opt/unity/UnityHub.AppImage
+sudo ln -sf /opt/unity/UnityHub.AppImage /usr/local/bin/unityhub
 
-flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-safe_flatpak_install flathub com.unity.UnityHub
-echo "  [OK] Unity Hub instalado exitosamente."
+# Crear acceso directo de escritorio
+sudo tee /usr/share/applications/unityhub.desktop > /dev/null <<EOF
+[Desktop Entry]
+Name=Unity Hub
+Exec=/opt/unity/UnityHub.AppImage %U
+Terminal=false
+Type=Application
+Icon=unityhub
+Categories=Development;
+StartupNotify=true
+EOF
+echo "  [OK] Unity Hub instalado exitosamente (.AppImage)."

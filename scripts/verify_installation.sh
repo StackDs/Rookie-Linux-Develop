@@ -45,7 +45,7 @@ commands=(
     # Navegadores, Ofimática y Multimedia
     "brave-browser" "firefox" "libreoffice" "evince" "vlc" "obs"
     # Frameworks SDK
-    "flutter" "dart"
+    "flutter" "dart" "unityhub"
 )
 
 for cmd in "${commands[@]}"; do
@@ -91,8 +91,8 @@ else
     echo -e "[\e[1;31mFALLO\e[0m] jflap"
 fi
 
-# IntelliJ IDEA (Flatpak)
-if command -v flatpak &> /dev/null && flatpak list | grep -q "com.jetbrains.IntelliJ-IDEA-Community"; then
+# IntelliJ IDEA
+if command -v idea &> /dev/null; then
     echo -e "[\e[1;32m OK \e[0m] intellij-idea-community"
 else
     echo -e "[\e[1;31mFALLO\e[0m] intellij-idea-community"

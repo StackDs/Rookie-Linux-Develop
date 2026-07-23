@@ -49,8 +49,9 @@ resolve_iso_source(){
             ISO_URL="${ISO_URL:-https://mirrors.edge.kernel.org/linuxmint/stable/${MINT_VERSION}/${ISO_NAME}}"
             ;;
         fedora)
-            # Fedora: lee el indice del mirror y elige la ISO Live correcta.
-            FEDORA_VERSION="${FEDORA_VERSION:-42}"
+            # Fedora: Para soportar Kickstart con scripts %post, no podemos usar ISOs Live.
+            # Usamos la edicion "Server" (netinst) que realiza una instalacion real por paquetes y soporta el grupo Workstation.
+            FEDORA_VERSION="${FEDORA_VERSION:-41}"
             FEDORA_PRODUCT="${FEDORA_PRODUCT:-Server}"
             FEDORA_ARCH="${FEDORA_ARCH:-x86_64}"
             FEDORA_MIRROR="${FEDORA_MIRROR:-https://download.fedoraproject.org/pub/fedora/linux/releases/${FEDORA_VERSION}/${FEDORA_PRODUCT}/${FEDORA_ARCH}/iso/}"
@@ -60,16 +61,17 @@ resolve_iso_source(){
                 ISO_NAME="$(printf '%s\n' "$FEDORA_INDEX" \
                     | grep -oE 'href="[^"]+\.iso"' \
                     | sed -E 's/^href="//; s/"$//' \
-                    | grep -E "Fedora-${FEDORA_PRODUCT}.*${FEDORA_VERSION}.*${FEDORA_ARCH}\\.iso$" \
-                    | grep -E "netinst|Live|Workstation" \
+                    | grep "Fedora-${FEDORA_PRODUCT}" \
+                    | grep "${FEDORA_VERSION}" \
+                    | grep "${FEDORA_ARCH}" \
+                    | grep "netinst" \
                     | sort -V \
                     | tail -n1)"
             fi
 
             if [ -z "$ISO_NAME" ]; then
-                error "No se pudo resolver una ISO de Fedora para ${FEDORA_VERSION}/${FEDORA_PRODUCT}/${FEDORA_ARCH}"
-                echo "Puedes definir ISO_URL o ISO_NAME manualmente."
-                exit 1
+                echo "[WARN] No se pudo resolver dinámicamente la ISO. Usando fallback por defecto."
+                ISO_NAME="Fedora-Server-netinst-x86_64-41-1.4.iso"
             fi
 
             ISO_URL="${ISO_URL:-${FEDORA_MIRROR}${ISO_NAME}}"

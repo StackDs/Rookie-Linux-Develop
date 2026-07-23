@@ -76,19 +76,35 @@ elif [ "$ISO_DISTRO" = "fedora" ]; then
     xorriso -osirrox on -indev "$ISO_PATH" -extract /boot/grub2/grub.cfg "$EXTRACT_DIR/grub2_grub.cfg" 2>/dev/null || true
     xorriso -osirrox on -indev "$ISO_PATH" -extract /isolinux/isolinux.cfg "$EXTRACT_DIR/isolinux.cfg" 2>/dev/null || true
     
+    echo "=> Extrayendo imagenes de arranque ocultas (El Torito)..."
+    xorriso -osirrox on -indev "$ISO_PATH" -extract_boot_images "$EXTRACT_DIR/boot_images" 2>/dev/null || true
+    
     chmod +w "$EXTRACT_DIR/efi_grub.cfg" "$EXTRACT_DIR/grub2_grub.cfg" "$EXTRACT_DIR/isolinux.cfg" 2>/dev/null || true
 
     echo "=> Modificando menu de arranque GRUB (autoinstall)..."
     for grubfile in "$EXTRACT_DIR/efi_grub.cfg" "$EXTRACT_DIR/grub2_grub.cfg"; do
         if [ -f "$grubfile" ]; then
-            sed -i 's/quiet/quiet inst.ks=cdrom:\/ks.cfg/g' "$grubfile" || true
-            sed -E -i "s/Start Fedora[^'\"]*/Instalador Automatico de Rookie Linux/g" "$grubfile" || true
+            # Reemplazo dinamico: si usa LABEL, le pasamos el ks usando el mismo LABEL (ideal para USBs).
+            sed -i 's/\(inst\.stage2=hd:LABEL=\([^ ]*\)\)/\1 inst.ks=hd:LABEL=\2:\/ks.cfg/g' "$grubfile" || true
+            # Fallback por si usa cdrom
+            sed -i 's/\(inst\.stage2=cdrom[^ ]*\)/\1 inst.ks=cdrom:\/ks.cfg/g' "$grubfile" || true
+            
+            sed -E -i "s/menuentry ['\"]Install Fedora[^'\"]*['\"]/menuentry 'Instalador Automatico de Rookie Linux'/g" "$grubfile" || true
+            sed -E -i "s/title .*Install Fedora.*/title Instalador Automatico de Rookie Linux/g" "$grubfile" || true
         fi
     done
     
     if [ -f "$EXTRACT_DIR/isolinux.cfg" ]; then
-        sed -i 's/quiet/quiet inst.ks=cdrom:\/ks.cfg/g' "$EXTRACT_DIR/isolinux.cfg" || true
-        sed -E -i "s/Start Fedora[^'\"]*/Instalador Automatico de Rookie Linux/g" "$EXTRACT_DIR/isolinux.cfg" || true
+        sed -i 's/\(inst\.stage2=hd:LABEL=\([^ ]*\)\)/\1 inst.ks=hd:LABEL=\2:\/ks.cfg/g' "$EXTRACT_DIR/isolinux.cfg" || true
+        sed -i 's/\(inst\.stage2=cdrom[^ ]*\)/\1 inst.ks=cdrom:\/ks.cfg/g' "$EXTRACT_DIR/isolinux.cfg" || true
+        
+        sed -E -i "s/menu label \^?Install Fedora.*/menu label ^Instalador Automatico de Rookie Linux/g" "$EXTRACT_DIR/isolinux.cfg" || true
+    fi
+    
+    if [ -f "$EXTRACT_DIR/boot_images/eltorito_img2_uefi.img" ] && command -v mcopy >/dev/null; then
+        echo "=> Inyectando GRUB parcheado en la imagen FAT EFI (eltorito_img2_uefi.img)..."
+        mcopy -D o -i "$EXTRACT_DIR/boot_images/eltorito_img2_uefi.img" "$EXTRACT_DIR/efi_grub.cfg" ::/EFI/BOOT/grub.cfg || true
+        mcopy -D o -i "$EXTRACT_DIR/boot_images/eltorito_img2_uefi.img" "$EXTRACT_DIR/efi_grub.cfg" ::/EFI/BOOT/GRUB.CFG || true
     fi
 elif [ "$ISO_DISTRO" = "mint" ]; then
     echo "=> Preparando configuracion Preseed (Ubiquity)..."
@@ -154,6 +170,11 @@ fi
 
 # Clona el sector de arranque exacto de la ISO original
 XORRISO_ARGS+=( -boot_image any replay )
+
+if [ "$ISO_DISTRO" = "fedora" ] && [ -f "$EXTRACT_DIR/boot_images/eltorito_img2_uefi.img" ]; then
+    XORRISO_ARGS+=( -append_partition 2 0xef "$EXTRACT_DIR/boot_images/eltorito_img2_uefi.img" )
+    XORRISO_ARGS+=( -boot_image any efi_path=--interval:appended_partition_2:all:: )
+fi
 
 xorriso "${XORRISO_ARGS[@]}"
 

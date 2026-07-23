@@ -144,10 +144,10 @@ safe_flatpak_install() {
     local remote="$1"
     local package="$2"
     echo ">>> Intentando instalar flatpak: $package"
-    if ! flatpak remote-add --if-not-exists $remote https://dl.flathub.org/repo/flathub.flatpakrepo; then
+    if ! timeout 60 flatpak remote-add --if-not-exists $remote https://dl.flathub.org/repo/flathub.flatpakrepo; then
         echo "[!] No se pudo anadir el remote $remote"
     fi
-    if ! sudo flatpak install -y $remote $package; then
+    if ! sudo timeout 300 flatpak install -y $remote $package; then
         echo "[ERROR] No se pudo instalar el flatpak $package."
     fi
 }
