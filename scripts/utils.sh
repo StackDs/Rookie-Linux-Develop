@@ -52,7 +52,9 @@ pkg_update() {
     if is_debian; then
         safe_apt_update
     elif is_fedora; then
-        sudo dnf check-update || true
+        # DNF actualiza su cache automaticamente cuando es necesario.
+        # Ejecutar check-update manualmente puede causar bloqueos en el chroot de Anaconda.
+        echo ">>> (Saltando check-update para Fedora)"
     elif is_arch; then
         sudo pacman -Sy --noconfirm
     elif is_suse; then

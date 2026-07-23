@@ -21,10 +21,11 @@ echo "=========================================="
 echo "Iniciando actualizacion para: $OS"
 echo "=========================================="
 
+# Esperar a que la red este disponible (critico para instalaciones desatendidas)
+wait_for_network
+
 case "$OS" in
     ubuntu|linuxmint|pop)
-        echo "Verificando conexion a internet en chroot..."
-        for i in {1..15}; do ping -c 1 8.8.8.8 >/dev/null 2>&1 && break || sleep 2; done
         if ! curl -s --connect-timeout 5 https://google.com >/dev/null; then
             echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf >/dev/null || true
         fi
@@ -47,7 +48,7 @@ case "$OS" in
         sudo dnf update -y
 
         echo "Instalando dependencias basicas..."
-        sudo dnf install -y curl wget git || true
+        sudo dnf install -y curl wget git || true
         echo "  [OK] Dependencias basicas instaladas exitosamente."
         ;;
     
@@ -60,4 +61,3 @@ esac
 echo "=========================================="
 echo "Actualizacion del sistema completada."
 echo "=========================================="
-

@@ -19,7 +19,7 @@ elif is_fedora; then
     pkg_install postgresql-server postgresql-contrib sqlite
     # Fedora requiere inicializar el cluster de BD manualmente
     sudo postgresql-setup --initdb || true
-    sudo systemctl enable --now postgresql || true
+    sudo systemctl enable postgresql || true
 else
     # Fallback
     pkg_install postgresql sqlite

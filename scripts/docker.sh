@@ -17,7 +17,7 @@ if is_debian; then
     pkg_install docker.io docker-compose
 elif is_fedora; then
     pkg_install docker docker-compose
-    sudo systemctl enable --now docker || true
+    sudo systemctl enable docker || true
 else
     # Fallback
     pkg_install docker docker-compose

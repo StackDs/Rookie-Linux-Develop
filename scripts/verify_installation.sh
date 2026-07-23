@@ -27,13 +27,13 @@ commands=(
     # IDEs y Editores
     "code" "emacs" "antigravity" "nano" "vim" "nvim"
     # Bases de Datos
-    "dbeaver-ce" "psql" "sqlite3"
+    "dbeaver-ce|dbeaver" "psql" "sqlite3"
     # C/C++ y compiladores
     "gcc" "g++" "gdb" "make" "cmake" "clang" "clang++" "ninja" "valgrind"
     # Java y .NET
     "java" "javac" "mvn" "dotnet"
     # Python
-    "python3" "pip3" "pipx" "black" "flake8" "ipython3" "jupyter"
+    "python3" "pip3" "pipx" "black" "flake8" "ipython3|ipython" "jupyter|jupyter-lab"
     # Node y TypeScript
     "node" "npm" "tsc" "eslint" "prettier"
     # Contenedores
@@ -41,18 +41,25 @@ commands=(
     # Git
     "git" "git-lfs" "gh"
     # Terminal
-    "zsh" "tmux" "htop" "btop" "tree" "curl" "wget" "unzip" "zip" "7z" "rar" "unrar" "jq" "rg" "fd" "bat" "fzf" "ncdu"
+    "zsh" "tmux" "htop" "btop" "tree" "curl" "wget" "unzip" "zip" "7z" "rar|unrar" "jq" "rg" "fd" "bat" "fzf" "ncdu"
     # Navegadores, Ofimática y Multimedia
     "brave-browser" "firefox" "libreoffice" "evince" "vlc" "obs"
     # Frameworks SDK
     "flutter" "dart" "unityhub"
 )
 
-for cmd in "${commands[@]}"; do
-    if command -v "$cmd" &> /dev/null; then
-        echo -e "[\e[1;32m OK \e[0m] $cmd"
-    else
-        echo -e "[\e[1;31mFALLO\e[0m] $cmd"
+for cmd_group in "${commands[@]}"; do
+    IFS='|' read -r -a alts <<< "$cmd_group"
+    found=false
+    for cmd in "${alts[@]}"; do
+        if command -v "$cmd" &> /dev/null; then
+            echo -e "[\e[1;32m OK \e[0m] $cmd"
+            found=true
+            break
+        fi
+    done
+    if [ "$found" = false ]; then
+        echo -e "[\e[1;31mFALLO\e[0m] ${alts[0]} (y alternativas)"
     fi
 done
 
@@ -62,10 +69,16 @@ cpp_libs=("libsdl2-dev" "libsfml-dev" "libgl1-mesa-dev" "libglfw3-dev" "libglew-
 for lib in "${cpp_libs[@]}"; do
     if command -v dpkg &> /dev/null && dpkg -l | grep -q "^ii  $lib"; then
         echo -e "[\e[1;32m OK \e[0m] $lib"
-    elif command -v rpm &> /dev/null && rpm -qa | grep -iq "${lib%-dev}"; then
-        echo -e "[\e[1;32m OK \e[0m] $lib"
+    elif command -v rpm &> /dev/null; then
+        # Fedora naming heuristic (libsdl2-dev -> SDL2-devel, etc.)
+        fedora_pkg=$(echo "$lib" | sed -e 's/libsdl2-dev/SDL2-devel/i' -e 's/libsfml-dev/SFML-devel/i' -e 's/libgl1-mesa-dev/mesa-libGL-devel/i' -e 's/libglfw3-dev/glfw-devel/i' -e 's/libglew-dev/glew-devel/i')
+        if rpm -qa | grep -iq "^${fedora_pkg%-devel}"; then
+            echo -e "[\e[1;32m OK \e[0m] $fedora_pkg"
+        else
+            echo -e "[\e[1;31mFALLO\e[0m] $fedora_pkg"
+        fi
     else
-        echo -e "[\e[1;31mFALLO\e[0m] $lib (o nombre diferente en esta distro)"
+        echo -e "[\e[1;31mFALLO\e[0m] $lib (Gestor no soportado)"
     fi
 done
 
