@@ -20,6 +20,7 @@ class App(ctk.CTk):
         super().__init__()
         self.title("Rookie Linux Developer")
         self.geometry("900x600")
+        self.resizable(False, False)
         
         # Configurar el grid principal
         self.grid_rowconfigure(0, weight=1)
@@ -27,20 +28,72 @@ class App(ctk.CTk):
 
         self.frames = {}
         
-        for F in (WelcomeScreen, DistroSelectionScreen):
+        for F in (StartScreen, InfoScreen, DistroSelectionScreen):
             page_name = F.__name__
             frame = F(parent=self, controller=self)
             self.frames[page_name] = frame
             frame.grid(row=0, column=0, sticky="nsew")
 
-        self.show_frame("WelcomeScreen")
+        self.show_frame("StartScreen")
 
     def show_frame(self, page_name):
         '''Muestra la pantalla solicitada'''
         frame = self.frames[page_name]
         frame.tkraise()
 
-class WelcomeScreen(ctk.CTkFrame):
+class StartScreen(ctk.CTkFrame):
+    def __init__(self, parent, controller):
+        super().__init__(parent, fg_color="transparent")
+        self.controller = controller
+        
+        # Cargar wallpaper
+        wallpaper_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "assets", "genericWallpaper.png")
+        self.bg_image = None
+        if os.path.exists(wallpaper_path):
+            try:
+                img = Image.open(wallpaper_path)
+                # Escalar la imagen al tamaño de la ventana (900x600)
+                self.bg_image = ctk.CTkImage(light_image=img, dark_image=img, size=(900, 600))
+                
+                # Etiqueta que actúa como fondo
+                bg_label = ctk.CTkLabel(self, image=self.bg_image, text="")
+                bg_label.place(relx=0.5, rely=0.5, anchor="center")
+            except Exception as e:
+                print(f"Error al cargar el wallpaper: {e}")
+                
+        # Botón solitario flotante interactivo (Glow y flecha animada)
+        self.btn = ctk.CTkButton(self, text="Entrar        →", font=ctk.CTkFont(size=20, weight="bold"), 
+                            height=60, width=240, corner_radius=15,
+                            command=lambda: controller.show_frame("InfoScreen"),
+                            cursor="hand2", 
+                            fg_color="#1a1a1a", # fondo oscuro (semitransparente visualmente contra el fondo)
+                            border_width=2, border_color="#00ACC1", # cian tenue
+                            hover_color="#1a1a1a", text_color="#FFFFFF")
+        
+        # Eventos para el efecto Hover
+        self.btn.bind("<Enter>", self.on_hover_enter)
+        self.btn.bind("<Leave>", self.on_hover_leave)
+        
+        # Posicionado en el costado derecho abajo
+        self.btn.place(relx=0.95, rely=0.92, anchor="se")
+
+    def on_hover_enter(self, event):
+        # Borde brillante cian (Glow) y flecha desplazada a la derecha
+        self.btn.configure(
+            border_color="#00FFFF", 
+            text_color="#00FFFF",
+            text="Entrar           →" # Simula un desplazamiento de unos ~5px
+        )
+
+    def on_hover_leave(self, event):
+        # Vuelve al estado normal
+        self.btn.configure(
+            border_color="#00ACC1", 
+            text_color="#FFFFFF",
+            text="Entrar        →"
+        )
+
+class InfoScreen(ctk.CTkFrame):
     def __init__(self, parent, controller):
         super().__init__(parent, fg_color="transparent")
         self.controller = controller
@@ -51,21 +104,73 @@ class WelcomeScreen(ctk.CTkFrame):
         self.grid_columnconfigure(0, weight=1)
         
         # Título
-        title = ctk.CTkLabel(self, text="¡Bienvenido a Rookie Linux!", 
-                             font=ctk.CTkFont(family="Roboto", size=42, weight="bold"))
-        title.grid(row=1, column=0, pady=(0, 30))
+        title = ctk.CTkLabel(self, text="¿Qué hace este programa?", 
+                             font=ctk.CTkFont(family="Roboto", size=38, weight="bold"))
+        title.grid(row=1, column=0, pady=(0, 40))
         
-        # Descripción
-        desc = ctk.CTkLabel(self, text="Esta herramienta te ayudará a configurar y desarrollar\ntu entorno Linux de manera rápida y elegante.",
-                            font=ctk.CTkFont(family="Roboto", size=20), text_color="gray70")
-        desc.grid(row=2, column=0, pady=(0, 60))
+        # Contenedor principal de la caja de texto
+        text_frame = ctk.CTkFrame(self, fg_color="transparent")
+        text_frame.grid(row=2, column=0, padx=40, pady=(0, 40), sticky="nsew")
         
-        # Botón
-        btn = ctk.CTkButton(self, text="Comenzar", font=ctk.CTkFont(size=18, weight="bold"), 
-                            height=55, width=220, corner_radius=10,
-                            command=lambda: controller.show_frame("DistroSelectionScreen"),
-                            cursor="hand2")
-        btn.grid(row=3, column=0)
+        self.grid_rowconfigure(2, weight=1)
+        
+        # TextBox con scroll automático
+        info_textbox = ctk.CTkTextbox(text_frame, font=ctk.CTkFont(family="Roboto", size=16), 
+                                      fg_color="gray15", text_color="gray85",
+                                      corner_radius=15, wrap="word")
+        info_textbox.pack(fill="both", expand=True)
+        
+        # Texto detallado (resumido y amigable)
+        info_text = (
+            "Rookie-Linux-Develop es una aplicación desarrollada con el fin de generar una "
+            "imagen de Linux equipada con todo lo necesario para comenzar a desarrollar. "
+            "Su objetivo principal es introducir de forma fácil y amigable a nuevos usuarios "
+            "al entorno de Linux, evitando configuraciones tediosas.\n\n"
+            "Esta herramienta automatiza la preparación de tu entorno. A continuación, un resumen "
+            "de lo que incluye la imagen generada:\n\n"
+            "=== DISTRIBUCIONES ===\n"
+            "• Opciones populares como Ubuntu, Mint, Fedora, Pop!_OS, entre otras.\n\n"
+            "=== ENTORNOS DE DESARROLLO (IDE's) ===\n"
+            "• Editores modernos y potentes como Visual Studio Code, IntelliJ IDEA, Emacs y Antigravity.\n\n"
+            "=== LENGUAJES Y COMPILADORES ===\n"
+            "• Entornos listos para programar en C/C++, Java, Python, C# (.NET) y JavaScript/TypeScript.\n\n"
+            "=== BASES DE DATOS ===\n"
+            "• Motores como PostgreSQL y SQLite, con clientes gráficos como DBeaver y pgAdmin4.\n\n"
+            "=== LIBRERÍAS Y FRAMEWORKS ===\n"
+            "• Ciencia de Datos en Python: Herramientas para análisis y manejo de datos (Pandas, NumPy, JupyterLab, etc.).\n"
+            "• Desarrollo Web: Flask, Django, FastAPI y utilidades para Node.js.\n"
+            "• Gráficos interactivos: Librerías esenciales para C/C++ (SDL2, OpenGL, SFML).\n"
+            "• Desarrollo Móvil: Flutter y Dart SDK.\n\n"
+            "=== HERRAMIENTAS DE SISTEMA Y CONTENEDORES ===\n"
+            "• Git y GitHub CLI preconfigurados para gestionar tu código.\n"
+            "• Docker Engine y Docker Compose para trabajar fácilmente con contenedores.\n"
+            "• Terminales vitaminadas (Zsh, tmux) y utilidades modernas de consola para búsquedas y monitoreo.\n\n"
+            "=== APLICACIONES DE USO DIARIO ===\n"
+            "• Navegadores web seguros (Brave, Firefox).\n"
+            "• Ofimática y multimedia completa (LibreOffice, VLC, OBS Studio).\n"
+            "• Herramientas educativas y páginas web útiles preconfiguradas (como JFLAP)."
+        )
+        
+        info_textbox.insert("0.0", info_text)
+        info_textbox.configure(state="disabled") # Hacerlo de solo lectura
+        
+        # Frame de botones
+        btn_frame = ctk.CTkFrame(self, fg_color="transparent")
+        btn_frame.grid(row=3, column=0, pady=(0, 40))
+        
+        btn_volver = ctk.CTkButton(btn_frame, text="Volver", command=lambda: controller.show_frame("StartScreen"),
+                                   height=50, width=150, corner_radius=15,
+                                   font=ctk.CTkFont(size=16, weight="bold"), cursor="hand2",
+                                   fg_color="transparent", border_width=2, border_color="#757575",
+                                   hover_color="#757575", text_color="#FFFFFF")
+        btn_volver.pack(side="left", padx=15)
+        
+        btn_siguiente = ctk.CTkButton(btn_frame, text="Siguiente", command=lambda: controller.show_frame("DistroSelectionScreen"),
+                                      height=50, width=200, corner_radius=15,
+                                      font=ctk.CTkFont(size=16, weight="bold"), cursor="hand2",
+                                      fg_color="transparent", border_width=2, border_color="#1E88E5",
+                                      hover_color="#1E88E5", text_color="#FFFFFF")
+        btn_siguiente.pack(side="left", padx=15)
 
 class DistroSelectionScreen(ctk.CTkFrame):
     def __init__(self, parent, controller):
@@ -86,7 +191,7 @@ class DistroSelectionScreen(ctk.CTkFrame):
         
         distros = [
             ("Ubuntu", "ubuntu-logo.png"),
-            ("Fedora", "fedora-logo.jpg"),
+            ("Fedora", "fedora-logo.png"),
             ("Pop!_OS", "PopOS-logo.png"),
             ("Linux Mint", "Linux-Mint-Logo.png")
         ]
@@ -135,17 +240,36 @@ class DistroSelectionScreen(ctk.CTkFrame):
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
         btn_frame.grid(row=2, column=0, pady=(0, 40))
         
-        btn_volver = ctk.CTkButton(btn_frame, text="Volver", command=lambda: controller.show_frame("WelcomeScreen"),
-                                   fg_color="gray30", hover_color="gray40", height=50, width=150,
-                                   font=ctk.CTkFont(size=16, weight="bold"), cursor="hand2")
+        # Cambiado para que el botón "Volver" regrese a la pantalla InfoScreen en vez de WelcomeScreen
+        btn_volver = ctk.CTkButton(btn_frame, text="Volver", command=lambda: controller.show_frame("InfoScreen"),
+                                   height=50, width=150, corner_radius=15,
+                                   font=ctk.CTkFont(size=16, weight="bold"), cursor="hand2",
+                                   fg_color="transparent", border_width=2, border_color="#757575",
+                                   hover_color="#757575", text_color="#FFFFFF")
         btn_volver.pack(side="left", padx=15)
         
         btn_ejecutar = ctk.CTkButton(btn_frame, text="Confirmar y Ejecutar", command=self.ejecutar_script,
-                                     height=50, width=220, font=ctk.CTkFont(size=16, weight="bold"), cursor="hand2")
+                                     height=50, width=220, corner_radius=15,
+                                     font=ctk.CTkFont(size=16, weight="bold"), cursor="hand2",
+                                     fg_color="transparent", border_width=2, border_color="#1E88E5",
+                                     hover_color="#1E88E5", text_color="#FFFFFF")
         btn_ejecutar.pack(side="left", padx=15)
         
     def ejecutar_script(self):
         distro_seleccionada = self.distro_var.get()
+        
+        if distro_seleccionada == "Pop!_OS":
+            respuesta = messagebox.askyesno(
+                "Versión de Pop!_OS", 
+                "¿Tienes una tarjeta gráfica NVIDIA en tu equipo?\n\n"
+                "• Selecciona 'Sí' para usar la ISO con drivers NVIDIA preinstalados.\n"
+                "• Selecciona 'No' para usar la ISO estándar (Intel/AMD)."
+            )
+            if respuesta:
+                distro_seleccionada = "Pop!_OS (NVIDIA)"
+            else:
+                distro_seleccionada = "Pop!_OS (Intel/AMD)"
+                
         try:
             current_dir = os.path.dirname(os.path.abspath(__file__))
             script_path = os.path.join(current_dir, "script_herramienta.py")
