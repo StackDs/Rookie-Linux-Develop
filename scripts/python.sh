@@ -14,20 +14,15 @@ echo "=========================================="
 pkg_update
 
 if is_debian; then
-    pkg_install \
-        python3 python3-pip python3-venv pipx \
-        black flake8 ipython3 jupyter \
-        python3-numpy python3-pandas python3-matplotlib python3-scipy \
-        python3-requests python3-flask python3-django python3-fastapi
+    packages=(python3 python3-pip python3-venv pipx black flake8 ipython3 jupyter python3-numpy python3-pandas python3-matplotlib python3-scipy python3-requests python3-flask python3-django python3-fastapi)
 elif is_fedora; then
-    pkg_install \
-        python3 python3-pip pipx \
-        black python3-flake8 python3-ipython jupyterlab \
-        python3-numpy python3-pandas python3-matplotlib python3-scipy \
-        python3-requests python3-flask python3-django python3-fastapi
+    packages=(python3 python3-pip pipx black python3-flake8 python3-ipython jupyterlab python3-numpy python3-pandas python3-matplotlib python3-scipy python3-requests python3-flask python3-django python3-fastapi)
 else
-    # Fallback generico
-    pkg_install python3 python3-pip pipx
+    packages=(python3 python3-pip pipx)
 fi
+
+for p in "${packages[@]}"; do
+    pkg_install "$p"
+done
 
 echo "  [OK] Python 3, herramientas CLI y librerias instaladas exitosamente."

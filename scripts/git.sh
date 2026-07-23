@@ -20,8 +20,7 @@ if is_debian; then
     pkg_update
     pkg_install git git-lfs gh
 elif is_fedora; then
-    # Fedora ya incluye gh en sus repositorios por defecto
-    pkg_update
+    sudo curl -fsSL https://cli.github.com/packages/rpm/gh-cli.repo -o /etc/yum.repos.d/gh-cli.repo
     pkg_install git git-lfs gh
 else
     # Fallback

@@ -14,15 +14,21 @@ echo "=========================================="
 pkg_update
 
 if is_debian; then
-    pkg_install postgresql postgresql-contrib sqlite3
+    packages=(postgresql postgresql-contrib sqlite3)
 elif is_fedora; then
-    pkg_install postgresql-server postgresql-contrib sqlite
+    packages=(postgresql-server postgresql-contrib sqlite)
+else
+    packages=(postgresql sqlite)
+fi
+
+for p in "${packages[@]}"; do
+    pkg_install "$p"
+done
+
+if is_fedora; then
     # Fedora requiere inicializar el cluster de BD manualmente
     sudo postgresql-setup --initdb || true
     sudo systemctl enable postgresql || true
-else
-    # Fallback
-    pkg_install postgresql sqlite
 fi
 
 echo "  [OK] PostgreSQL y SQLite instalados exitosamente."

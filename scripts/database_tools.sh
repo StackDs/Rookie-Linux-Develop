@@ -21,9 +21,9 @@ install_dbeaver() {
         pkg_update
         pkg_install dbeaver-ce
     elif is_fedora; then
-        sudo wget -O /etc/yum.repos.d/dbeaver.repo https://dbeaver.io/debs/dbeaver.repo
-        pkg_update
-        pkg_install dbeaver-ce
+        sudo rpm -i https://dbeaver.io/files/dbeaver-ce-latest-stable.x86_64.rpm || true
+        # Si falla (por estar instalado), actualizamos
+        sudo dnf upgrade -y dbeaver-ce || true
     else
         echo "[!] Instalacion automatica de DBeaver no soportada en $OS_FAMILY"
     fi

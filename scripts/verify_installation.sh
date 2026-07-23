@@ -17,6 +17,38 @@ if command -v gsettings &> /dev/null; then
     gsettings set org.gnome.desktop.screensaver picture-options "zoom"
 fi
 
+# ==========================================
+# Verificador interactivo de instalacion
+# ==========================================
+
+if pgrep -f "scripts/install.sh" > /dev/null || systemctl is-active --quiet rookie-install.service 2>/dev/null; then
+    echo -e "\e[1;33m====================================================\e[0m"
+    echo -e "\e[1;33m La instalacion automatica sigue ejecutandose...\e[0m"
+    echo -e "\e[1;33m Mostrando progreso en vivo (Ctrl+C cancela la vista):\e[0m"
+    echo -e "\e[1;33m====================================================\e[0m"
+    
+    TAIL_PID=""
+    if [ -f /var/log/rookie-install-firstboot.log ]; then
+        tail -f /var/log/rookie-install-firstboot.log &
+        TAIL_PID=$!
+    elif [ -f /var/log/rookie-install.log ]; then
+        tail -f /var/log/rookie-install.log &
+        TAIL_PID=$!
+    fi
+    
+    while pgrep -f "scripts/install.sh" > /dev/null || systemctl is-active --quiet rookie-install.service 2>/dev/null; do
+        sleep 5
+    done
+    
+    if [ -n "$TAIL_PID" ]; then
+        kill $TAIL_PID 2>/dev/null || true
+    fi
+    
+    echo -e "\n\e[1;32mLa instalacion en segundo plano ha finalizado.\e[0m"
+    sleep 2
+fi
+echo -e "\nProcediendo con la verificacion final...\n"
+
 echo -e "\e[1;36m====================================================\e[0m"
 echo -e "\e[1;36m  Verificando TODO el software instalado\e[0m"
 echo -e "\e[1;36m====================================================\e[0m"
@@ -25,7 +57,7 @@ echo ""
 # Comandos binarios directos (agrupados por categorías)
 commands=(
     # IDEs y Editores
-    "code" "emacs" "antigravity" "nano" "vim" "nvim"
+    "code" "emacs" "nano" "vim" "nvim"
     # Bases de Datos
     "dbeaver-ce|dbeaver" "psql" "sqlite3"
     # C/C++ y compiladores
@@ -102,6 +134,17 @@ if [ -s "/opt/jflap/JFLAP.jar" ] && command -v jflap &> /dev/null; then
     echo -e "[\e[1;32m OK \e[0m] jflap"
 else
     echo -e "[\e[1;31mFALLO\e[0m] jflap"
+fi
+
+# Antigravity (Solo Debian)
+if command -v dpkg &> /dev/null; then
+    if command -v antigravity &> /dev/null; then
+        echo -e "[\e[1;32m OK \e[0m] antigravity"
+    else
+        echo -e "[\e[1;31mFALLO\e[0m] antigravity"
+    fi
+else
+    echo -e "[\e[1;33mSALTADO\e[0m] antigravity (No soportado nativamente en este SO)"
 fi
 
 # IntelliJ IDEA

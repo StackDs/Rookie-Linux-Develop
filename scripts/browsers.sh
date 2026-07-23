@@ -20,8 +20,7 @@ if is_debian; then
     pkg_install firefox brave-browser
 elif is_fedora; then
     # Repositorio de Brave
-    sudo dnf install -y dnf-plugins-core || true
-    sudo dnf config-manager --add-repo https://brave-browser-rpm-release.s3.brave.com/brave-browser.repo || true
+    sudo curl -fsSL https://brave-browser-rpm-release.s3.brave.com/brave-browser.repo -o /etc/yum.repos.d/brave-browser.repo
     sudo rpm --import https://brave-browser-rpm-release.s3.brave.com/brave-core.asc || true
     
     pkg_update

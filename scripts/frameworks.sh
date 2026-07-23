@@ -25,7 +25,11 @@ fi
 
 # Unity Hub (Via AppImage universal)
 echo ">>> Instalando Unity Hub..."
-pkg_install fuse libfuse2 || true
+if is_debian; then
+    pkg_install fuse libfuse2 || true
+elif is_fedora; then
+    pkg_install fuse fuse-libs || true
+fi
 sudo mkdir -p /opt/unity
 safe_curl "https://public-cdn.cloud.unity3d.com/hub/prod/UnityHub.AppImage" "/opt/unity/UnityHub.AppImage"
 sudo chmod +x /opt/unity/UnityHub.AppImage

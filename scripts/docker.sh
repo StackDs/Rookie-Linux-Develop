@@ -16,7 +16,8 @@ pkg_update
 if is_debian; then
     pkg_install docker.io docker-compose
 elif is_fedora; then
-    pkg_install docker docker-compose
+    sudo curl -fsSL https://download.docker.com/linux/fedora/docker-ce.repo -o /etc/yum.repos.d/docker-ce.repo
+    pkg_install docker-ce docker-ce-cli containerd.io docker-compose-plugin
     sudo systemctl enable docker || true
 else
     # Fallback

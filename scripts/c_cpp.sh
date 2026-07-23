@@ -16,13 +16,16 @@ echo ">>> Instalando cadena de herramientas C/C++..."
 pkg_update
 
 if is_debian; then
-    pkg_install gcc g++ gdb make cmake clang ninja-build valgrind
+    packages=(gcc g++ gdb make cmake clang ninja-build valgrind)
 elif is_fedora; then
-    pkg_install gcc gcc-c++ gdb make cmake clang ninja-build valgrind
+    packages=(gcc gcc-c++ gdb make cmake clang ninja-build valgrind)
 else
-    # Nombres estandares
-    pkg_install gcc gdb make cmake clang ninja valgrind
+    packages=(gcc gdb make cmake clang ninja valgrind)
 fi
+
+for p in "${packages[@]}"; do
+    pkg_install "$p"
+done
 
 echo "  [OK] Cadena de herramientas C/C++ instalada exitosamente."
 

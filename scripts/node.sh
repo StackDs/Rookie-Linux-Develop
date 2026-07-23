@@ -14,20 +14,23 @@ echo "=========================================="
 if is_debian; then
     curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash - || true
     pkg_update
-    pkg_install nodejs
-    
+    packages=(nodejs)
     # En caso de que NodeSource falle, nodejs de Ubuntu no incluye npm
     if ! command -v npm &> /dev/null; then
-        pkg_install npm || true
+        packages+=(npm)
     fi
 elif is_fedora; then
     curl -fsSL https://rpm.nodesource.com/setup_lts.x | sudo bash -
     pkg_update
-    pkg_install nodejs
+    packages=(nodejs)
 else
     pkg_update
-    pkg_install nodejs npm
+    packages=(nodejs npm)
 fi
+
+for p in "${packages[@]}"; do
+    pkg_install "$p"
+done
 
 # Instalar herramientas globales de JS/TS
 sudo npm install -g typescript eslint prettier || true
