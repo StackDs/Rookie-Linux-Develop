@@ -129,6 +129,7 @@ elif [ "$ISO_DISTRO" = "mint" ]; then
 fi
 
 OUTPUT_ISO="$BUILD_DIR/custom-$ISO_NAME"
+rm -f "$OUTPUT_ISO"
 echo "=> Generando nueva ISO inyectada ($OUTPUT_ISO)..."
 
 XORRISO_ARGS=(

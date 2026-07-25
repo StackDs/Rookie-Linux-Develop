@@ -14,6 +14,7 @@ from explanation_screen import ExplanationScreen
 from distro_selection_screen import DistroSelectionScreen
 from distro_info_screen import DistroInfoScreen
 from build_progress_screen import BuildProgressScreen
+from usb_flash_screen import UsbFlashScreen
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("green")
@@ -36,7 +37,7 @@ class App(ctk.CTk):
         self.container.grid_columnconfigure(0, weight=1)
 
         self.frames = {}
-        for F in (StartScreen, InfoScreen, ExplanationScreen, DistroSelectionScreen, DistroInfoScreen, BuildProgressScreen):
+        for F in (StartScreen, InfoScreen, ExplanationScreen, DistroSelectionScreen, DistroInfoScreen, BuildProgressScreen, UsbFlashScreen):
             page_name = F.__name__
             frame = F(parent=self.container, controller=self)
             self.frames[page_name] = frame

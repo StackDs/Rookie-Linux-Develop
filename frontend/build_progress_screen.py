@@ -46,13 +46,22 @@ class BuildProgressScreen(ctk.CTkFrame):
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
         btn_frame.grid(row=4, column=0, pady=(40, 0))
         
+        self.btn_flash_usb = ctk.CTkButton(btn_frame, text="Montar en USB", command=lambda: self.controller.show_frame("UsbFlashScreen"),
+                                   height=45, width=200, corner_radius=5,
+                                   font=ctk.CTkFont(family="Consolas", size=15, weight="bold"), cursor="hand2",
+                                   fg_color="#004400", border_width=2, border_color="#00FF00",
+                                   hover_color="#007700", text_color="#FFFFFF")
+        apply_glow_effect(self.btn_flash_usb, default_text="Montar en USB", hover_text="Montar en USB")
+        
         self.btn_action = ctk.CTkButton(btn_frame, text="Cancelar", command=self.cancel_process,
                                    height=45, width=200, corner_radius=5,
                                    font=ctk.CTkFont(family="Consolas", size=15, weight="bold"), cursor="hand2",
                                    fg_color="transparent", border_width=2, border_color="#FF0000",
                                    hover_color="#330000", text_color="#FF0000")
         apply_glow_effect(self.btn_action, default_text="Cancelar", hover_text="Cancelar")
-        self.btn_action.pack()
+        
+        # Ocultar botones inicialmente, se empaquetan en on_show
+        self.btn_action.pack(side="left", padx=10)
         
         self.current_process = None
         self.current_iso_target_dir = None
@@ -64,6 +73,7 @@ class BuildProgressScreen(ctk.CTkFrame):
         self.status_lbl.configure(text="Estado: Iniciando motor de Docker...", text_color="#00FF00")
         
         self.is_cancelled = False
+        self.btn_flash_usb.pack_forget()
         self.btn_action.configure(text="Cancelar", command=self.cancel_process, text_color="#FF0000", border_color="#FF0000", hover_color="#330000", state="normal")
         apply_glow_effect(self.btn_action, default_text="Cancelar", hover_text="Cancelar")
         
@@ -118,8 +128,13 @@ class BuildProgressScreen(ctk.CTkFrame):
                 try:
                     os.remove(iso_file)
                     print(f"Eliminado: {iso_file}")
+                    return True
                 except Exception as e:
                     messagebox.showwarning("Advertencia", f"No se pudo eliminar el archivo:\n{e}")
+                    return True
+            else:
+                return False
+        return True
 
     def ejecutar_script(self):
         distro_seleccionada = self.controller.frames["DistroSelectionScreen"].distro_var.get()
@@ -150,6 +165,7 @@ class BuildProgressScreen(ctk.CTkFrame):
         
         # Check oficial ISO
         download_dir = os.path.join(project_root, "downloads", "iso", distro_env)
+        os.makedirs(download_dir, exist_ok=True)
         self.check_and_delete_iso(download_dir, "oficial descargada", distro_env)
         
         # Iniciar hilo de Docker para descarga
@@ -213,11 +229,18 @@ class BuildProgressScreen(ctk.CTkFrame):
         if self.is_cancelled:
             return
         output_dir = os.path.join(project_root, "output", distro_env)
-        self.check_and_delete_iso(output_dir, "modificada final", distro_env)
+        os.makedirs(output_dir, exist_ok=True)
+        should_build = self.check_and_delete_iso(output_dir, "modificada final", distro_env)
         
         self.current_iso_target_dir = output_dir
         if not self.is_cancelled:
-            threading.Thread(target=self.run_build_thread, args=(project_root, distro_env, distro_seleccionada), daemon=True).start()
+            if should_build:
+                threading.Thread(target=self.run_build_thread, args=(project_root, distro_env, distro_seleccionada), daemon=True).start()
+            else:
+                self.after(0, self.update_progress_generation, 1.0, "100")
+                self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Usando ISO generada previamente.", text_color="#00FF00"))
+                self.after(0, lambda: self.btn_flash_usb.pack(side="left", padx=10))
+                self.after(0, self.set_btn_volver)
 
     def run_build_thread(self, project_root, distro_env, distro_seleccionada):
         self.after(0, self.update_progress_generation, 0.0, "0")
@@ -267,6 +290,7 @@ class BuildProgressScreen(ctk.CTkFrame):
             if self.current_process.returncode == 0:
                 self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Sistema Construido Exitosamente.", text_color="#00FF00"))
                 self.after(0, lambda: messagebox.showinfo("Éxito", f"¡La imagen de {distro_seleccionada} se ha construido correctamente!\n\nRevisa la carpeta 'output'."))
+                self.after(0, lambda: self.btn_flash_usb.pack(side="left", padx=10))
             else:
                 error_details = "\n".join(last_lines)
                 self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Error en la construcción.", text_color="#FF0000"))
