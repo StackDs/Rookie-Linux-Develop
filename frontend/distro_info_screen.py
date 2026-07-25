@@ -1,8 +1,5 @@
 import customtkinter as ctk
 import os
-import sys
-import subprocess
-from tkinter import messagebox
 from PIL import Image
 from utils import apply_glow_effect
 
@@ -98,26 +95,25 @@ class DistroInfoScreen(ctk.CTkFrame):
         self.typing_job = None
         self.char_index = 0
         self.current_text = ""
-        self.last_distro = None
-        
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
-        btn_frame.grid(row=3, column=0, pady=(0, 40))
+        self.last_distro = None
+        btn_frame.grid(row=4, column=0, pady=(0, 40))
         
-        btn_volver = ctk.CTkButton(btn_frame, text="←    Volver", command=lambda: controller.show_frame("DistroSelectionScreen"),
+        self.btn_volver = ctk.CTkButton(btn_frame, text="←    Volver", command=lambda: self.controller.show_frame("DistroSelectionScreen"),
                                    height=45, width=150, corner_radius=5,
                                    font=ctk.CTkFont(family="Consolas", size=15, weight="bold"), cursor="hand2",
                                    fg_color="transparent", border_width=2, border_color="#008800",
                                    hover_color="#001100", text_color="#008800")
-        apply_glow_effect(btn_volver, default_text="←    Volver", hover_text="←       Volver")
-        btn_volver.pack(side="left", padx=15)
+        apply_glow_effect(self.btn_volver, default_text="←    Volver", hover_text="←       Volver")
+        self.btn_volver.pack(side="left", padx=15)
         
-        btn_ejecutar = ctk.CTkButton(btn_frame, text="Confirmar y Ejecutar", command=self.ejecutar_script,
+        self.btn_ejecutar = ctk.CTkButton(btn_frame, text="Confirmar y Ejecutar", command=lambda: self.controller.show_frame("BuildProgressScreen"),
                                      height=45, width=220, corner_radius=5,
                                      font=ctk.CTkFont(family="Consolas", size=15, weight="bold"), cursor="hand2",
                                      fg_color="transparent", border_width=2, border_color="#008800",
                                      hover_color="#001100", text_color="#008800")
-        apply_glow_effect(btn_ejecutar, default_text="Confirmar y Ejecutar", hover_text="Confirmar y Ejecutar")
-        btn_ejecutar.pack(side="left", padx=15)
+        apply_glow_effect(self.btn_ejecutar, default_text="Confirmar y Ejecutar", hover_text="Confirmar y Ejecutar")
+        self.btn_ejecutar.pack(side="left", padx=15)
 
     def load_images(self, distro):
         folder = self.folder_map.get(distro, "Ubuntu")
@@ -202,43 +198,3 @@ class DistroInfoScreen(ctk.CTkFrame):
             self.typing_job = self.after(10, self.type_character)
         else:
             self.info_textbox.configure(state="disabled")
-
-    def ejecutar_script(self):
-        distro_seleccionada = self.controller.frames["DistroSelectionScreen"].distro_var.get()
-        
-        distro_map = {
-            "Ubuntu": "ubuntu",
-            "Linux Mint": "mint",
-            "Fedora": "fedora",
-            "Pop!_OS": "popos"
-        }
-        
-        distro_env = distro_map.get(distro_seleccionada, "ubuntu")
-        
-        if distro_seleccionada == "Pop!_OS":
-            respuesta = messagebox.askyesno(
-                "Versión de Pop!_OS", 
-                "¿Tienes una tarjeta gráfica NVIDIA en tu equipo?\n\n"
-                "• Selecciona 'Sí' para usar la ISO con drivers NVIDIA preinstalados.\n"
-                "• Selecciona 'No' para usar la ISO estándar (Intel/AMD)."
-            )
-            if respuesta:
-                distro_env = "popos_nvidia"
-            else:
-                distro_env = "popos_amd"
-                
-        try:
-            # Obtener la ruta raíz del proyecto
-            current_dir = os.path.dirname(os.path.abspath(__file__))
-            project_root = os.path.abspath(os.path.join(current_dir, ".."))
-            
-            # Usar docker compose (v2) para construir y luego correr el contenedor con --rm para que se cierre y borre al terminar
-            cmd = f'cd /d "{project_root}" && docker compose build builder && docker compose run -e ISO_DISTRO="{distro_env}" --rm builder /workspace/builder/ejecutar.sh'
-            
-            # Ejecutar abriendo una ventana de cmd independiente (start) que se cierra al finalizar (cmd /c)
-            subprocess.Popen(f'start "Rookie Linux Builder - {distro_seleccionada}" cmd /c "{cmd}"', shell=True)
-            
-            messagebox.showinfo("Proceso Iniciado", f"Se ha iniciado la creación del entorno Docker para {distro_seleccionada}.\n\nRevisa la nueva ventana de terminal emergente para ver el progreso de la construcción.")
-            
-        except Exception as e:
-            messagebox.showerror("Error inesperado", str(e))

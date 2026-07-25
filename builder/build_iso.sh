@@ -128,7 +128,6 @@ elif [ "$ISO_DISTRO" = "mint" ]; then
     fi
 fi
 
-# 3. Reempaquetar inyectando los archivos directamente en la ISO clonada
 OUTPUT_ISO="$BUILD_DIR/custom-$ISO_NAME"
 echo "=> Generando nueva ISO inyectada ($OUTPUT_ISO)..."
 
