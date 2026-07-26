@@ -138,7 +138,11 @@ resolve_iso_source(){
 echo "=== Descargando imagen ISO de ${ISO_DISTRO} ==="
 
 create_directories
+# Dar 1 segundo a Docker Desktop para Windows para sincronizar la carpeta creada por Python
+sleep 1
+mkdir -p "$DOWNLOAD_DIR"
 check_command wget
+check_command curl
 
 resolve_iso_source "$ISO_DISTRO"
 

@@ -63,7 +63,7 @@ def main():
         # DD Write
         drive_path = rf"\\.\PhysicalDrive{drive_num}"
         iso_size = os.path.getsize(iso_path)
-        chunk_size = 4 * 1024 * 1024 # 4MB chunks
+        chunk_size = 1024 * 1024 * 1  # 1 MB chunks
         written = 0
         
         cancel_flag = os.path.join(tempfile.gettempdir(), "rookie_flash_cancel.flag")
@@ -81,10 +81,10 @@ def main():
                 written += len(chunk)
                 
                 percent = written / iso_size
-                text_val = str(int(percent * 100))
+                text_val = f"{percent * 100:.2f}".replace('.', ',')
                 write_progress(prog_file, "writing", percent, text_val)
                 
-        write_progress(prog_file, "done", 1.0, "100")
+        write_progress(prog_file, "done", 1.0, "100,00")
         
     except PermissionError:
         write_progress(prog_file, "error", 0, "", "Error de Permisos. Windows bloqueó el acceso físico.")

@@ -5,7 +5,7 @@ import subprocess
 import threading
 import glob
 import re
-from tkinter import messagebox
+from custom_messagebox import msg_show_info, msg_show_error, msg_show_warning, msg_ask_yes_no
 from utils import apply_glow_effect
 
 class BuildProgressScreen(ctk.CTkFrame):
@@ -58,7 +58,7 @@ class BuildProgressScreen(ctk.CTkFrame):
                                    font=ctk.CTkFont(family="Consolas", size=15, weight="bold"), cursor="hand2",
                                    fg_color="transparent", border_width=2, border_color="#FF0000",
                                    hover_color="#330000", text_color="#FF0000")
-        apply_glow_effect(self.btn_action, default_text="Cancelar", hover_text="Cancelar")
+        apply_glow_effect(self.btn_action, default_text="Cancelar", hover_text="Cancelar", color_base="#AA0000", color_glow="#FF0000")
         
         # Ocultar botones inicialmente, se empaquetan en on_show
         self.btn_action.pack(side="left", padx=10)
@@ -75,10 +75,10 @@ class BuildProgressScreen(ctk.CTkFrame):
         self.is_cancelled = False
         self.btn_flash_usb.pack_forget()
         self.btn_action.configure(text="Cancelar", command=self.cancel_process, text_color="#FF0000", border_color="#FF0000", hover_color="#330000", state="normal")
-        apply_glow_effect(self.btn_action, default_text="Cancelar", hover_text="Cancelar")
+        apply_glow_effect(self.btn_action, default_text="Cancelar", hover_text="Cancelar", color_base="#AA0000", color_glow="#FF0000")
         
-        self.update_progress_download(0.0, "0")
-        self.update_progress_generation(0.0, "0")
+        self.update_progress_download(0.0, "0,00")
+        self.update_progress_generation(0.0, "0,00")
         self.ejecutar_script()
 
     def update_progress_download(self, val, text_val):
@@ -124,13 +124,13 @@ class BuildProgressScreen(ctk.CTkFrame):
             iso_file = isos[0]
             iso_name = os.path.basename(iso_file)
             msg = f"Se encontró una ISO {name_desc} existente: '{iso_name}'.\n\n¿Desea eliminarla y generarla de nuevo?\n\n• 'Sí' para reconstruir.\n• 'No' para reusar la existente."
-            if messagebox.askyesno("ISO Detectada", msg):
+            if msg_ask_yes_no("ISO Detectada", msg):
                 try:
                     os.remove(iso_file)
                     print(f"Eliminado: {iso_file}")
                     return True
                 except Exception as e:
-                    messagebox.showwarning("Advertencia", f"No se pudo eliminar el archivo:\n{e}")
+                    msg_show_warning("Advertencia", f"No se pudo eliminar el archivo:\n{e}")
                     return True
             else:
                 return False
@@ -149,7 +149,7 @@ class BuildProgressScreen(ctk.CTkFrame):
         distro_env = distro_map.get(distro_seleccionada, "ubuntu")
         
         if distro_seleccionada == "Pop!_OS":
-            respuesta = messagebox.askyesno(
+            respuesta = msg_ask_yes_no(
                 "Versión de Pop!_OS", 
                 "¿Tienes una tarjeta gráfica NVIDIA en tu equipo?\n\n"
                 "• Selecciona 'Sí' para usar la ISO con drivers NVIDIA preinstalados.\n"
@@ -173,7 +173,7 @@ class BuildProgressScreen(ctk.CTkFrame):
         threading.Thread(target=self.run_download_thread, args=(project_root, distro_env, distro_seleccionada), daemon=True).start()
 
     def run_download_thread(self, project_root, distro_env, distro_seleccionada):
-        self.after(0, self.update_progress_download, 0.0, "0")
+        self.after(0, self.update_progress_download, 0.0, "0,00")
         
         try:
             creationflags = 0x08000000 if sys.platform == "win32" else 0
@@ -201,7 +201,8 @@ class BuildProgressScreen(ctk.CTkFrame):
                 percent_match = re.search(r'(\d+(?:\.\d+)?)%', line)
                 if percent_match:
                     percent_val = float(percent_match.group(1)) / 100.0
-                    text_val = str(int(float(percent_match.group(1))))
+                    val = float(percent_match.group(1))
+                    text_val = f"{val:.2f}".replace('.', ',')
                     self.after(0, self.update_progress_download, percent_val, text_val)
                     
             self.current_process.stdout.close()
@@ -211,18 +212,18 @@ class BuildProgressScreen(ctk.CTkFrame):
                 return
             
             if self.current_process.returncode == 0:
-                self.after(0, self.update_progress_download, 1.0, "100")
+                self.after(0, self.update_progress_download, 1.0, "100,00")
                 self.after(0, self.check_output_iso_and_build, project_root, distro_env, distro_seleccionada)
             else:
                 error_details = "\n".join(last_lines)
                 self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Error en la descarga.", text_color="#FF0000"))
-                self.after(0, lambda err=error_details: messagebox.showerror("Error", f"Ocurrió un error durante la descarga de la ISO.\nDetalles:\n{err}"))
+                self.after(0, lambda err=error_details: msg_show_error("Error", f"Ocurrió un error durante la descarga de la ISO.\nDetalles:\n{err}"))
                 self.after(0, self.set_btn_volver)
                 
         except Exception as e:
             if not self.is_cancelled:
                 self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Error inesperado.", text_color="#FF0000"))
-                self.after(0, lambda: messagebox.showerror("Error", str(e)))
+                self.after(0, lambda: msg_show_error("Error", str(e)))
                 self.after(0, self.set_btn_volver)
 
     def check_output_iso_and_build(self, project_root, distro_env, distro_seleccionada):
@@ -237,13 +238,13 @@ class BuildProgressScreen(ctk.CTkFrame):
             if should_build:
                 threading.Thread(target=self.run_build_thread, args=(project_root, distro_env, distro_seleccionada), daemon=True).start()
             else:
-                self.after(0, self.update_progress_generation, 1.0, "100")
+                self.after(0, self.update_progress_generation, 1.0, "100,00")
                 self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Usando ISO generada previamente.", text_color="#00FF00"))
                 self.after(0, lambda: self.btn_flash_usb.pack(side="left", padx=10))
                 self.after(0, self.set_btn_volver)
 
     def run_build_thread(self, project_root, distro_env, distro_seleccionada):
-        self.after(0, self.update_progress_generation, 0.0, "0")
+        self.after(0, self.update_progress_generation, 0.0, "0,00")
         current_phase = "processing"
         
         try:
@@ -254,7 +255,7 @@ class BuildProgressScreen(ctk.CTkFrame):
             self.current_process = subprocess.Popen(cmd, shell=True, cwd=project_root, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, creationflags=creationflags, bufsize=1, universal_newlines=True)
             
             self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Modificando e inyectando código en la ISO..."))
-            self.after(0, self.update_progress_download, 1.0, "100")
+            self.after(0, self.update_progress_download, 1.0, "100,00")
             
             last_lines = []
             for line in iter(self.current_process.stdout.readline, ''):
@@ -269,7 +270,8 @@ class BuildProgressScreen(ctk.CTkFrame):
                 percent_match = re.search(r'(\d+(?:\.\d+)?)%', line)
                 if percent_match:
                     percent_val = float(percent_match.group(1)) / 100.0
-                    text_val = str(int(float(percent_match.group(1))))
+                    val = float(percent_match.group(1))
+                    text_val = f"{val:.2f}".replace('.', ',')
                     if current_phase == "generating":
                         self.after(0, self.update_progress_generation, percent_val, text_val)
                         
@@ -279,7 +281,7 @@ class BuildProgressScreen(ctk.CTkFrame):
                 elif "exitosa" in line_lower:
                     current_phase = "done"
                     self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: ¡ISO finalizada con éxito!"))
-                    self.after(0, self.update_progress_generation, 1.0, "100")
+                    self.after(0, self.update_progress_generation, 1.0, "100,00")
                     
             self.current_process.stdout.close()
             self.current_process.wait()
@@ -289,18 +291,18 @@ class BuildProgressScreen(ctk.CTkFrame):
             
             if self.current_process.returncode == 0:
                 self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Sistema Construido Exitosamente.", text_color="#00FF00"))
-                self.after(0, lambda: messagebox.showinfo("Éxito", f"¡La imagen de {distro_seleccionada} se ha construido correctamente!\n\nRevisa la carpeta 'output'."))
+                self.after(0, lambda: msg_show_info("Éxito", f"¡La imagen de {distro_seleccionada} se ha construido correctamente!\n\nRevisa la carpeta 'output'."))
                 self.after(0, lambda: self.btn_flash_usb.pack(side="left", padx=10))
             else:
                 error_details = "\n".join(last_lines)
                 self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Error en la construcción.", text_color="#FF0000"))
-                self.after(0, lambda err=error_details: messagebox.showerror("Error", f"Ocurrió un error durante la construcción de la ISO.\nDetalles:\n{err}"))
+                self.after(0, lambda err=error_details: msg_show_error("Error", f"Ocurrió un error durante la construcción de la ISO.\nDetalles:\n{err}"))
 
                 
         except Exception as e:
             if not self.is_cancelled:
                 self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Error inesperado.", text_color="#FF0000"))
-                self.after(0, lambda: messagebox.showerror("Error", str(e)))
+                self.after(0, lambda: msg_show_error("Error", str(e)))
             
         finally:
             if not self.is_cancelled:

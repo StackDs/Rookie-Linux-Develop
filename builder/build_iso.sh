@@ -59,11 +59,11 @@ if [ "$ISO_DISTRO" = "ubuntu" ]; then
 
     echo "=> Modificando menu de arranque GRUB (autoinstall)..."
     if [ -f "$EXTRACT_DIR/grub.cfg" ]; then
-        sed -i 's/---/autoinstall ds=nocloud\\;s=\/cdrom\/nocloud\/ ---/g' "$EXTRACT_DIR/grub.cfg" || true
+        sed -i 's/---/autoinstall ds=nocloud\\;s=\/cdrom\/nocloud\/ nomodeset ---/g' "$EXTRACT_DIR/grub.cfg" || true
         sed -i 's/"Try or Install Ubuntu"/"Instalador Automatico de Rookie Linux"/g' "$EXTRACT_DIR/grub.cfg" || true
     fi
     if [ -f "$EXTRACT_DIR/loopback.cfg" ]; then
-        sed -i 's/---/autoinstall ds=nocloud\\;s=\/cdrom\/nocloud\/ ---/g' "$EXTRACT_DIR/loopback.cfg" || true
+        sed -i 's/---/autoinstall ds=nocloud\\;s=\/cdrom\/nocloud\/ nomodeset ---/g' "$EXTRACT_DIR/loopback.cfg" || true
         sed -i 's/"Try or Install Ubuntu"/"Instalador Automatico de Rookie Linux"/g' "$EXTRACT_DIR/loopback.cfg" || true
     fi
 elif [ "$ISO_DISTRO" = "fedora" ]; then

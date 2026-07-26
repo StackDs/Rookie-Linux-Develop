@@ -59,7 +59,7 @@ class InfoScreen(ctk.CTkFrame):
             "    - Docker Engine, Docker Compose\n"
             "    - Utilidades: Zsh, tmux, htop, btop, ripgrep, fzf, jq\n\n"
             "[+] USO DIARIO\n"
-            "    - Navegadores: Brave, Firefox, Chromium\n"
+            "    - Navegadores: Brave, Firefox\n"
             "    - Multimedia/Ofimática: OBS Studio, VLC, LibreOffice\n"
             "    - Otros: JFLAP\n\n"
             "> Fin de la lectura de paquetes.\n"

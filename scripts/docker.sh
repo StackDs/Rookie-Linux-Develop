@@ -24,5 +24,5 @@ else
     pkg_install docker docker-compose
 fi
 
-sudo usermod -aG docker developer || true
+sudo usermod -aG docker develop || true
 echo "  [OK] Docker Engine y Compose instalados exitosamente."

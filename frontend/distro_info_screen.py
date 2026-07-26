@@ -62,7 +62,10 @@ class DistroInfoScreen(ctk.CTkFrame):
                 "más populares. Basada en Debian, combina simplicidad, estabilidad y rendimiento.\n\n"
                 "Destaca por su facilidad de uso, su enorme catálogo de software y su gran comunidad que facilita "
                 "encontrar ayuda. Es ideal tanto para principiantes como para usuarios avanzados, ofreciendo "
-                "soporte a largo plazo (LTS) y una amplia compatibilidad de hardware."
+                "soporte a largo plazo (LTS) y una amplia compatibilidad de hardware.\n\n"
+                "⏱️ Tiempo est. de instalación: ~25-35 minutos (incluye scripts)\n"
+                "💾 Espacio requerido en Disco: Mínimo 25 GB\n"
+                "🔌 Espacio requerido en USB: Mínimo 8 GB"
             ),
             "Linux Mint": (
                 "> Analizando: Linux Mint\n\n"
@@ -71,7 +74,10 @@ class DistroInfoScreen(ctk.CTkFrame):
                 "con una interfaz familiar.\n\n"
                 "Incluye numerosas herramientas listas para usar, excelente rendimiento y acceso a los mismos "
                 "repositorios de Ubuntu, siendo ideal para dar nueva vida a equipos antiguos o para el uso diario "
-                "sin complicaciones."
+                "sin complicaciones.\n\n"
+                "⏱️ Tiempo est. de instalación: ~25-35 minutos (incluye scripts)\n"
+                "💾 Espacio requerido en Disco: Mínimo 20 GB\n"
+                "🔌 Espacio requerido en USB: Mínimo 4 GB (Se recomiendan 8 GB)"
             ),
             "Fedora": (
                 "> Analizando: Fedora Linux\n\n"
@@ -80,7 +86,10 @@ class DistroInfoScreen(ctk.CTkFrame):
                 "tecnologías más recientes del ecosistema Linux.\n\n"
                 "Con su enfoque en la seguridad, software actualizado y excelente integración con contenedores, "
                 "es una opción perfecta para desarrolladores, estudiantes y usuarios que buscan un sistema moderno "
-                "y de alto rendimiento."
+                "y de alto rendimiento.\n\n"
+                "⏱️ Tiempo est. de instalación: ~30-40 minutos (incluye scripts)\n"
+                "💾 Espacio requerido en Disco: Mínimo 20 GB\n"
+                "🔌 Espacio requerido en USB: Mínimo 8 GB"
             ),
             "Pop!_OS": (
                 "> Analizando: Pop!_OS\n\n"
@@ -88,7 +97,10 @@ class DistroInfoScreen(ctk.CTkFrame):
                 "y basada en Ubuntu, ofrece una experiencia moderna enfocada en la productividad y el flujo de trabajo.\n\n"
                 "Destaca por sus potentes funciones de gestión de ventanas, excelente soporte para gamers "
                 "y creadores de contenido, y por ofrecer versiones optimizadas para tarjetas "
-                "gráficas NVIDIA y AMD."
+                "gráficas NVIDIA y AMD.\n\n"
+                "⏱️ Tiempo est. de instalación: ~25-35 minutos (incluye scripts)\n"
+                "💾 Espacio requerido en Disco: Mínimo 20 GB\n"
+                "🔌 Espacio requerido en USB: Mínimo 8 GB"
             )
         }
         

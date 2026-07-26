@@ -1,11 +1,11 @@
 import tkinter as tk
-from tkinter import messagebox
+from custom_messagebox import msg_show_error
 import sys
 
 try:
     import customtkinter as ctk
 except ImportError:
-    messagebox.showerror("Error", "Faltan librerías. Ejecuta 'pip install customtkinter pillow'.")
+    msg_show_error("Error", "Faltan librerías. Ejecuta 'pip install customtkinter pillow'.")
     sys.exit(1)
 
 from start_screen import StartScreen
@@ -15,6 +15,8 @@ from distro_selection_screen import DistroSelectionScreen
 from distro_info_screen import DistroInfoScreen
 from build_progress_screen import BuildProgressScreen
 from usb_flash_screen import UsbFlashScreen
+from basic_concepts_screen import BasicConceptsScreen
+from bitlocker_screen import BitlockerScreen
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("green")
@@ -22,7 +24,7 @@ ctk.set_default_color_theme("green")
 class App(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.title("Rookie Linux Developer - Terminal Mode")
+        self.title("Rookie Linux Develop - Terminal Mode")
         self.geometry("900x600")
         self.resizable(True, True)
         self.minsize(800, 500)
@@ -37,7 +39,7 @@ class App(ctk.CTk):
         self.container.grid_columnconfigure(0, weight=1)
 
         self.frames = {}
-        for F in (StartScreen, InfoScreen, ExplanationScreen, DistroSelectionScreen, DistroInfoScreen, BuildProgressScreen, UsbFlashScreen):
+        for F in (StartScreen, InfoScreen, ExplanationScreen, DistroSelectionScreen, DistroInfoScreen, BuildProgressScreen, UsbFlashScreen, BasicConceptsScreen, BitlockerScreen):
             page_name = F.__name__
             frame = F(parent=self.container, controller=self)
             self.frames[page_name] = frame

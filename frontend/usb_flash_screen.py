@@ -7,7 +7,7 @@ import glob
 import json
 import time
 import tempfile
-from tkinter import messagebox
+from custom_messagebox import msg_show_info, msg_show_error, msg_show_warning, msg_ask_yes_no
 from utils import apply_glow_effect
 
 class UsbFlashScreen(ctk.CTkFrame):
@@ -102,7 +102,7 @@ class UsbFlashScreen(ctk.CTkFrame):
 
     def cancel_flash(self):
         msg = "¿Estás seguro que deseas cancelar el flasheo?\n\nADVERTENCIA: Si cancelas ahora, tu USB quedará corrupto e inutilizable hasta que lo vuelvas a formatear."
-        if messagebox.askyesno("Confirmar Cancelación", msg, icon="warning"):
+        if msg_ask_yes_no("Confirmar Cancelación", msg):
             self.btn_action.configure(state="disabled")
             self.status_lbl.configure(text="Estado: Cancelando proceso de escritura...", text_color="#FFAA00")
             try:
@@ -153,7 +153,7 @@ class UsbFlashScreen(ctk.CTkFrame):
     def start_flash(self):
         selected = self.combo_var.get()
         if "Disco" not in selected:
-            messagebox.showwarning("Aviso", "Por favor selecciona un disco USB válido.")
+            msg_show_warning("Aviso", "Por favor selecciona un disco USB válido.")
             return
             
         target_num = None
@@ -163,7 +163,7 @@ class UsbFlashScreen(ctk.CTkFrame):
                 break
                 
         if target_num is None:
-            messagebox.showwarning("Error", "No se pudo identificar el número de disco.")
+            msg_show_warning("Error", "No se pudo identificar el número de disco.")
             return
 
         distro_seleccionada = self.controller.frames["DistroSelectionScreen"].distro_var.get()
@@ -181,14 +181,14 @@ class UsbFlashScreen(ctk.CTkFrame):
         
         isos = glob.glob(os.path.join(output_dir, "*.iso"))
         if not isos:
-            messagebox.showerror("Error", f"No se encontró ninguna ISO generada en {output_dir}.")
+            msg_show_error("Error", f"No se encontró ninguna ISO generada en {output_dir}.")
             return
             
         iso_path = isos[0]
         iso_name = os.path.basename(iso_path)
         
         msg = f"ATENCIÓN: Vas a formatear y sobrescribir el siguiente disco:\n\n{selected}\n\nCon la imagen:\n{iso_name}\n\nTODOS LOS DATOS EN EL USB SE PERDERÁN.\n¿Estás absolutamente seguro de continuar?"
-        if not messagebox.askyesno("Peligro de pérdida de datos", msg, icon="warning"):
+        if not msg_ask_yes_no("Peligro de pérdida de datos", msg):
             return
             
         try:
@@ -200,7 +200,7 @@ class UsbFlashScreen(ctk.CTkFrame):
         
         self.btn_action.configure(text="Cancelar", command=self.cancel_flash, 
                                   text_color="#FF0000", border_color="#FF0000", hover_color="#330000")
-        apply_glow_effect(self.btn_action, default_text="Cancelar", hover_text="Cancelar")
+        apply_glow_effect(self.btn_action, default_text="Cancelar", hover_text="Cancelar", color_base="#AA0000", color_glow="#FF0000")
         
         self.status_lbl.configure(text="Estado: Preparando disco (diskpart)...", text_color="#FFAA00")
         
@@ -239,7 +239,7 @@ class UsbFlashScreen(ctk.CTkFrame):
             error_msg = ""
             
             while not done:
-                time.sleep(0.5)
+                time.sleep(0.1)
                 if not os.path.exists(prog_file):
                     continue
                     
@@ -258,9 +258,9 @@ class UsbFlashScreen(ctk.CTkFrame):
                         self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Escribiendo ISO a bajo nivel (Modo DD)...", text_color="#00FF00"))
                         self.after(0, self.update_progress, pct, txt)
                     elif st == "done":
-                        self.after(0, self.update_progress, 1.0, "100")
+                        self.after(0, self.update_progress, 1.0, "100,00")
                         self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: ¡Flasheo completado con éxito!", text_color="#00FF00"))
-                        self.after(0, lambda: messagebox.showinfo("Éxito", "El USB booteable ha sido creado correctamente. Ya puedes usarlo para instalar el sistema."))
+                        self.after(0, lambda: msg_show_info("Éxito", "El USB booteable ha sido creado correctamente. Ya puedes usarlo para instalar el sistema."))
                         done = True
                     elif st == "error":
                         error_msg = err
@@ -274,11 +274,11 @@ class UsbFlashScreen(ctk.CTkFrame):
                     
             if error_msg:
                 self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Operación interrumpida o fallida.", text_color="#FF0000"))
-                self.after(0, lambda e=error_msg: messagebox.showerror("Error", f"Detalles:\n{e}"))
+                self.after(0, lambda e=error_msg: msg_show_error("Error", f"Detalles:\n{e}"))
                 
         except Exception as e:
             self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Error inesperado.", text_color="#FF0000"))
-            self.after(0, lambda e=e: messagebox.showerror("Error", str(e)))
+            self.after(0, lambda e=e: msg_show_error("Error", str(e)))
         finally:
             self.after(0, self.set_btn_volver)
             self.after(0, lambda: self.btn_flash.configure(state="normal"))

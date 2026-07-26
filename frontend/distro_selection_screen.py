@@ -64,7 +64,7 @@ class DistroSelectionScreen(ctk.CTkFrame):
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
         btn_frame.grid(row=2, column=0, pady=(0, 40))
         
-        btn_volver = ctk.CTkButton(btn_frame, text="←    Volver", command=lambda: controller.show_frame("ExplanationScreen"),
+        btn_volver = ctk.CTkButton(btn_frame, text="←    Volver", command=lambda: controller.show_frame("BitlockerScreen"),
                                    height=45, width=150, corner_radius=5,
                                    font=ctk.CTkFont(family="Consolas", size=15, weight="bold"), cursor="hand2",
                                    fg_color="transparent", border_width=2, border_color="#008800",

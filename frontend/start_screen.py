@@ -7,12 +7,12 @@ class StartScreen(ctk.CTkFrame):
         self.controller = controller
         
         # Textos de bienvenida estilo terminal
-        self.title_lbl = ctk.CTkLabel(self, text=">_ ROOKIE LINUX DEVELOPER", 
+        self.title_lbl = ctk.CTkLabel(self, text=">_ ROOKIE LINUX DEVELOP", 
                                       font=ctk.CTkFont(family="Consolas", size=50, weight="bold"),
                                       text_color="#00FF00")
         self.title_lbl.place(relx=0.5, rely=0.35, anchor="center")
         
-        self.subtitle_lbl = ctk.CTkLabel(self, text="[ Sistema de despliegue automatizado en espera ]", 
+        self.subtitle_lbl = ctk.CTkLabel(self, text="[ Sistema automatizado ]", 
                                          font=ctk.CTkFont(family="Consolas", size=16),
                                          text_color="#008800")
         self.subtitle_lbl.place(relx=0.5, rely=0.45, anchor="center")

@@ -1,8 +1,6 @@
 import customtkinter as ctk
 
-def apply_glow_effect(btn, default_text, hover_text=None):
-    color_base = "#008800" # Verde terminal atenuado
-    color_glow = "#00FF00" # Verde terminal brillante
+def apply_glow_effect(btn, default_text, hover_text=None, color_base="#008800", color_glow="#00FF00"):
     
     def on_enter(e):
         btn.configure(

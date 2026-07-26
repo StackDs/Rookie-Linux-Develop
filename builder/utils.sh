@@ -122,9 +122,10 @@ download_file(){
     echo "$URL"
 
 
-    wget \
-        -q --show-progress \
-        -O "$OUTPUT" \
+    curl \
+        --create-dirs \
+        -# -L \
+        -o "$OUTPUT" \
         "$URL"
 
 
