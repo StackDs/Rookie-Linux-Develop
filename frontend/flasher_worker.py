@@ -5,6 +5,9 @@ import subprocess
 import json
 import traceback
 import tempfile
+import ctypes
+from ctypes.wintypes import DWORD, HANDLE
+import msvcrt
 
 def write_progress(file_path, status, percent=0, text="", error=""):
     data = {
@@ -68,7 +71,32 @@ def main():
         
         cancel_flag = os.path.join(tempfile.gettempdir(), "rookie_flash_cancel.flag")
         
+        FSCTL_LOCK_VOLUME = 0x00090018
+        FSCTL_DISMOUNT_VOLUME = 0x00090020
+        
         with open(iso_path, 'rb') as f_in, open(drive_path, 'r+b', buffering=0) as f_out:
+            # Bloquear el disco físico para evitar que Windows intente montarlo
+            # a mitad de escritura (lo cual invalida nuestro handle y causa Errno 9).
+            try:
+                hDrive = msvcrt.get_osfhandle(f_out.fileno())
+                bytes_returned = DWORD()
+                ctypes.windll.kernel32.DeviceIoControl(
+                    HANDLE(hDrive), FSCTL_LOCK_VOLUME, None, 0, None, 0, ctypes.byref(bytes_returned), None
+                )
+                ctypes.windll.kernel32.DeviceIoControl(
+                    HANDLE(hDrive), FSCTL_DISMOUNT_VOLUME, None, 0, None, 0, ctypes.byref(bytes_returned), None
+                )
+            except Exception as e:
+                pass # Si falla el bloqueo, continuamos y esperamos que Windows no moleste.
+
+            # Leer el primer chunk (MBR/GPT) pero NO escribirlo aún.
+            first_chunk = f_in.read(chunk_size)
+            if first_chunk:
+                # Escribimos ceros en el disco para avanzar el puntero, o hacemos seek
+                # Hacemos seek en el disco destino para saltarnos el primer chunk
+                f_out.seek(len(first_chunk))
+                written += len(first_chunk) # Simulamos que ya se escribió para el %
+
             while True:
                 if os.path.exists(cancel_flag):
                     write_progress(prog_file, "error", percent, text_val, "Flasheo cancelado por el usuario.")
@@ -77,13 +105,30 @@ def main():
                 chunk = f_in.read(chunk_size)
                 if not chunk:
                     break
+                
+                original_len = len(chunk)
+                
+                # Windows requiere alineamiento de sectores. Rellenamos el último chunk.
+                if original_len % 4096 != 0:
+                    padding_size = 4096 - (original_len % 4096)
+                    chunk += b'\0' * padding_size
+                    
                 f_out.write(chunk)
-                written += len(chunk)
+                written += original_len
                 
                 percent = written / iso_size
                 text_val = f"{percent * 100:.2f}".replace('.', ',')
                 write_progress(prog_file, "writing", percent, text_val)
             
+            # Al final, volver al inicio y escribir el primer chunk! (Magia anti-Windows)
+            if first_chunk:
+                f_out.seek(0)
+                original_len = len(first_chunk)
+                if original_len % 4096 != 0:
+                    padding_size = 4096 - (original_len % 4096)
+                    first_chunk += b'\0' * padding_size
+                f_out.write(first_chunk)
+
             # Forzar que todos los datos lleguen al USB físicamente
             write_progress(prog_file, "writing", 1.0, "100,00")
             f_out.flush()

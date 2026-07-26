@@ -129,8 +129,6 @@ class BuildProgressScreen(ctk.CTkFrame):
 
     def check_and_delete_iso(self, directory, name_desc, distro_env, ask_confirmation=True):
         isos = glob.glob(os.path.join(directory, "*.iso"))
-        if not isos and "popos" in distro_env:
-            isos = glob.glob(os.path.join(os.path.dirname(directory), "pop", "*.iso"))
         if isos:
             iso_file = isos[0]
             iso_name = os.path.basename(iso_file)
@@ -162,6 +160,7 @@ class BuildProgressScreen(ctk.CTkFrame):
             cflags = 0x08000000 if sys.platform == "win32" else 0
             subprocess.run("docker compose kill", shell=True, cwd=project_root, creationflags=cflags, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             subprocess.run("docker compose rm -f", shell=True, cwd=project_root, creationflags=cflags, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run("docker container prune -f", shell=True, creationflags=cflags, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         except Exception:
             pass
 
@@ -211,7 +210,7 @@ class BuildProgressScreen(ctk.CTkFrame):
             subprocess.run(build_cmd, shell=True, cwd=project_root, creationflags=creationflags, check=False)
             
             # Ejecutar run de la descarga
-            cmd = f'docker compose run -e ISO_DISTRO="{distro_env}" --rm builder /workspace/builder/download_iso.sh "{distro_env}"'
+            cmd = f'docker compose run -e ISO_DISTRO="{distro_env}" --rm builder bash -c "sed -i \"s/\\r\$//\" /workspace/builder/entrypoint.sh 2>/dev/null; bash /workspace/builder/entrypoint.sh /workspace/builder/download_iso.sh \"{distro_env}\""'
             
             self.current_process = subprocess.Popen(cmd, shell=True, cwd=project_root, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, creationflags=creationflags, bufsize=1, universal_newlines=True)
             
@@ -278,38 +277,80 @@ class BuildProgressScreen(ctk.CTkFrame):
         try:
             creationflags = 0x08000000 if sys.platform == "win32" else 0
             
-            cmd = f'docker compose run -e ISO_DISTRO="{distro_env}" --rm builder /workspace/builder/build_iso.sh'
+            cmd = f'docker compose run -e ISO_DISTRO="{distro_env}" --rm builder bash -c "sed -i \"s/\\r\$//\" /workspace/builder/entrypoint.sh 2>/dev/null; bash /workspace/builder/entrypoint.sh /workspace/builder/build_iso.sh"'
             
             self.current_process = subprocess.Popen(cmd, shell=True, cwd=project_root, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, creationflags=creationflags, bufsize=1, universal_newlines=True)
             
             self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Modificando e inyectando código en la ISO..."))
             self.after(0, self.update_progress_download, 1.0, "100,00")
             
+            current_subphase = "generating"
+            base_percent = 0.0
+            scale_percent = 1.0
+            
             last_lines = []
-            for line in iter(self.current_process.stdout.readline, ''):
-                if not line or self.is_cancelled:
+            char_buffer = []
+            
+            while True:
+                if self.is_cancelled:
                     break
                 
-                last_lines.append(line.strip())
-                if len(last_lines) > 5:
-                    last_lines.pop(0)
+                char = self.current_process.stdout.read(1)
+                if not char:
+                    break
+                
+                if char == '\r' or char == '\n':
+                    line = ''.join(char_buffer).strip()
+                    char_buffer = []
                     
-                line_lower = line.lower()
-                percent_match = re.search(r'(\d+(?:\.\d+)?)%', line)
-                if percent_match:
-                    percent_val = float(percent_match.group(1)) / 100.0
-                    val = float(percent_match.group(1))
-                    text_val = f"{val:.2f}".replace('.', ',')
-                    if current_phase == "generating":
-                        self.after(0, self.update_progress_generation, percent_val, text_val)
+                    if not line:
+                        continue
+                    
+                    last_lines.append(line)
+                    if len(last_lines) > 5:
+                        last_lines.pop(0)
                         
-                if "generando nueva iso" in line_lower:
-                    current_phase = "generating"
-                    self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Empaquetando y exportando ISO final..."))
-                elif "exitosa" in line_lower:
-                    current_phase = "done"
-                    self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: ¡ISO finalizada con éxito!"))
-                    self.after(0, self.update_progress_generation, 1.0, "100,00")
+                    line_lower = line.lower()
+                    
+                    if "desempaquetando squashfs" in line_lower:
+                        current_phase = "generating"
+                        current_subphase = "unpacking"
+                        base_percent = 0.0
+                        scale_percent = 0.25
+                        self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Desempaquetando sistema de archivos base (1/3)..."))
+                    elif "reempaquetando squashfs" in line_lower:
+                        current_phase = "generating"
+                        current_subphase = "repacking"
+                        base_percent = 0.25
+                        scale_percent = 0.50
+                        self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Comprimiendo nuevo sistema de archivos (2/3)..."))
+                    elif "generando nueva iso" in line_lower:
+                        current_phase = "generating"
+                        current_subphase = "generating"
+                        if "pop" in distro_env.lower():
+                            base_percent = 0.75
+                            scale_percent = 0.25
+                            self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Empaquetando y exportando ISO final (3/3)..."))
+                        else:
+                            base_percent = 0.0
+                            scale_percent = 1.0
+                            self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Empaquetando y exportando ISO final..."))
+                            
+                    percent_match = re.search(r'(\d+(?:\.\d+)?)%', line)
+                    if percent_match:
+                        raw_percent = float(percent_match.group(1)) / 100.0
+                        actual_percent = base_percent + (raw_percent * scale_percent)
+                        val = actual_percent * 100.0
+                        text_val = f"{val:.2f}".replace('.', ',')
+                        if current_phase == "generating":
+                            self.after(0, self.update_progress_generation, actual_percent, text_val)
+                            
+                    if "exitosa" in line_lower:
+                        current_phase = "done"
+                        self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: ¡ISO finalizada con éxito!"))
+                        self.after(0, self.update_progress_generation, 1.0, "100,00")
+                else:
+                    char_buffer.append(char)
                     
             self.current_process.stdout.close()
             self.current_process.wait()

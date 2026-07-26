@@ -21,7 +21,7 @@ fi
 # Verificador interactivo de instalacion
 # ==========================================
 
-if pgrep -f "scripts/install.sh" > /dev/null || systemctl is-active --quiet rookie-install.service 2>/dev/null; then
+if pgrep -f "scripts/install.sh" > /dev/null || systemctl is-active --quiet rookie-install.service 2>/dev/null || systemctl is-active --quiet rookie-firstboot.service 2>/dev/null; then
     echo -e "\e[1;33m====================================================\e[0m"
     echo -e "\e[1;33m La instalacion automatica sigue ejecutandose...\e[0m"
     echo -e "\e[1;33m Mostrando progreso en vivo (Ctrl+C cancela la vista):\e[0m"

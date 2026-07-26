@@ -76,9 +76,8 @@ resolve_iso_source(){
 
             ISO_URL="${ISO_URL:-${FEDORA_MIRROR}${ISO_NAME}}"
             ;;
-        pop|popos|pop-os|pop-nvidia|popos-nvidia|pop_nvidia)
+        pop|popos|pop-os|pop-nvidia|popos-nvidia|pop_nvidia|popos_amd|pop_amd|popos_*)
             # Pop!_OS: intenta resolver desde el mirror; si cambia el layout, usa ISO_URL/ISO_NAME.
-            DOWNLOAD_DIR="$PROJECT_ROOT/downloads/iso/pop"
             POP_VERSION="${POP_VERSION:-24.04}"
             POP_ARCH="${POP_ARCH:-amd64}"
 

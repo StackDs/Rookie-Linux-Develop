@@ -23,20 +23,27 @@ else
     echo "  [-] Flutter SDK ya esta instalado."
 fi
 
-# Unity Hub (Via AppImage universal)
+# Unity Hub
 echo ">>> Instalando Unity Hub..."
 if is_debian; then
-    pkg_install fuse libfuse2 || true
-elif is_fedora; then
-    pkg_install fuse fuse-libs || true
-fi
-sudo mkdir -p /opt/unity
-safe_curl "https://public-cdn.cloud.unity3d.com/hub/prod/UnityHub.AppImage" "/opt/unity/UnityHub.AppImage"
-sudo chmod +x /opt/unity/UnityHub.AppImage
-sudo ln -sf /opt/unity/UnityHub.AppImage /usr/local/bin/unityhub
-
-# Crear acceso directo de escritorio
-sudo tee /usr/share/applications/unityhub.desktop > /dev/null <<EOF
+    wget -qO - https://hub.unity3d.com/linux/keys/public | gpg --dearmor | sudo tee /usr/share/keyrings/Unity_Technologies_ApS.gpg > /dev/null
+    sudo sh -c 'echo "deb [signed-by=/usr/share/keyrings/Unity_Technologies_ApS.gpg] https://hub.unity3d.com/linux/repos/deb stable main" > /etc/apt/sources.list.d/unityhub.list'
+    sudo apt-get update > /dev/null 2>&1
+    pkg_install unityhub
+    echo "  [OK] Unity Hub instalado exitosamente (APT)."
+else
+    # Fallback para no-Debian usando AppImage
+    if is_fedora; then
+        pkg_install fuse fuse-libs || true
+    fi
+    sudo mkdir -p /opt/unity
+    safe_curl "https://public-cdn.cloud.unity3d.com/hub/prod/UnityHub.AppImage" "/opt/unity/UnityHub.AppImage" || true
+    if [ -f /opt/unity/UnityHub.AppImage ]; then
+        sudo chmod +x /opt/unity/UnityHub.AppImage
+        sudo ln -sf /opt/unity/UnityHub.AppImage /usr/local/bin/unityhub
+        
+        # Crear acceso directo de escritorio
+        sudo tee /usr/share/applications/unityhub.desktop > /dev/null <<EOF
 [Desktop Entry]
 Name=Unity Hub
 Exec=/opt/unity/UnityHub.AppImage %U
@@ -46,4 +53,8 @@ Icon=unityhub
 Categories=Development;
 StartupNotify=true
 EOF
-echo "  [OK] Unity Hub instalado exitosamente (.AppImage)."
+        echo "  [OK] Unity Hub instalado exitosamente (.AppImage)."
+    else
+        echo "  [-] Error al descargar Unity Hub."
+    fi
+fi
