@@ -59,11 +59,11 @@ if [ "$ISO_DISTRO" = "ubuntu" ]; then
 
     echo "=> Modificando menu de arranque GRUB (autoinstall)..."
     if [ -f "$EXTRACT_DIR/grub.cfg" ]; then
-        sed -i 's/---/autoinstall ds=nocloud\\;s=\/cdrom\/nocloud\/ nomodeset ---/g' "$EXTRACT_DIR/grub.cfg" || true
+        sed -i 's/---/autoinstall ds=nocloud\\;s=\/cdrom\/nocloud\/ ---/g' "$EXTRACT_DIR/grub.cfg" || true
         sed -i 's/"Try or Install Ubuntu"/"Instalador Automatico de Rookie Linux"/g' "$EXTRACT_DIR/grub.cfg" || true
     fi
     if [ -f "$EXTRACT_DIR/loopback.cfg" ]; then
-        sed -i 's/---/autoinstall ds=nocloud\\;s=\/cdrom\/nocloud\/ nomodeset ---/g' "$EXTRACT_DIR/loopback.cfg" || true
+        sed -i 's/---/autoinstall ds=nocloud\\;s=\/cdrom\/nocloud\/ ---/g' "$EXTRACT_DIR/loopback.cfg" || true
         sed -i 's/"Try or Install Ubuntu"/"Instalador Automatico de Rookie Linux"/g' "$EXTRACT_DIR/loopback.cfg" || true
     fi
 elif [ "$ISO_DISTRO" = "fedora" ]; then
@@ -177,6 +177,18 @@ if [ "$ISO_DISTRO" = "fedora" ] && [ -f "$EXTRACT_DIR/boot_images/eltorito_img2_
 fi
 
 xorriso "${XORRISO_ARGS[@]}"
+
+# Hacer la ISO arrancable por USB (isohybrid MBR + UEFI)
+# Esto es equivalente a lo que Rufus hace internamente.
+# Sin esto, el USB puede no arrancar o arrancar con errores.
+echo "=> Aplicando isohybrid (MBR + UEFI) a la ISO..."
+if command -v isohybrid &>/dev/null; then
+    isohybrid --uefi "$OUTPUT_ISO" 2>/dev/null || \
+    isohybrid "$OUTPUT_ISO" 2>/dev/null || \
+    echo "[WARNING] isohybrid falló, la ISO podría no arrancar correctamente desde USB."
+else
+    echo "[WARNING] isohybrid no está instalado. La ISO podría no arrancar correctamente desde USB."
+fi
 
 echo "=========================================="
 echo "ISO GENERADA EXITOSAMENTE:"

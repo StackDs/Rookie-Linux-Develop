@@ -22,3 +22,10 @@ autoinstall:
     # 2. Ejecutar la bateria de scripts (install.sh) "chrootando" al sistema recien instalado
     # Todo el log de instalacion se enviara a /var/log/rookie-install.log
     - curtin in-target -- bash -c "/opt/rookie-scripts/scripts/install.sh > /var/log/rookie-install.log 2>&1"
+    
+    # 3. Desactivar cloud-init en el sistema instalado para que no se ejecute en cada arranque
+    - curtin in-target -- touch /etc/cloud/cloud-init.disabled
+    
+    # 4. Limpiar nomodeset del GRUB instalado (por si se propagó desde el USB)
+    - curtin in-target -- sed -i 's/ nomodeset//g' /etc/default/grub || true
+    - curtin in-target -- update-grub || true

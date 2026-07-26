@@ -83,6 +83,11 @@ def main():
                 percent = written / iso_size
                 text_val = f"{percent * 100:.2f}".replace('.', ',')
                 write_progress(prog_file, "writing", percent, text_val)
+            
+            # Forzar que todos los datos lleguen al USB físicamente
+            write_progress(prog_file, "writing", 1.0, "100,00")
+            f_out.flush()
+            os.fsync(f_out.fileno())
                 
         write_progress(prog_file, "done", 1.0, "100,00")
         
