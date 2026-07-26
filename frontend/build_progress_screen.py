@@ -4,6 +4,7 @@ import sys
 import subprocess
 import threading
 import glob
+import time
 import re
 from custom_messagebox import msg_show_info, msg_show_error, msg_show_warning, msg_ask_yes_no
 from utils import apply_glow_effect
@@ -104,9 +105,19 @@ class BuildProgressScreen(ctk.CTkFrame):
                 self.current_process.kill()
             except Exception:
                 pass
+            
+            try:
+                current_dir = os.path.dirname(os.path.abspath(__file__))
+                project_root = os.path.abspath(os.path.join(current_dir, ".."))
+                cflags = 0x08000000 if sys.platform == "win32" else 0
+                subprocess.run("docker compose kill", shell=True, cwd=project_root, creationflags=cflags, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                subprocess.run("docker compose rm -f", shell=True, cwd=project_root, creationflags=cflags, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            except Exception:
+                pass
                 
         if self.current_iso_target_dir:
             try:
+                time.sleep(0.5)
                 isos = glob.glob(os.path.join(self.current_iso_target_dir, "*.iso"))
                 for iso in isos:
                     os.remove(iso)
@@ -116,27 +127,44 @@ class BuildProgressScreen(ctk.CTkFrame):
         self.status_lbl.configure(text="Estado: Proceso cancelado.")
         self.set_btn_volver()
 
-    def check_and_delete_iso(self, directory, name_desc, distro_env):
+    def check_and_delete_iso(self, directory, name_desc, distro_env, ask_confirmation=True):
         isos = glob.glob(os.path.join(directory, "*.iso"))
         if not isos and "popos" in distro_env:
             isos = glob.glob(os.path.join(os.path.dirname(directory), "pop", "*.iso"))
         if isos:
             iso_file = isos[0]
             iso_name = os.path.basename(iso_file)
-            msg = f"Se encontró una ISO {name_desc} existente: '{iso_name}'.\n\n¿Desea eliminarla y generarla de nuevo?\n\n• 'Sí' para reconstruir.\n• 'No' para reusar la existente."
-            if msg_ask_yes_no("ISO Detectada", msg):
+            
+            if ask_confirmation:
+                msg = f"Se encontró una ISO {name_desc} existente: '{iso_name}'.\n\n¿Desea eliminarla y generarla de nuevo?\n\n• 'Sí' para reconstruir.\n• 'No' para reusar la existente."
+                should_delete = msg_ask_yes_no("ISO Detectada", msg)
+            else:
+                should_delete = True
+                
+            if should_delete:
                 try:
                     os.remove(iso_file)
                     print(f"Eliminado: {iso_file}")
                     return True
                 except Exception as e:
-                    msg_show_warning("Advertencia", f"No se pudo eliminar el archivo:\n{e}")
+                    if ask_confirmation:
+                        msg_show_warning("Advertencia", f"No se pudo eliminar el archivo:\n{e}")
                     return True
             else:
                 return False
         return True
 
     def ejecutar_script(self):
+        # Limpieza proactiva de contenedores huérfanos antes de hacer cualquier cosa
+        try:
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            project_root = os.path.abspath(os.path.join(current_dir, ".."))
+            cflags = 0x08000000 if sys.platform == "win32" else 0
+            subprocess.run("docker compose kill", shell=True, cwd=project_root, creationflags=cflags, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run("docker compose rm -f", shell=True, cwd=project_root, creationflags=cflags, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except Exception:
+            pass
+
         distro_seleccionada = self.controller.frames["DistroSelectionScreen"].distro_var.get()
         
         distro_map = {
@@ -231,7 +259,7 @@ class BuildProgressScreen(ctk.CTkFrame):
             return
         output_dir = os.path.join(project_root, "output", distro_env)
         os.makedirs(output_dir, exist_ok=True)
-        should_build = self.check_and_delete_iso(output_dir, "modificada final", distro_env)
+        should_build = self.check_and_delete_iso(output_dir, "modificada final", distro_env, ask_confirmation=False)
         
         self.current_iso_target_dir = output_dir
         if not self.is_cancelled:

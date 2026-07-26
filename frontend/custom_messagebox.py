@@ -1,10 +1,10 @@
 import customtkinter as ctk
 
 class CustomMessageBox(ctk.CTkToplevel):
-    def __init__(self, title, message, msg_type="info"):
+    def __init__(self, title, message, msg_type="info", width=550, height=350):
         super().__init__()
         self.title(title)
-        self.geometry("450x250")
+        self.geometry(f"{width}x{height}")
         self.resizable(False, False)
         
         # Ocultar barra superior nativa (opcional, pero puede dar problemas en windows si no hay como arrastrar)
@@ -17,8 +17,8 @@ class CustomMessageBox(ctk.CTkToplevel):
         # Center it relative to parent
         self.update_idletasks()
         try:
-            x = self.master.winfo_x() + (self.master.winfo_width() // 2) - (450 // 2)
-            y = self.master.winfo_y() + (self.master.winfo_height() // 2) - (250 // 2)
+            x = self.master.winfo_x() + (self.master.winfo_width() // 2) - (width // 2)
+            y = self.master.winfo_y() + (self.master.winfo_height() // 2) - (height // 2)
             self.geometry(f"+{x}+{y}")
         except:
             pass # fallback if master doesn't have winfo ready
@@ -37,7 +37,7 @@ class CustomMessageBox(ctk.CTkToplevel):
         lbl_title = ctk.CTkLabel(self, text=f">_ {title}", text_color=title_color, font=ctk.CTkFont(family="Consolas", size=20, weight="bold"))
         lbl_title.pack(pady=(20, 10))
         
-        lbl_msg = ctk.CTkLabel(self, text=message, text_color="#00E676", font=ctk.CTkFont(family="Consolas", size=14), wraplength=400, justify="center")
+        lbl_msg = ctk.CTkLabel(self, text=message, text_color="#00E676", font=ctk.CTkFont(family="Consolas", size=14), wraplength=width - 50, justify="center")
         lbl_msg.pack(pady=(10, 20), padx=20, expand=True)
         
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -74,22 +74,22 @@ class CustomMessageBox(ctk.CTkToplevel):
         self.result = True
         self.destroy()
 
-def msg_show_info(title, message):
-    dialog = CustomMessageBox(title, message, "info")
+def msg_show_info(title, message, width=500, height=300):
+    dialog = CustomMessageBox(title, message, "info", width, height)
     dialog.wait_window()
     return dialog.result
 
-def msg_show_error(title, message):
-    dialog = CustomMessageBox(title, message, "error")
+def msg_show_error(title, message, width=500, height=300):
+    dialog = CustomMessageBox(title, message, "error", width, height)
     dialog.wait_window()
     return dialog.result
 
-def msg_show_warning(title, message):
-    dialog = CustomMessageBox(title, message, "warning")
+def msg_show_warning(title, message, width=500, height=300):
+    dialog = CustomMessageBox(title, message, "warning", width, height)
     dialog.wait_window()
     return dialog.result
 
-def msg_ask_yes_no(title, message):
-    dialog = CustomMessageBox(title, message, "askyesno")
+def msg_ask_yes_no(title, message, width=550, height=350):
+    dialog = CustomMessageBox(title, message, "askyesno", width, height)
     dialog.wait_window()
     return dialog.result

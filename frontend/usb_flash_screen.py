@@ -188,7 +188,7 @@ class UsbFlashScreen(ctk.CTkFrame):
         iso_name = os.path.basename(iso_path)
         
         msg = f"ATENCIÓN: Vas a formatear y sobrescribir el siguiente disco:\n\n{selected}\n\nCon la imagen:\n{iso_name}\n\nTODOS LOS DATOS EN EL USB SE PERDERÁN.\n¿Estás absolutamente seguro de continuar?"
-        if not msg_ask_yes_no("Peligro de pérdida de datos", msg):
+        if not msg_ask_yes_no("Peligro de pérdida de datos", msg, width=600, height=450):
             return
             
         try:
