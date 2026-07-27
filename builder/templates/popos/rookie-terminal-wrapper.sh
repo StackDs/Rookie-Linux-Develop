@@ -9,6 +9,12 @@ if command -v cosmic-term >/dev/null 2>&1; then
 elif command -v gnome-terminal >/dev/null 2>&1; then
     # GNOME (Pop!_OS 22.04 y Ubuntu)
     gnome-terminal -- "$SCRIPT"
+elif command -v ptyxis >/dev/null 2>&1; then
+    # GNOME Fedora 40+ (Ptyxis)
+    ptyxis -- "$SCRIPT"
+elif command -v kgx >/dev/null 2>&1; then
+    # GNOME Console (Fedora 39)
+    kgx -e "$SCRIPT"
 elif command -v x-terminal-emulator >/dev/null 2>&1; then
     # Fallback genérico Debian/Ubuntu
     x-terminal-emulator -e "$SCRIPT"

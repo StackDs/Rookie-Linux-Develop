@@ -49,10 +49,9 @@ resolve_iso_source(){
             ISO_URL="${ISO_URL:-https://mirrors.edge.kernel.org/linuxmint/stable/${MINT_VERSION}/${ISO_NAME}}"
             ;;
         fedora)
-            # Fedora: Para soportar Kickstart con scripts %post, no podemos usar ISOs Live.
-            # Usamos la edicion "Server" (netinst) que realiza una instalacion real por paquetes y soporta el grupo Workstation.
+            # Fedora: Gracias a la directiva liveimg en ks.cfg, ahora podemos usar la ISO Workstation Live!
             FEDORA_VERSION="${FEDORA_VERSION:-41}"
-            FEDORA_PRODUCT="${FEDORA_PRODUCT:-Server}"
+            FEDORA_PRODUCT="${FEDORA_PRODUCT:-Workstation}"
             FEDORA_ARCH="${FEDORA_ARCH:-x86_64}"
             FEDORA_MIRROR="${FEDORA_MIRROR:-https://download.fedoraproject.org/pub/fedora/linux/releases/${FEDORA_VERSION}/${FEDORA_PRODUCT}/${FEDORA_ARCH}/iso/}"
 
@@ -64,14 +63,14 @@ resolve_iso_source(){
                     | grep "Fedora-${FEDORA_PRODUCT}" \
                     | grep "${FEDORA_VERSION}" \
                     | grep "${FEDORA_ARCH}" \
-                    | grep "netinst" \
+                    | grep "Live" \
                     | sort -V \
                     | tail -n1)"
             fi
 
             if [ -z "$ISO_NAME" ]; then
                 echo "[WARN] No se pudo resolver dinámicamente la ISO. Usando fallback por defecto."
-                ISO_NAME="Fedora-Server-netinst-x86_64-41-1.4.iso"
+                ISO_NAME="Fedora-Workstation-Live-x86_64-41-1.4.iso"
             fi
 
             ISO_URL="${ISO_URL:-${FEDORA_MIRROR}${ISO_NAME}}"

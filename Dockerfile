@@ -17,6 +17,8 @@ RUN apt update && apt install -y \
     p7zip-full \
     rsync \
     uuid-runtime \
+    e2fsprogs \
+    fuse3 \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /workspace
