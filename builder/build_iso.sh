@@ -1,11 +1,34 @@
 #!/bin/bash
-set -e
+# NO usamos 'set -e' para controlar errores explicitamente y dar mensajes claros a la GUI.
+
+# Helper: ejecuta un comando, imprime [FATAL_ERROR] en stdout si falla y sale.
+safe_run() {
+    "$@"
+    local code=$?
+    if [ $code -ne 0 ]; then
+        echo "[FATAL_ERROR] Fallo el comando: $*  (exit $code)"
+        exit $code
+    fi
+}
+
+# Helper: ejecuta un comando en background y envia puntos por stdout cada segundo
+# para mantener el pipe activo y evitar que Python se bloquee esperando datos.
+run_with_heartbeat() {
+    "$@" &
+    local cmd_pid=$!
+    while kill -0 "$cmd_pid" 2>/dev/null; do
+        sleep 1
+        echo "." 2>/dev/null || true
+    done
+    wait "$cmd_pid"
+    return $?
+}
 
 echo "=========================================="
-echo "Iniciando Constructor de ISO (Docker)"
+echo "Iniciando Constructor de ISO (WSL)"
 echo "=========================================="
 
-WORKSPACE="/workspace"
+WORKSPACE="$(pwd)"
 ISO_DISTRO="${ISO_DISTRO:-ubuntu}"
 
 # Normalizar variantes de Pop!_OS para rutas de templates
@@ -53,7 +76,8 @@ mkdir -p "$EXTRACT_DIR/custom_scripts"
 
 echo "=> Preparando scripts y recursos (Rookie-Linux-Develop)..."
 cp -r "$WORKSPACE/scripts" "$EXTRACT_DIR/custom_scripts/"
-cp -r "$WORKSPACE/assets" "$EXTRACT_DIR/custom_scripts/"
+mkdir -p "$EXTRACT_DIR/custom_scripts/assets"
+cp "$WORKSPACE/assets/wallpaper.png" "$EXTRACT_DIR/custom_scripts/assets/" 2>/dev/null || true
 
 echo "=> Convirtiendo finales de linea Windows (CRLF) a Linux (LF)..."
 find "$EXTRACT_DIR/custom_scripts/scripts/" -type f -name "*.sh" -exec sed -i 's/\r$//' {} + 2>/dev/null || true
@@ -151,24 +175,26 @@ fi
 if [[ "$ISO_DISTRO" == popos* ]] || [[ "$ISO_DISTRO" == pop* ]] || [ "$ISO_DISTRO" = "mint" ]; then
     echo "=> Preparando configuración (Firstboot via squashfs)..."
     
-    SQUASH_WORK="/tmp/squashfs_work"
+    SQUASH_WORK="/var/tmp/squashfs_work"
     rm -rf "$SQUASH_WORK"
     mkdir -p "$SQUASH_WORK"
     
     # 1. Extraer squashfs de la ISO
     echo "=> [1/6] Extrayendo filesystem.squashfs de la ISO..."
-    CASPER_DIR=$(xorriso -indev "$ISO_PATH" -find / -name "casper*" -type d 2>/dev/null | grep -i casper | head -n 1 | tr -d "'")
+    CASPER_DIR=$(xorriso -indev "$ISO_PATH" -find / -name "casper*" -type d 2>/dev/null | grep -i casper | head -n 1 | tr -d "'" | tr -d ' ')
     if [ -z "$CASPER_DIR" ]; then
         CASPER_DIR="/casper"
     fi
+    export CASPER_DIR
     echo "   Directorio casper detectado: $CASPER_DIR"
     
-    xorriso -osirrox on -indev "$ISO_PATH" -extract "$CASPER_DIR/filesystem.squashfs" "$SQUASH_WORK/filesystem.squashfs" 2>/dev/null
+    safe_run run_with_heartbeat xorriso -osirrox on -indev "$ISO_PATH" -extract "$CASPER_DIR/filesystem.squashfs" "$SQUASH_WORK/filesystem.squashfs" 2>/dev/null
     
     # 2. Desempaquetar squashfs
     echo "=> [2/6] Desempaquetando squashfs (esto puede tardar varios minutos)..."
-    stdbuf -o0 unsquashfs -d "$SQUASH_WORK/root" "$SQUASH_WORK/filesystem.squashfs"
+    safe_run stdbuf -o0 unsquashfs -d "$SQUASH_WORK/root" "$SQUASH_WORK/filesystem.squashfs" 2>/dev/null
     rm -f "$SQUASH_WORK/filesystem.squashfs"
+    sync; echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
     
     # 3. Inyectar scripts de Rookie Linux
     echo "=> [3/6] Inyectando scripts de Rookie Linux en el sistema..."
@@ -194,94 +220,81 @@ if [[ "$ISO_DISTRO" == popos* ]] || [[ "$ISO_DISTRO" == pop* ]] || [ "$ISO_DISTR
     
     # 5. Reempaquetar squashfs
     echo "=> [5/6] Reempaquetando squashfs (esto puede tardar varios minutos)..."
-    stdbuf -o0 mksquashfs "$SQUASH_WORK/root" "$SQUASH_WORK/filesystem.squashfs" -comp xz -b 1M
+    safe_run stdbuf -o0 mksquashfs "$SQUASH_WORK/root" "$SQUASH_WORK/filesystem.squashfs" -comp xz -b 1M -mem 1G 2>/dev/null
     rm -rf "$SQUASH_WORK/root"
+    sync; echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
 
 elif [ "$ISO_DISTRO" = "fedora" ]; then
     echo "=> Preparando configuración (Firstboot via squashfs para Fedora)..."
     
-    SQUASH_WORK="/tmp/squashfs_work"
+    SQUASH_WORK="/var/tmp/squashfs_work"
     rm -rf "$SQUASH_WORK"
     mkdir -p "$SQUASH_WORK"
     
     # 1. Extraer squashfs.img de la ISO (Fedora usa /LiveOS/squashfs.img)
     echo "=> [1/8] Extrayendo LiveOS/squashfs.img de la ISO..."
-    xorriso -osirrox on -indev "$ISO_PATH" -extract "/LiveOS/squashfs.img" "$SQUASH_WORK/squashfs.img" 2>/dev/null
+    safe_run run_with_heartbeat xorriso -osirrox on -indev "$ISO_PATH" -extract "/LiveOS/squashfs.img" "$SQUASH_WORK/squashfs.img" 2>/dev/null
     
     # 2. Desempaquetar squashfs.img para obtener rootfs.img
     echo "=> [2/8] Desempaquetando squashfs.img..."
-    stdbuf -o0 unsquashfs -d "$SQUASH_WORK/squashfs_root" "$SQUASH_WORK/squashfs.img"
+    safe_run stdbuf -o0 unsquashfs -d "$SQUASH_WORK/squashfs_root" "$SQUASH_WORK/squashfs.img" 2>/dev/null
     rm -f "$SQUASH_WORK/squashfs.img"
+    sync; echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
     
-    # 3. Inyectar scripts de Rookie Linux directamente en rootfs.img usando debugfs
-    #    (No usamos mount -o loop porque Docker Desktop en Windows no soporta loop devices)
-    echo "=> [3/8] Inyectando scripts de Rookie Linux en rootfs.img..."
+    # 3. Montar rootfs.img (es una imagen ext4) si existe
     ROOTFS_IMG="$SQUASH_WORK/squashfs_root/LiveOS/rootfs.img"
+    ROOTFS_MOUNT="$SQUASH_WORK/rootfs_mount"
     
-    # Generar archivo de comandos batch para debugfs
-    DEBUGFS_CMDS="$SQUASH_WORK/debugfs_cmds.txt"
+    if [ -f "$ROOTFS_IMG" ]; then
+        echo "=> [3/8] Montando rootfs.img (ext4)..."
+        mkdir -p "$ROOTFS_MOUNT"
+        safe_run mount -o loop "$ROOTFS_IMG" "$ROOTFS_MOUNT"
+        TARGET_ROOT="$ROOTFS_MOUNT"
+        NEED_UMOUNT=1
+    else
+        echo "=> [3/8] rootfs.img no encontrado. Usando squashfs como rootfs directo..."
+        TARGET_ROOT="$SQUASH_WORK/squashfs_root"
+        NEED_UMOUNT=0
+    fi
     
-    # Crear directorios
-    echo "mkdir /opt/rookie-scripts" > "$DEBUGFS_CMDS"
-    echo "mkdir /opt/rookie-scripts/scripts" >> "$DEBUGFS_CMDS"
-    echo "mkdir /opt/rookie-scripts/assets" >> "$DEBUGFS_CMDS"
+    # 4. Inyectar scripts de Rookie Linux
+    echo "=> [4/8] Inyectando scripts de Rookie Linux en rootfs..."
+    mkdir -p "$TARGET_ROOT/opt/rookie-scripts"
+    cp -r "$EXTRACT_DIR/custom_scripts/scripts" "$TARGET_ROOT/opt/rookie-scripts/"
+    cp -r "$EXTRACT_DIR/custom_scripts/assets" "$TARGET_ROOT/opt/rookie-scripts/"
+    find "$TARGET_ROOT/opt/rookie-scripts/scripts/" -type f -name "*.sh" -exec chmod +x {} +
     
-    # Copiar todos los scripts .sh
-    for f in "$EXTRACT_DIR/custom_scripts/scripts/"*.sh; do
-        [ -f "$f" ] || continue
-        BASENAME=$(basename "$f")
-        echo "write $f /opt/rookie-scripts/scripts/$BASENAME" >> "$DEBUGFS_CMDS"
-    done
+    # 5. Inyectar ejecutable de primer arranque
+    echo "=> [5/8] Configurando instalador post-arranque para Fedora..."
+    cp "$TEMPLATES_DIR/rookie-firstboot.sh" "$TARGET_ROOT/opt/rookie-scripts/"
+    chmod +x "$TARGET_ROOT/opt/rookie-scripts/rookie-firstboot.sh"
+    sed -i 's/\r$//' "$TARGET_ROOT/opt/rookie-scripts/rookie-firstboot.sh"
     
-    # Copiar todos los assets (recursivo)
-    find "$EXTRACT_DIR/custom_scripts/assets/" -type d | while read dir; do
-        REL_PATH="${dir#$EXTRACT_DIR/custom_scripts/assets}"
-        if [ -n "$REL_PATH" ]; then
-            echo "mkdir /opt/rookie-scripts/assets${REL_PATH}" >> "$DEBUGFS_CMDS"
-        fi
-    done
-    find "$EXTRACT_DIR/custom_scripts/assets/" -type f | while read f; do
-        REL_PATH="${f#$EXTRACT_DIR/custom_scripts/assets/}"
-        echo "write $f /opt/rookie-scripts/assets/$REL_PATH" >> "$DEBUGFS_CMDS"
-    done
+    cp "$TEMPLATES_DIR/rookie-terminal-wrapper.sh" "$TARGET_ROOT/opt/rookie-scripts/"
+    chmod +x "$TARGET_ROOT/opt/rookie-scripts/rookie-terminal-wrapper.sh"
+    sed -i 's/\r$//' "$TARGET_ROOT/opt/rookie-scripts/rookie-terminal-wrapper.sh"
     
-    # Copiar firstboot scripts
-    echo "write $TEMPLATES_DIR/rookie-firstboot.sh /opt/rookie-scripts/rookie-firstboot.sh" >> "$DEBUGFS_CMDS"
-    echo "write $TEMPLATES_DIR/rookie-terminal-wrapper.sh /opt/rookie-scripts/rookie-terminal-wrapper.sh" >> "$DEBUGFS_CMDS"
+    mkdir -p "$TARGET_ROOT/etc/xdg/autostart"
+    cp "$TEMPLATES_DIR/rookie-firstboot.desktop" "$TARGET_ROOT/etc/xdg/autostart/"
+    chmod 644 "$TARGET_ROOT/etc/xdg/autostart/rookie-firstboot.desktop"
+    sed -i 's/\r$//' "$TARGET_ROOT/etc/xdg/autostart/rookie-firstboot.desktop"
     
-    # Crear directorio autostart y copiar desktop file
-    echo "mkdir /etc/xdg" >> "$DEBUGFS_CMDS"
-    echo "mkdir /etc/xdg/autostart" >> "$DEBUGFS_CMDS"
-    echo "write $TEMPLATES_DIR/rookie-firstboot.desktop /etc/xdg/autostart/rookie-firstboot.desktop" >> "$DEBUGFS_CMDS"
+    # 6. Restaurar contextos SELinux y desmontar
+    echo "=> [6/8] Restaurando contextos SELinux y finalizando..."
+    chroot "$TARGET_ROOT" restorecon -R /opt/rookie-scripts 2>/dev/null || true
+    chroot "$TARGET_ROOT" restorecon -R /etc/xdg/autostart 2>/dev/null || true
     
-    # Convertir CRLF a LF en los archivos fuente antes de inyectar
-    sed -i 's/\r$//' "$TEMPLATES_DIR/rookie-firstboot.sh" 2>/dev/null || true
-    sed -i 's/\r$//' "$TEMPLATES_DIR/rookie-terminal-wrapper.sh" 2>/dev/null || true
-    sed -i 's/\r$//' "$TEMPLATES_DIR/rookie-firstboot.desktop" 2>/dev/null || true
+    if [ "$NEED_UMOUNT" -eq 1 ]; then
+        umount "$ROOTFS_MOUNT"
+    fi
     
-    # Ejecutar todos los comandos de debugfs de una vez
-    echo "=> [4/8] Escribiendo archivos en rootfs.img con debugfs..."
-    debugfs -w -f "$DEBUGFS_CMDS" "$ROOTFS_IMG"
-    
-    # 5. Establecer permisos de ejecución usando debugfs
-    echo "=> [5/8] Estableciendo permisos de ejecución..."
-    PERM_CMDS="$SQUASH_WORK/debugfs_perms.txt"
-    echo "set_inode_field /opt/rookie-scripts/rookie-firstboot.sh mode 0100755" > "$PERM_CMDS"
-    echo "set_inode_field /opt/rookie-scripts/rookie-terminal-wrapper.sh mode 0100755" >> "$PERM_CMDS"
-    for f in "$EXTRACT_DIR/custom_scripts/scripts/"*.sh; do
-        [ -f "$f" ] || continue
-        BASENAME=$(basename "$f")
-        echo "set_inode_field /opt/rookie-scripts/scripts/$BASENAME mode 0100755" >> "$PERM_CMDS"
-    done
-    echo "set_inode_field /etc/xdg/autostart/rookie-firstboot.desktop mode 0100644" >> "$PERM_CMDS"
-    debugfs -w -f "$PERM_CMDS" "$ROOTFS_IMG"
-    
-    echo "=> [6/8] Archivos inyectados correctamente en rootfs.img."
+    echo "=> [7/8] Archivos inyectados correctamente en rootfs."
     
     # 8. Reempaquetar squashfs.img
     echo "=> [8/8] Reempaquetando squashfs.img (esto puede tardar varios minutos)..."
-    stdbuf -o0 mksquashfs "$SQUASH_WORK/squashfs_root" "$SQUASH_WORK/squashfs.img" -comp xz -b 1M
+    safe_run stdbuf -o0 mksquashfs "$SQUASH_WORK/squashfs_root" "$SQUASH_WORK/squashfs.img" -comp xz -b 1M -mem 1G 2>/dev/null
     rm -rf "$SQUASH_WORK/squashfs_root"
+    sync; echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
 fi
 
 OUTPUT_ISO="$BUILD_DIR/custom-$ISO_NAME"
@@ -304,7 +317,7 @@ if [ "$ISO_DISTRO" = "ubuntu" ]; then
         XORRISO_ARGS+=( -map "$EXTRACT_DIR/loopback.cfg" "/boot/grub/loopback.cfg" )
     fi
 elif [ "$ISO_DISTRO" = "fedora" ]; then
-    SQUASH_WORK="/tmp/squashfs_work"
+    SQUASH_WORK="/var/tmp/squashfs_work"
     XORRISO_ARGS+=( -map "$EXTRACT_DIR/ks.cfg" "/ks.cfg" )
     XORRISO_ARGS+=( -map "$SQUASH_WORK/squashfs.img" "/LiveOS/squashfs.img" )
     if [ -f "$EXTRACT_DIR/efi_grub.cfg" ]; then
@@ -317,8 +330,8 @@ elif [ "$ISO_DISTRO" = "fedora" ]; then
         XORRISO_ARGS+=( -map "$EXTRACT_DIR/isolinux.cfg" "/isolinux/isolinux.cfg" )
     fi
 elif [ "$ISO_DISTRO" = "mint" ] || [[ "$ISO_DISTRO" == popos* ]] || [[ "$ISO_DISTRO" == pop* ]]; then
-    SQUASH_WORK="/tmp/squashfs_work"
-    CASPER_DIR=$(xorriso -indev "$ISO_PATH" -find / -name "casper*" -type d 2>/dev/null | grep -i casper | head -n 1 | tr -d "'")
+    SQUASH_WORK="/var/tmp/squashfs_work"
+    # Reusar CASPER_DIR detectado al inicio (exportado), no volver a detectar
     if [ -z "$CASPER_DIR" ]; then
         CASPER_DIR="/casper"
     fi
@@ -342,7 +355,7 @@ if [ "$ISO_DISTRO" = "fedora" ] && [ -f "$EXTRACT_DIR/boot_images/eltorito_img2_
     XORRISO_ARGS+=( -boot_image any efi_path=--interval:appended_partition_2:all:: )
 fi
 
-xorriso "${XORRISO_ARGS[@]}"
+safe_run run_with_heartbeat xorriso "${XORRISO_ARGS[@]}"
 
 # Hacer la ISO arrancable por USB (isohybrid MBR + UEFI)
 # Esto es equivalente a lo que Rufus hace internamente.

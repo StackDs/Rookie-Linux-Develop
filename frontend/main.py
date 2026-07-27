@@ -2,6 +2,18 @@ import tkinter as tk
 from custom_messagebox import msg_show_error
 import sys
 
+# Worker hook para flasheo como Admin
+if "--worker" in sys.argv:
+    try:
+        import flasher_worker
+        flasher_worker.main()
+    except Exception as e:
+        open('C:/Users/Stack/Desktop/error_main.txt', 'w').write(str(e))
+
+    flasher_worker.main()
+    import sys as _sys
+    _sys.exit(0)
+
 try:
     import customtkinter as ctk
 except ImportError:

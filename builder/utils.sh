@@ -122,11 +122,11 @@ download_file(){
     echo "$URL"
 
 
-    curl \
-        --create-dirs \
-        -# -L \
-        -o "$OUTPUT" \
-        "$URL"
+    if command -v aria2c &> /dev/null; then
+        aria2c -x 16 -s 16 -j 16 -k 1M --file-allocation=none --summary-interval=1 --console-log-level=error -d "$(dirname "$OUTPUT")" -o "$(basename "$OUTPUT")" "$URL"
+    else
+        curl --create-dirs -# -L -o "$OUTPUT" "$URL"
+    fi
 
 
     if [ $? -eq 0 ]

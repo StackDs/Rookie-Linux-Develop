@@ -1,7 +1,7 @@
 import customtkinter as ctk
 import os
 from PIL import Image
-from utils import apply_glow_effect
+from utils import apply_glow_effect, get_project_root
 
 class DistroInfoScreen(ctk.CTkFrame):
     def __init__(self, parent, controller):
@@ -129,7 +129,7 @@ class DistroInfoScreen(ctk.CTkFrame):
 
     def load_images(self, distro):
         folder = self.folder_map.get(distro, "Ubuntu")
-        base_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "assets", "DistrosScreenShots", folder)
+        base_path = os.path.join(get_project_root(), "assets", "DistrosScreenShots", folder)
         self.current_images = []
         
         def set_img(btn, filename, size):

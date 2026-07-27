@@ -1,0 +1,98 @@
+import os
+import sys
+import shutil
+import subprocess
+import zipfile
+import time
+
+def force_remove_tree(path):
+    """Elimina un directorio matando primero cualquier proceso que bloquee el exe."""
+    if not os.path.exists(path):
+        return
+    # Cerrar el ejecutable si está corriendo para liberar el handle
+    subprocess.run(
+        ["taskkill", "/F", "/IM", "Rookie-Linux-Builder.exe"],
+        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+    )
+    time.sleep(1)
+    # Intentar borrar; si falla usar rd /s /q como último recurso
+    try:
+        shutil.rmtree(path)
+    except OSError:
+        subprocess.run(["cmd", "/c", "rd", "/s", "/q", path], check=False)
+        time.sleep(0.5)
+
+def copy_folder_robust(src, dst):
+    """Copia una carpeta usando robocopy si está disponible para mayor estabilidad."""
+    if os.path.exists("C:\\Windows\\System32\\robocopy.exe"):
+        # robocopy exit codes 0-7 son exitosos
+        subprocess.run(["robocopy", src, dst, "/E", "/NP", "/R:3", "/W:5"], capture_output=True)
+    else:
+        shutil.copytree(src, dst)
+
+def main():
+    # Cambiar al directorio raiz del proyecto (un nivel arriba de scripts/)
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    os.chdir(project_root)
+    
+    print("Iniciando empaquetado de Rookie Linux Builder...")
+    
+    # 1. Instalar dependencias si faltan
+    subprocess.run([sys.executable, "-m", "pip", "install", "pyinstaller", "customtkinter"], check=True)
+    
+    # 2. Construir el ejecutable con PyInstaller
+    print("Compilando con PyInstaller...")
+    subprocess.run([
+        sys.executable, "-m", "PyInstaller", 
+        "--noconfirm",
+        "--onefile",
+        "--windowed",
+        "--name", "Rookie-Linux-Builder",
+        "frontend/main.py"
+    ], check=True)
+    
+    # 3. Preparar directorio de distribucion
+    dist_dir = "Rookie-Linux-Release"
+    print(f"Preparando directorio de lanzamiento: {dist_dir}...")
+    force_remove_tree(dist_dir)
+    os.makedirs(dist_dir)
+    
+    # Mover el ejecutable
+    shutil.move("dist/Rookie-Linux-Builder.exe", os.path.join(dist_dir, "Rookie-Linux-Builder.exe"))
+    
+    # Copiar carpetas necesarias
+    folders_to_copy = ["assets", "builder", "templates", "configs", "scripts"]
+    for folder in folders_to_copy:
+        if os.path.exists(folder):
+            print(f"Copiando {folder}...")
+            copy_folder_robust(folder, os.path.join(dist_dir, folder))
+            
+    # Crear carpetas vacias necesarias
+    os.makedirs(os.path.join(dist_dir, "downloads", "iso"), exist_ok=True)
+    os.makedirs(os.path.join(dist_dir, "output"), exist_ok=True)
+    os.makedirs(os.path.join(dist_dir, "logs"), exist_ok=True)
+    
+    # 4. Crear el archivo ZIP final en el Escritorio
+    desktop_path = os.path.join(os.environ["USERPROFILE"], "Desktop")
+    zip_filename = os.path.join(desktop_path, "Rookie-Linux-Builder-Release.zip")
+    
+    print(f"Creando {zip_filename}...")
+    with zipfile.ZipFile(zip_filename, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        for root, dirs, files in os.walk(dist_dir):
+            for file in files:
+                file_path = os.path.join(root, file)
+                arcname = os.path.relpath(file_path, dist_dir)
+                zipf.write(file_path, arcname)
+                
+    print("Limpiando carpetas temporales...")
+    force_remove_tree(dist_dir)
+    force_remove_tree("build")
+    force_remove_tree("dist")
+    if os.path.exists("Rookie-Linux-Builder.spec"):
+        os.remove("Rookie-Linux-Builder.spec")
+        
+    print(f"¡Exito! Se ha creado {zip_filename}")
+    print(f"El empaquetado final (.zip) está en tu Escritorio y las carpetas residuales han sido limpiadas.")
+
+if __name__ == "__main__":
+    main()

@@ -7,7 +7,7 @@ import glob
 import time
 import re
 from custom_messagebox import msg_show_info, msg_show_error, msg_show_warning, msg_ask_yes_no
-from utils import apply_glow_effect
+from utils import apply_glow_effect, get_project_root
 
 class BuildProgressScreen(ctk.CTkFrame):
     def __init__(self, parent, controller):
@@ -67,6 +67,14 @@ class BuildProgressScreen(ctk.CTkFrame):
         self.current_process = None
         self.current_iso_target_dir = None
         self.is_cancelled = False
+        
+        self.target_download = 0.0
+        self.current_download = 0.0
+        self.is_animating_dl = False
+        
+        self.target_gen = 0.0
+        self.current_gen = 0.0
+        self.is_animating_gen = False
 
     def on_show(self):
         distro_seleccionada = self.controller.frames["DistroSelectionScreen"].distro_var.get()
@@ -78,17 +86,90 @@ class BuildProgressScreen(ctk.CTkFrame):
         self.btn_action.configure(text="Cancelar", command=self.cancel_process, text_color="#FF0000", border_color="#FF0000", hover_color="#330000", state="normal")
         apply_glow_effect(self.btn_action, default_text="Cancelar", hover_text="Cancelar", color_base="#AA0000", color_glow="#FF0000")
         
+        self.target_download = 0.0
+        self.current_download = 0.0
+        self.is_animating_dl = False
+        self.target_gen = 0.0
+        self.current_gen = 0.0
+        self.is_animating_gen = False
+        
         self.update_progress_download(0.0, "0,00")
         self.update_progress_generation(0.0, "0,00")
         self.ejecutar_script()
 
     def update_progress_download(self, val, text_val):
-        self.progress_bar_download.set(val)
-        self.lbl_download.configure(text=f"Descarga: {text_val}%")
+        if self.progress_bar_download.cget("mode") == "indeterminate":
+            self.progress_bar_download.stop()
+            self.progress_bar_download.configure(mode="determinate")
+        self.target_download = val
+        if not self.is_animating_dl:
+            self.is_animating_dl = True
+            self.animate_download()
 
     def update_progress_generation(self, val, text_val):
-        self.progress_bar_generation.set(val)
+        if self.progress_bar_generation.cget("mode") == "indeterminate":
+            self.progress_bar_generation.stop()
+            self.progress_bar_generation.configure(mode="determinate")
+        self.target_gen = val
+        if not self.is_animating_gen:
+            self.is_animating_gen = True
+            self.animate_generation()
+
+    def animate_download(self):
+        if self.is_cancelled:
+            self.is_animating_dl = False
+            return
+            
+        step = 0.005 # 0.5% por frame
+        if self.current_download < self.target_download:
+            self.current_download += step
+            if self.current_download > self.target_download:
+                self.current_download = self.target_download
+        elif self.current_download > self.target_download:
+            self.current_download = self.target_download
+            
+        self.progress_bar_download.set(self.current_download)
+        val = self.current_download * 100.0
+        text_val = f"{val:.2f}".replace('.', ',')
+        self.lbl_download.configure(text=f"Descarga: {text_val}%")
+        
+        if self.current_download < self.target_download:
+            self.after(20, self.animate_download)
+        else:
+            self.is_animating_dl = False
+            
+    def animate_generation(self):
+        if self.is_cancelled:
+            self.is_animating_gen = False
+            return
+            
+        step = 0.005
+        if self.current_gen < self.target_gen:
+            self.current_gen += step
+            if self.current_gen > self.target_gen:
+                self.current_gen = self.target_gen
+        elif self.current_gen > self.target_gen:
+            self.current_gen = self.target_gen
+            
+        self.progress_bar_generation.set(self.current_gen)
+        val = self.current_gen * 100.0
+        text_val = f"{val:.2f}".replace('.', ',')
         self.lbl_generation.configure(text=f"Generación: {text_val}%")
+        
+        if self.current_gen < self.target_gen:
+            self.after(20, self.animate_generation)
+        else:
+            self.is_animating_gen = False
+
+    def start_indeterminate_download(self):
+        self.progress_bar_download.configure(mode="indeterminate")
+        self.progress_bar_download.start()
+        self.lbl_download.configure(text="Descarga: Conectando...")
+
+    def start_indeterminate_generation(self):
+        self.progress_bar_generation.configure(mode="indeterminate")
+        self.progress_bar_generation.start()
+        self.lbl_generation.configure(text="Generación: Procesando...")
 
     def set_btn_volver(self):
         self.btn_action.configure(text="← Volver al Inicio", command=lambda: self.controller.show_frame("StartScreen"), 
@@ -107,11 +188,8 @@ class BuildProgressScreen(ctk.CTkFrame):
                 pass
             
             try:
-                current_dir = os.path.dirname(os.path.abspath(__file__))
-                project_root = os.path.abspath(os.path.join(current_dir, ".."))
                 cflags = 0x08000000 if sys.platform == "win32" else 0
-                subprocess.run("docker compose kill", shell=True, cwd=project_root, creationflags=cflags, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                subprocess.run("docker compose rm -f", shell=True, cwd=project_root, creationflags=cflags, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                subprocess.run('wsl -u root -e pkill -f "build_iso.sh|download_iso.sh"', shell=True, creationflags=cflags, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             except Exception:
                 pass
                 
@@ -153,14 +231,37 @@ class BuildProgressScreen(ctk.CTkFrame):
         return True
 
     def ejecutar_script(self):
-        # Limpieza proactiva de contenedores huérfanos antes de hacer cualquier cosa
+        # 1. Verificar si WSL está disponible
         try:
-            current_dir = os.path.dirname(os.path.abspath(__file__))
-            project_root = os.path.abspath(os.path.join(current_dir, ".."))
             cflags = 0x08000000 if sys.platform == "win32" else 0
-            subprocess.run("docker compose kill", shell=True, cwd=project_root, creationflags=cflags, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            subprocess.run("docker compose rm -f", shell=True, cwd=project_root, creationflags=cflags, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            subprocess.run("docker container prune -f", shell=True, creationflags=cflags, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            res = subprocess.run(["wsl", "--status"], capture_output=True, text=True, creationflags=cflags)
+            if res.returncode != 0:
+                raise Exception("WSL no instalado")
+        except Exception:
+            instalar = msg_ask_yes_no(
+                "WSL Requerido", 
+                "El Subsistema de Windows para Linux (WSL) no está instalado y es necesario para construir la ISO.\n\n"
+                "¿Deseas instalarlo ahora automáticamente? (Se pedirán permisos de administrador)"
+            )
+            
+            if instalar:
+                try:
+                    ps_cmd = 'Start-Process powershell -ArgumentList "-NoExit", "-Command", "wsl --install" -Verb RunAs'
+                    subprocess.run(['powershell', '-Command', ps_cmd], creationflags=cflags)
+                    msg_show_info(
+                        "Instalando WSL",
+                        "Se ha abierto una ventana de PowerShell (como Administrador) para instalar WSL.\n\n"
+                        "Por favor, espera a que termine el proceso en esa ventana. Una vez finalizado, REINICIA TU PC para aplicar los cambios."
+                    )
+                except Exception as e:
+                    msg_show_error("Error", f"No se pudo lanzar el instalador de WSL.\nPor favor ejecuta 'wsl --install' manualmente como Administrador.\nError: {e}")
+            
+            self.set_btn_volver()
+            return
+
+        # Limpieza proactiva de procesos huérfanos de WSL
+        try:
+            subprocess.run('wsl -u root -e pkill -f "build_iso.sh|download_iso.sh"', shell=True, creationflags=cflags, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         except Exception:
             pass
 
@@ -187,8 +288,7 @@ class BuildProgressScreen(ctk.CTkFrame):
             else:
                 distro_env = "popos_amd"
                 
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        project_root = os.path.abspath(os.path.join(current_dir, ".."))
+        project_root = get_project_root()
         
         # Check oficial ISO
         download_dir = os.path.join(project_root, "downloads", "iso", distro_env)
@@ -200,19 +300,26 @@ class BuildProgressScreen(ctk.CTkFrame):
         threading.Thread(target=self.run_download_thread, args=(project_root, distro_env, distro_seleccionada), daemon=True).start()
 
     def run_download_thread(self, project_root, distro_env, distro_seleccionada):
-        self.after(0, self.update_progress_download, 0.0, "0,00")
+        self.after(0, self.start_indeterminate_download)
         
         try:
             creationflags = 0x08000000 if sys.platform == "win32" else 0
             
-            # Ejecutar build primero
-            build_cmd = 'docker compose build builder'
-            subprocess.run(build_cmd, shell=True, cwd=project_root, creationflags=creationflags, check=False)
+            # Instalar dependencias en WSL (reemplaza a docker build)
+            self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Instalando dependencias de Linux en WSL..."))
+            wsl_deps_cmd = 'wsl -u root -e bash -c "apt-get update && apt-get install -y xorriso squashfs-tools e2fsprogs mtools dosfstools p7zip-full wget curl aria2 syslinux-utils isolinux coreutils"'
+            subprocess.run(wsl_deps_cmd, shell=True, creationflags=creationflags, check=False)
             
-            # Ejecutar run de la descarga
-            cmd = f'docker compose run -e ISO_DISTRO="{distro_env}" --rm builder bash -c "sed -i \"s/\\r\$//\" /workspace/builder/entrypoint.sh 2>/dev/null; bash /workspace/builder/entrypoint.sh /workspace/builder/download_iso.sh \"{distro_env}\""'
+            def to_wsl_path(win_path):
+                drive, rest = os.path.splitdrive(win_path)
+                return f"/mnt/{drive[0].lower()}{rest.replace(os.sep, '/')}"
+                
+            wsl_project_root = to_wsl_path(project_root)
             
-            self.current_process = subprocess.Popen(cmd, shell=True, cwd=project_root, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, creationflags=creationflags, bufsize=1, universal_newlines=True)
+            # Ejecutar run de la descarga usando WSL en vez de docker
+            cmd = f'wsl -u root -e bash -c "export ISO_DISTRO=\\"{distro_env}\\"; sed -i \\"s/\\\\r\\$//\\" {wsl_project_root}/builder/download_iso.sh 2>/dev/null; cd {wsl_project_root} && bash {wsl_project_root}/builder/download_iso.sh \\"{distro_env}\\""'
+            
+            self.current_process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, creationflags=creationflags, bufsize=1, universal_newlines=True)
             
             self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Descargando imagen oficial de la ISO..."))
             
@@ -258,7 +365,7 @@ class BuildProgressScreen(ctk.CTkFrame):
             return
         output_dir = os.path.join(project_root, "output", distro_env)
         os.makedirs(output_dir, exist_ok=True)
-        should_build = self.check_and_delete_iso(output_dir, "modificada final", distro_env, ask_confirmation=False)
+        should_build = self.check_and_delete_iso(output_dir, "modificada final", distro_env, ask_confirmation=True)
         
         self.current_iso_target_dir = output_dir
         if not self.is_cancelled:
@@ -271,15 +378,21 @@ class BuildProgressScreen(ctk.CTkFrame):
                 self.after(0, self.set_btn_volver)
 
     def run_build_thread(self, project_root, distro_env, distro_seleccionada):
-        self.after(0, self.update_progress_generation, 0.0, "0,00")
+        self.after(0, self.start_indeterminate_generation)
         current_phase = "processing"
         
         try:
             creationflags = 0x08000000 if sys.platform == "win32" else 0
             
-            cmd = f'docker compose run -e ISO_DISTRO="{distro_env}" --rm builder bash -c "sed -i \"s/\\r\$//\" /workspace/builder/entrypoint.sh 2>/dev/null; bash /workspace/builder/entrypoint.sh /workspace/builder/build_iso.sh"'
+            def to_wsl_path(win_path):
+                drive, rest = os.path.splitdrive(win_path)
+                return f"/mnt/{drive[0].lower()}{rest.replace(os.sep, '/')}"
+                
+            wsl_project_root = to_wsl_path(project_root)
             
-            self.current_process = subprocess.Popen(cmd, shell=True, cwd=project_root, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, creationflags=creationflags, bufsize=1, universal_newlines=True)
+            cmd = f'wsl -u root -e bash -c "export ISO_DISTRO=\\"{distro_env}\\"; sed -i \\"s/\\\\r\\$//\\" {wsl_project_root}/builder/build_iso.sh 2>/dev/null; cd {wsl_project_root} && bash {wsl_project_root}/builder/build_iso.sh"'
+            
+            self.current_process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, creationflags=creationflags, bufsize=1, universal_newlines=True)
             
             self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Modificando e inyectando código en la ISO..."))
             self.after(0, self.update_progress_download, 1.0, "100,00")
@@ -345,7 +458,18 @@ class BuildProgressScreen(ctk.CTkFrame):
                         if current_phase == "generating":
                             self.after(0, self.update_progress_generation, actual_percent, text_val)
                             
-                    if "exitosa" in line_lower:
+                    if "fatal_error" in line_lower or line_lower.startswith("[fatal_error]"):
+                        # El script de WSL reportó un error crítico — mostrarlo de inmediato
+                        error_details = line
+                        self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Error crítico en el proceso.", text_color="#FF0000"))
+                        self.after(0, lambda err=error_details: msg_show_error(
+                            "Error crítico",
+                            f"El proceso de construcción falló en un paso crítico:\n\n{err}\n\n"
+                            "Revisa que la ISO descargada no esté corrupta e inténtalo de nuevo."
+                        ))
+                        self.after(0, self.set_btn_volver)
+                        return
+                    elif "exitosa" in line_lower:
                         current_phase = "done"
                         self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: ¡ISO finalizada con éxito!"))
                         self.after(0, self.update_progress_generation, 1.0, "100,00")
@@ -359,10 +483,12 @@ class BuildProgressScreen(ctk.CTkFrame):
                 return
             
             if self.current_process.returncode == 0:
+                self.after(0, self.update_progress_generation, 1.0, "100,00")
                 self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Sistema Construido Exitosamente.", text_color="#00FF00"))
                 self.after(0, lambda: msg_show_info("Éxito", f"¡La imagen de {distro_seleccionada} se ha construido correctamente!\n\nRevisa la carpeta 'output'."))
                 self.after(0, lambda: self.btn_flash_usb.pack(side="left", padx=10))
             else:
+                self.after(0, self.update_progress_generation, 0.0, "0,00")
                 error_details = "\n".join(last_lines)
                 self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Error en la construcción.", text_color="#FF0000"))
                 self.after(0, lambda err=error_details: msg_show_error("Error", f"Ocurrió un error durante la construcción de la ISO.\nDetalles:\n{err}"))

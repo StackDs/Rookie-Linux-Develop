@@ -1,7 +1,7 @@
 import customtkinter as ctk
 import os
 from PIL import Image
-from utils import apply_glow_effect
+from utils import apply_glow_effect, get_project_root
 
 class DistroSelectionScreen(ctk.CTkFrame):
     def __init__(self, parent, controller):
@@ -32,7 +32,7 @@ class DistroSelectionScreen(ctk.CTkFrame):
         self.images = []
         
         for idx, (name, img_file) in enumerate(distros):
-            img_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "assets", img_file)
+            img_path = os.path.join(get_project_root(), "assets", img_file)
             
             card = ctk.CTkFrame(cards_frame, fg_color="transparent", border_width=0)
             card.grid(row=0, column=idx, padx=15, pady=10)

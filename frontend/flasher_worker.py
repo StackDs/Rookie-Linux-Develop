@@ -1,5 +1,6 @@
 import os
 import sys
+import tempfile
 import argparse
 import subprocess
 import json
@@ -27,6 +28,7 @@ def main():
     parser.add_argument("--iso", required=True, help="Path to ISO file")
     parser.add_argument("--drive", required=True, type=int, help="PhysicalDrive Number")
     parser.add_argument("--progress", required=True, help="Path to progress JSON file")
+    parser.add_argument("--worker", action="store_true", help="Internal flag when running from packaged exe")
     args = parser.parse_args()
     
     prog_file = args.progress
@@ -38,7 +40,7 @@ def main():
     try:
         # Diskpart clean con reintentos y clear readonly
         dp_script = f"select disk {drive_num}\nattributes disk clear readonly\nclean\n"
-        dp_path = os.path.join(os.path.dirname(__file__), "dp_clean_worker.txt")
+        dp_path = os.path.join(tempfile.gettempdir(), "dp_clean_worker.txt")
         
         for attempt in range(3):
             with open(dp_path, "w") as f:

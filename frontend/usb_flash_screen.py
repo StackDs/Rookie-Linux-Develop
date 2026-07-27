@@ -8,7 +8,7 @@ import json
 import time
 import tempfile
 from custom_messagebox import msg_show_info, msg_show_error, msg_show_warning, msg_ask_yes_no
-from utils import apply_glow_effect
+from utils import apply_glow_effect, get_project_root
 
 class UsbFlashScreen(ctk.CTkFrame):
     def __init__(self, parent, controller):
@@ -86,10 +86,17 @@ class UsbFlashScreen(ctk.CTkFrame):
         
         self.is_flashing = False
         self.cancel_flag = os.path.join(tempfile.gettempdir(), "rookie_flash_cancel.flag")
+        
+        self.target_progress = 0.0
+        self.current_progress = 0.0
+        self.is_animating = False
 
     def on_show(self):
+        self.target_progress = 0.0
+        self.current_progress = 0.0
+        self.is_animating = False
         self.progress_bar.set(0)
-        self.lbl_progress.configure(text="Progreso: 0%")
+        self.lbl_progress.configure(text="Progreso: 0,00%")
         self.status_lbl.configure(text="Estado: Esperando confirmación...", text_color="#008800")
         self.btn_flash.configure(state="normal")
         self.set_btn_volver()
@@ -175,8 +182,7 @@ class UsbFlashScreen(ctk.CTkFrame):
              if build_screen.current_iso_target_dir:
                  distro_env = os.path.basename(build_screen.current_iso_target_dir)
              
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        project_root = os.path.abspath(os.path.join(current_dir, ".."))
+        project_root = get_project_root()
         output_dir = os.path.join(project_root, "output", distro_env)
         
         isos = glob.glob(os.path.join(output_dir, "*.iso"))
@@ -207,8 +213,29 @@ class UsbFlashScreen(ctk.CTkFrame):
         threading.Thread(target=self.flash_worker, args=(iso_path, target_num), daemon=True).start()
 
     def update_progress(self, percent, text):
-        self.progress_bar.set(percent)
-        self.lbl_progress.configure(text=f"Progreso: {text}%")
+        self.target_progress = percent
+        if not self.is_animating:
+            self.is_animating = True
+            self.animate_progress()
+
+    def animate_progress(self):
+        step = 0.005 # 0.5% por frame
+        if self.current_progress < self.target_progress:
+            self.current_progress += step
+            if self.current_progress > self.target_progress:
+                self.current_progress = self.target_progress
+        elif self.current_progress > self.target_progress:
+            self.current_progress = self.target_progress
+            
+        self.progress_bar.set(self.current_progress)
+        val = self.current_progress * 100.0
+        text_val = f"{val:.2f}".replace('.', ',')
+        self.lbl_progress.configure(text=f"Progreso: {text_val}%")
+        
+        if self.current_progress < self.target_progress:
+            self.after(20, self.animate_progress)
+        else:
+            self.is_animating = False
 
     def flash_worker(self, iso_path, drive_num):
         prog_file = os.path.join(tempfile.gettempdir(), "rookie_flash_progress.json")
@@ -219,14 +246,21 @@ class UsbFlashScreen(ctk.CTkFrame):
             pass
             
         try:
-            worker_script = os.path.join(os.path.dirname(__file__), "flasher_worker.py")
             python_exe = sys.executable
             
-            # Lanzamos el proceso trabajador elevado
-            ps_cmd = f'Start-Process "{python_exe}" -ArgumentList \'"{worker_script}" --iso "{iso_path}" --drive {drive_num} --progress "{prog_file}"\' -Verb RunAs -WindowStyle Hidden'
+            # Lanzamos el proceso trabajador elevado usando --worker
+            if getattr(sys, 'frozen', False):
+                # Exe empaquetado: relanzarse a sí mismo con --worker como proceso Admin
+                args_list = f'--worker --iso "{iso_path}" --drive {drive_num} --progress "{prog_file}"'
+                ps_cmd = f'Start-Process -FilePath "{python_exe}" -ArgumentList \'{args_list}\' -Verb RunAs -WindowStyle Hidden'
+            else:
+                # Modo código fuente: lanzar flasher_worker.py directamente
+                worker_script = os.path.join(os.path.dirname(__file__), "flasher_worker.py")
+                args_list = f'"{worker_script}" --iso "{iso_path}" --drive {drive_num} --progress "{prog_file}"'
+                ps_cmd = f'Start-Process -FilePath "{python_exe}" -ArgumentList \'{args_list}\' -Verb RunAs -WindowStyle Hidden'
             
             creationflags = 0x08000000 if sys.platform == "win32" else 0
-            res = subprocess.run(['powershell', '-Command', ps_cmd], capture_output=True, text=True, creationflags=creationflags)
+            res = subprocess.run(['powershell', '-NoProfile', '-Command', ps_cmd], capture_output=True, text=True, creationflags=creationflags)
             
             if res.returncode != 0:
                 self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Flasheo cancelado o fallido.", text_color="#FF0000"))

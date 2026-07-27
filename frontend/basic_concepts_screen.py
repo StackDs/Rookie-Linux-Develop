@@ -1,6 +1,7 @@
 import customtkinter as ctk
 import os
 from PIL import Image
+from utils import get_project_root
 from utils import apply_glow_effect
 
 class BasicConceptsScreen(ctk.CTkFrame):
@@ -58,7 +59,7 @@ class BasicConceptsScreen(ctk.CTkFrame):
         self.btn_siguiente.pack(side="left", padx=15)
         
     def load_image(self, parent, filename):
-        base_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "assets")
+        base_path = os.path.join(get_project_root(), "assets")
         img_path = os.path.join(base_path, filename)
         try:
             if os.path.exists(img_path):
