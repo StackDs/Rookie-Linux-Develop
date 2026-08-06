@@ -50,13 +50,13 @@ class BitlockerScreen(ctk.CTkFrame):
         apply_glow_effect(self.btn_volver, default_text="←    Volver", hover_text="←       Volver")
         self.btn_volver.pack(side="left", padx=15)
         
-        self.btn_siguiente = ctk.CTkButton(btn_frame, text="Entendido    →", command=lambda: self.controller.show_frame("DistroSelectionScreen"),
-                                       height=45, width=170, corner_radius=5,
+        self.btn_home = ctk.CTkButton(btn_frame, text="⌂ Volver a Opciones", command=lambda: self.controller.show_frame("OptionSelectionScreen"),
+                                       height=45, width=220, corner_radius=5,
                                        font=ctk.CTkFont(family="Consolas", size=15, weight="bold"), cursor="hand2",
                                        fg_color="transparent", border_width=2, border_color="#008800",
                                        hover_color="#001100", text_color="#008800")
-        apply_glow_effect(self.btn_siguiente, default_text="Entendido    →", hover_text="Entendido       →")
-        self.btn_siguiente.pack(side="left", padx=15)
+        apply_glow_effect(self.btn_home, default_text="⌂ Volver a Opciones", hover_text="⌂ Volver a Opciones")
+        self.btn_home.pack(side="left", padx=15)
         
     def load_image(self, parent, filename):
         base_path = os.path.join(get_project_root(), "assets")

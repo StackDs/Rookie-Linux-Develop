@@ -73,21 +73,13 @@ class InfoScreen(ctk.CTkFrame):
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
         btn_frame.grid(row=3, column=0, pady=(0, 40))
         
-        btn_volver = ctk.CTkButton(btn_frame, text="←    Volver", command=lambda: controller.show_frame("StartScreen"),
-                                   height=45, width=150, corner_radius=5,
+        btn_home = ctk.CTkButton(btn_frame, text="⌂ Volver a Opciones", command=lambda: controller.show_frame("OptionSelectionScreen"),
+                                   height=45, width=220, corner_radius=5,
                                    font=ctk.CTkFont(family="Consolas", size=15, weight="bold"), cursor="hand2",
                                    fg_color="transparent", border_width=2, border_color="#008800",
                                    hover_color="#001100", text_color="#008800")
-        apply_glow_effect(btn_volver, default_text="←    Volver", hover_text="←       Volver")
-        btn_volver.pack(side="left", padx=15)
-        
-        btn_siguiente = ctk.CTkButton(btn_frame, text="Siguiente    →", command=lambda: controller.show_frame("ExplanationScreen"),
-                                      height=45, width=170, corner_radius=5,
-                                      font=ctk.CTkFont(family="Consolas", size=15, weight="bold"), cursor="hand2",
-                                      fg_color="transparent", border_width=2, border_color="#008800",
-                                      hover_color="#001100", text_color="#008800")
-        apply_glow_effect(btn_siguiente, default_text="Siguiente    →", hover_text="Siguiente       →")
-        btn_siguiente.pack(side="left", padx=15)
+        apply_glow_effect(btn_home, default_text="⌂ Volver a Opciones", hover_text="⌂ Volver a Opciones")
+        btn_home.pack(side="left", padx=15)
 
     def on_show(self):
         if not getattr(self, "has_animated", False):

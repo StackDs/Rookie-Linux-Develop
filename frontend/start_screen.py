@@ -19,7 +19,7 @@ class StartScreen(ctk.CTkFrame):
             
         self.btn = ctk.CTkButton(self, text="INICIAR SISTEMA    →", font=ctk.CTkFont(family="Consolas", size=18, weight="bold"), 
                             height=60, width=280, corner_radius=5,
-                            command=lambda: controller.show_frame("InfoScreen"),
+                            command=lambda: controller.show_frame("OptionSelectionScreen"),
                             cursor="hand2", 
                             fg_color="transparent", border_width=2, border_color="#008800",
                             hover_color="#001100", text_color="#008800")

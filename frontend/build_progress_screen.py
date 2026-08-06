@@ -172,9 +172,9 @@ class BuildProgressScreen(ctk.CTkFrame):
         self.lbl_generation.configure(text="Generación: Procesando...")
 
     def set_btn_volver(self):
-        self.btn_action.configure(text="← Volver al Inicio", command=lambda: self.controller.show_frame("StartScreen"), 
+        self.btn_action.configure(text="⌂ Volver a Opciones", command=lambda: self.controller.show_frame("OptionSelectionScreen"), 
                                   text_color="#008800", border_color="#008800", hover_color="#001100", state="normal")
-        apply_glow_effect(self.btn_action, default_text="← Volver al Inicio", hover_text="← Volver al Inicio")
+        apply_glow_effect(self.btn_action, default_text="⌂ Volver a Opciones", hover_text="⌂ Volver a Opciones")
 
     def cancel_process(self):
         self.is_cancelled = True

@@ -7,6 +7,7 @@ import glob
 import json
 import time
 import tempfile
+from tkinter import filedialog
 from custom_messagebox import msg_show_info, msg_show_error, msg_show_warning, msg_ask_yes_no
 from utils import apply_glow_effect, get_project_root
 
@@ -17,7 +18,7 @@ class UsbFlashScreen(ctk.CTkFrame):
         self.drives_info = []
         
         self.grid_rowconfigure(0, weight=1)
-        self.grid_rowconfigure(7, weight=1)
+        self.grid_rowconfigure(8, weight=1)
         self.grid_columnconfigure(0, weight=1)
         
         self.title = ctk.CTkLabel(self, text="> Flasheador USB_", 
@@ -31,11 +32,22 @@ class UsbFlashScreen(ctk.CTkFrame):
         # Admin Warning
         self.admin_lbl = ctk.CTkLabel(self, text="Se te pedirá permisos de Administrador.", 
                                       text_color="#FFAA00", font=ctk.CTkFont(family="Consolas", size=14, weight="bold"))
-        self.admin_lbl.grid(row=3, column=0, pady=(0, 20))
+        self.admin_lbl.grid(row=3, column=0, pady=(0, 15))
         
+        # ISO Selection Frame
+        iso_frame = ctk.CTkFrame(self, fg_color="transparent")
+        iso_frame.grid(row=4, column=0, pady=(0, 15))
+        
+        self.iso_var = ctk.StringVar(value="")
+        self.iso_entry = ctk.CTkEntry(iso_frame, textvariable=self.iso_var, width=350, font=ctk.CTkFont(family="Consolas", size=13), state="disabled", fg_color="#001100", border_color="#008800", text_color="#00FF00")
+        self.iso_entry.pack(side="left", padx=10)
+        
+        self.btn_browse = ctk.CTkButton(iso_frame, text="Buscar ISO", command=self.browse_iso, height=30, width=100, font=ctk.CTkFont(family="Consolas", size=13, weight="bold"), cursor="hand2", fg_color="transparent", border_width=1, border_color="#008800", hover_color="#002200", text_color="#00FF00")
+        self.btn_browse.pack(side="left")
+
         # Selection Frame
         sel_frame = ctk.CTkFrame(self, fg_color="transparent")
-        sel_frame.grid(row=4, column=0, pady=(0, 20))
+        sel_frame.grid(row=5, column=0, pady=(0, 20))
         
         self.combo_var = ctk.StringVar(value="Buscando unidades...")
         self.usb_combo = ctk.CTkComboBox(sel_frame, variable=self.combo_var, values=["Buscando unidades..."], width=350,
@@ -53,7 +65,7 @@ class UsbFlashScreen(ctk.CTkFrame):
         
         # Progress Frame
         self.progress_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.progress_frame.grid(row=5, column=0, pady=(0, 20))
+        self.progress_frame.grid(row=6, column=0, pady=(0, 20))
         
         self.status_lbl = ctk.CTkLabel(self.progress_frame, text="Estado: Esperando confirmación...", text_color="#008800", font=ctk.CTkFont(family="Consolas", size=14))
         self.status_lbl.pack(pady=(0, 10))
@@ -66,7 +78,7 @@ class UsbFlashScreen(ctk.CTkFrame):
         
         # Action Buttons
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
-        btn_frame.grid(row=6, column=0, pady=(20, 0))
+        btn_frame.grid(row=7, column=0, pady=(20, 0))
         
         self.btn_flash = ctk.CTkButton(btn_frame, text="Flashear USB", command=self.start_flash,
                                    height=45, width=200, corner_radius=5,
@@ -76,12 +88,12 @@ class UsbFlashScreen(ctk.CTkFrame):
         apply_glow_effect(self.btn_flash, default_text="Flashear USB", hover_text="Flashear USB")
         self.btn_flash.pack(side="left", padx=10)
         
-        self.btn_action = ctk.CTkButton(btn_frame, text="← Volver al Inicio", command=lambda: self.controller.show_frame("StartScreen"),
+        self.btn_action = ctk.CTkButton(btn_frame, text="⌂ Volver a Opciones", command=lambda: self.controller.show_frame("OptionSelectionScreen"),
                                    height=45, width=200, corner_radius=5,
                                    font=ctk.CTkFont(family="Consolas", size=15, weight="bold"), cursor="hand2",
                                    fg_color="transparent", border_width=2, border_color="#008800",
                                    hover_color="#001100", text_color="#008800")
-        apply_glow_effect(self.btn_action, default_text="← Volver al Inicio", hover_text="← Volver al Inicio")
+        apply_glow_effect(self.btn_action, default_text="⌂ Volver a Opciones", hover_text="⌂ Volver a Opciones")
         self.btn_action.pack(side="left", padx=10)
         
         self.is_flashing = False
@@ -103,9 +115,9 @@ class UsbFlashScreen(ctk.CTkFrame):
         threading.Thread(target=self.load_drives, daemon=True).start()
 
     def set_btn_volver(self):
-        self.btn_action.configure(text="← Volver al Inicio", command=lambda: self.controller.show_frame("StartScreen"),
+        self.btn_action.configure(text="⌂ Volver a Opciones", command=lambda: self.controller.show_frame("OptionSelectionScreen"),
                                   text_color="#008800", border_color="#008800", hover_color="#001100", state="normal")
-        apply_glow_effect(self.btn_action, default_text="← Volver al Inicio", hover_text="← Volver al Inicio")
+        apply_glow_effect(self.btn_action, default_text="⌂ Volver a Opciones", hover_text="⌂ Volver a Opciones")
 
     def cancel_flash(self):
         msg = "¿Estás seguro que deseas cancelar el flasheo?\n\nADVERTENCIA: Si cancelas ahora, tu USB quedará corrupto e inutilizable hasta que lo vuelvas a formatear."
@@ -157,7 +169,20 @@ class UsbFlashScreen(ctk.CTkFrame):
         except Exception as e:
             self.combo_var.set("Error al buscar unidades")
 
+    def browse_iso(self):
+        filename = filedialog.askopenfilename(
+            title="Seleccionar imagen ISO",
+            filetypes=(("Archivos ISO", "*.iso"), ("Todos los archivos", "*.*"))
+        )
+        if filename:
+            self.iso_var.set(filename)
+
     def start_flash(self):
+        iso_path = self.iso_var.get()
+        if not iso_path or not os.path.exists(iso_path) or not iso_path.lower().endswith(".iso"):
+            msg_show_warning("Aviso", "Por favor selecciona un archivo ISO válido.")
+            return
+
         selected = self.combo_var.get()
         if "Disco" not in selected:
             msg_show_warning("Aviso", "Por favor selecciona un disco USB válido.")
@@ -172,25 +197,7 @@ class UsbFlashScreen(ctk.CTkFrame):
         if target_num is None:
             msg_show_warning("Error", "No se pudo identificar el número de disco.")
             return
-
-        distro_seleccionada = self.controller.frames["DistroSelectionScreen"].distro_var.get()
-        distro_map = {"Ubuntu": "ubuntu", "Linux Mint": "mint", "Fedora": "fedora", "Pop!_OS": "popos"}
-        distro_env = distro_map.get(distro_seleccionada, "ubuntu")
-        
-        build_screen = self.controller.frames.get("BuildProgressScreen")
-        if distro_seleccionada == "Pop!_OS" and build_screen and hasattr(build_screen, "current_iso_target_dir"):
-             if build_screen.current_iso_target_dir:
-                 distro_env = os.path.basename(build_screen.current_iso_target_dir)
-             
-        project_root = get_project_root()
-        output_dir = os.path.join(project_root, "output", distro_env)
-        
-        isos = glob.glob(os.path.join(output_dir, "*.iso"))
-        if not isos:
-            msg_show_error("Error", f"No se encontró ninguna ISO generada en {output_dir}.")
-            return
             
-        iso_path = isos[0]
         iso_name = os.path.basename(iso_path)
         
         msg = f"ATENCIÓN: Vas a formatear y sobrescribir el siguiente disco:\n\n{selected}\n\nCon la imagen:\n{iso_name}\n\nTODOS LOS DATOS EN EL USB SE PERDERÁN.\n¿Estás absolutamente seguro de continuar?"

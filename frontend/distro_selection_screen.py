@@ -2,6 +2,7 @@ import customtkinter as ctk
 import os
 from PIL import Image
 from utils import apply_glow_effect, get_project_root
+from custom_messagebox import msg_show_error
 
 class DistroSelectionScreen(ctk.CTkFrame):
     def __init__(self, parent, controller):
@@ -64,18 +65,24 @@ class DistroSelectionScreen(ctk.CTkFrame):
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
         btn_frame.grid(row=2, column=0, pady=(0, 40))
         
-        btn_volver = ctk.CTkButton(btn_frame, text="←    Volver", command=lambda: controller.show_frame("BitlockerScreen"),
-                                   height=45, width=150, corner_radius=5,
+        btn_volver = ctk.CTkButton(btn_frame, text="⌂ Volver a Opciones", command=lambda: controller.show_frame("OptionSelectionScreen"),
+                                   height=45, width=220, corner_radius=5,
                                    font=ctk.CTkFont(family="Consolas", size=15, weight="bold"), cursor="hand2",
                                    fg_color="transparent", border_width=2, border_color="#008800",
                                    hover_color="#001100", text_color="#008800")
-        apply_glow_effect(btn_volver, default_text="←    Volver", hover_text="←       Volver")
+        apply_glow_effect(btn_volver, default_text="⌂ Volver a Opciones", hover_text="⌂ Volver a Opciones")
         btn_volver.pack(side="left", padx=15)
         
-        btn_siguiente = ctk.CTkButton(btn_frame, text="Siguiente    →", command=lambda: controller.show_frame("DistroInfoScreen"),
+        btn_siguiente = ctk.CTkButton(btn_frame, text="Siguiente    →", command=self.check_and_proceed,
                                       height=45, width=170, corner_radius=5,
                                       font=ctk.CTkFont(family="Consolas", size=15, weight="bold"), cursor="hand2",
                                       fg_color="transparent", border_width=2, border_color="#008800",
                                       hover_color="#001100", text_color="#008800")
         apply_glow_effect(btn_siguiente, default_text="Siguiente    →", hover_text="Siguiente       →")
         btn_siguiente.pack(side="left", padx=15)
+        
+    def check_and_proceed(self):
+        if self.distro_var.get() == "Fedora":
+            msg_show_error("En desarrollo", "Esta opción actualmente se encuentra en desarrollo.")
+        else:
+            self.controller.show_frame("DistroInfoScreen")

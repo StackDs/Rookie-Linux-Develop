@@ -21,6 +21,7 @@ except ImportError:
     sys.exit(1)
 
 from start_screen import StartScreen
+from option_selection_screen import OptionSelectionScreen
 from info_screen import InfoScreen
 from explanation_screen import ExplanationScreen
 from distro_selection_screen import DistroSelectionScreen
@@ -51,7 +52,7 @@ class App(ctk.CTk):
         self.container.grid_columnconfigure(0, weight=1)
 
         self.frames = {}
-        for F in (StartScreen, InfoScreen, ExplanationScreen, DistroSelectionScreen, DistroInfoScreen, BuildProgressScreen, UsbFlashScreen, BasicConceptsScreen, BitlockerScreen):
+        for F in (StartScreen, OptionSelectionScreen, InfoScreen, ExplanationScreen, DistroSelectionScreen, DistroInfoScreen, BuildProgressScreen, UsbFlashScreen, BasicConceptsScreen, BitlockerScreen):
             page_name = F.__name__
             frame = F(parent=self.container, controller=self)
             self.frames[page_name] = frame
