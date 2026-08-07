@@ -49,7 +49,7 @@ class BitlockerScreen(ctk.CTkFrame):
         self.btn_volver.pack(side="left", padx=15)
         
     def load_image(self, parent, filename):
-        base_path = os.path.join(get_project_root(), "assets")
+        base_path = os.path.join(get_project_root(), "assets", "Utils")
         img_path = os.path.join(base_path, filename)
         try:
             if os.path.exists(img_path):

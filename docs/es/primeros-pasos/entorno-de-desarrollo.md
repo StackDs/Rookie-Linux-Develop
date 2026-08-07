@@ -117,4 +117,4 @@ pip install --upgrade customtkinter
 2. En `frontend/main.py`, importa la clase y agrégala al bucle de inicialización de frames.
 3. Navega hacia ella con `self.controller.show_frame("MiPantalla")`.
 
-Consulta la [guía completa de pantallas](../reference/estructura-de-pantallas.md) para más detalles.
+Consulta la [guía completa de pantallas](../referencia/estructura-de-pantallas.md) para más detalles.

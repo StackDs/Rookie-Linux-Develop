@@ -124,7 +124,7 @@ Y si corresponde, actualiza también la pantalla de `DocumentationScreen` con un
 ## Paso 5: Actualizar el catálogo de scripts
 
 Documenta la nueva herramienta en la referencia:
-→ [`reference/catalogo-de-scripts.md`](../reference/catalogo-de-scripts.md)
+→ [`referencia/catalogo-de-scripts.md`](../referencia/catalogo-de-scripts.md)
 
 ---
 

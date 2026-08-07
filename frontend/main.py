@@ -54,7 +54,7 @@ class App(ctk.CTk):
         # Cargar icono de la ventana (si existe)
         import os
         from utils import get_project_root
-        icon_path = os.path.join(get_project_root(), "assets", "icon.ico")
+        icon_path = os.path.join(get_project_root(), "assets", "Utils", "icon.ico")
         if os.path.exists(icon_path):
             try:
                 self.iconbitmap(icon_path)

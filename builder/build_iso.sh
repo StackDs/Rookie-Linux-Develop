@@ -77,7 +77,7 @@ mkdir -p "$EXTRACT_DIR/custom_scripts"
 echo "=> Preparando scripts y recursos (Rookie-Linux-Develop)..."
 cp -r "$WORKSPACE/scripts" "$EXTRACT_DIR/custom_scripts/"
 mkdir -p "$EXTRACT_DIR/custom_scripts/assets"
-cp "$WORKSPACE/assets/wallpaper.png" "$EXTRACT_DIR/custom_scripts/assets/" 2>/dev/null || true
+cp "$WORKSPACE/assets/Utils/wallpaper.png" "$EXTRACT_DIR/custom_scripts/assets/" 2>/dev/null || true
 
 echo "=> Convirtiendo finales de linea Windows (CRLF) a Linux (LF)..."
 find "$EXTRACT_DIR/custom_scripts/scripts/" -type f -name "*.sh" -exec sed -i 's/\r$//' {} + 2>/dev/null || true

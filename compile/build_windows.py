@@ -55,7 +55,7 @@ def main():
             "--noconfirm",
             "--windowed",
             "--name", "Rookie-Linux-Builder",
-            "--icon", "assets/icon.ico",
+            "--icon", "assets/Utils/icon.ico",
             "--hidden-import", "PIL._tkinter_finder",
             "--collect-all", "customtkinter",
             "frontend/main.py"
@@ -70,7 +70,7 @@ def main():
             "wine python -m pip install pyinstaller customtkinter pillow && "
             "wine pyinstaller --noconfirm --windowed --collect-all customtkinter "
             "--hidden-import PIL._tkinter_finder "
-            "--icon assets/icon.ico --name Rookie-Linux-Builder frontend/main.py"
+            "--icon assets/Utils/icon.ico --name Rookie-Linux-Builder frontend/main.py"
         )
         subprocess.run([
             "sudo", "docker", "run", "--rm", 

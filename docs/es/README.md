@@ -17,18 +17,19 @@ La app guía al usuario de principio a fin: desde la selección de la distribuci
 ```
 docs/
 ├── README.md                           ← Estás aquí
-├── architecture/                       Explicaciones de cómo funciona el proyecto internamente
+├── LICENCIA.md                         ← Licencia MIT del proyecto
+├── arquitectura/                       Explicaciones de cómo funciona el proyecto internamente
 │   ├── ARQUITECTURA_BACKEND.md         Lógica de los scripts Bash y el sistema builder
 │   ├── arquitectura-frontend.md        Cómo se comunican las pantallas Python (CTk)
 │   └── flujo-creacion-iso.md           Cómo build_iso.sh inyecta preseed/kickstart
-├── getting-started/                    Para desarrolladores que quieran contribuir
+├── primeros-pasos/                     Para desarrolladores que quieran contribuir
 │   ├── entorno-de-desarrollo.md        Cómo levantar main.py y sus dependencias
 │   └── compilacion.md                  Cómo usar compile/ para generar los .rar
-├── guides/                             Guías de uso y extensión del proyecto
+├── guias/                              Guías de uso y extensión del proyecto
 │   ├── como-agregar-una-distro.md      Añadir nuevas distros en builder/templates/
 │   ├── como-agregar-scripts.md         Sumar herramientas en scripts/
 │   └── manejo-de-usb.md                Cómo funciona el flasher_worker
-└── reference/                          Referencia técnica estricta
+└── referencia/                         Referencia técnica estricta
     ├── distros-soportadas.md           Detalles de ISOs (versiones, preseed vs ks.cfg)
     ├── catalogo-de-scripts.md          Lista de todo lo instalable
     └── estructura-de-pantallas.md      Mapa de frontend/screens/
@@ -39,23 +40,23 @@ docs/
 ## Índice rápido
 
 ### 🏗 Arquitectura
-- [Backend y Scripts](./architecture/ARQUITECTURA_BACKEND.md) — Cómo funcionan los scripts Bash
-- [Frontend Python](./architecture/arquitectura-frontend.md) — Sistema de pantallas con CustomTkinter
-- [Flujo de creación de ISO](./architecture/flujo-creacion-iso.md) — Inyección de preseed y kickstart
+- [Backend y Scripts](./arquitectura/ARQUITECTURA_BACKEND.md) — Cómo funcionan los scripts Bash
+- [Frontend Python](./arquitectura/arquitectura-frontend.md) — Sistema de pantallas con CustomTkinter
+- [Flujo de creación de ISO](./arquitectura/flujo-creacion-iso.md) — Inyección de preseed y kickstart
 
 ### 🚀 Primeros Pasos (Para Desarrolladores)
-- [Entorno de desarrollo](./getting-started/entorno-de-desarrollo.md) — Ejecutar el proyecto en local
-- [Compilación y distribución](./getting-started/compilacion.md) — Generar ejecutables con PyInstaller
+- [Entorno de desarrollo](./primeros-pasos/entorno-de-desarrollo.md) — Ejecutar el proyecto en local
+- [Compilación y distribución](./primeros-pasos/compilacion.md) — Generar ejecutables con PyInstaller
 
 ### 📖 Guías
-- [Agregar una distribución](./guides/como-agregar-una-distro.md) — Añadir Ubuntu, Fedora, etc.
-- [Agregar scripts de instalación](./guides/como-agregar-scripts.md) — Nuevas herramientas en la ISO
-- [Manejo del USB](./guides/manejo-de-usb.md) — Cómo funciona el flasheador en Linux y Windows
+- [Agregar una distribución](./guias/como-agregar-una-distro.md) — Añadir Ubuntu, Fedora, etc.
+- [Agregar scripts de instalación](./guias/como-agregar-scripts.md) — Nuevas herramientas en la ISO
+- [Manejo del USB](./guias/manejo-de-usb.md) — Cómo funciona el flasheador en Linux y Windows
 
 ### 📋 Referencia
-- [Distros soportadas](./reference/distros-soportadas.md) — Tabla de versiones e ISOs
-- [Catálogo de scripts](./reference/catalogo-de-scripts.md) — Todo lo que se instala
-- [Mapa de pantallas](./reference/estructura-de-pantallas.md) — Todas las pantallas del frontend
+- [Distros soportadas](./referencia/distros-soportadas.md) — Tabla de versiones e ISOs
+- [Catálogo de scripts](./referencia/catalogo-de-scripts.md) — Todo lo que se instala
+- [Mapa de pantallas](./referencia/estructura-de-pantallas.md) — Todas las pantallas del frontend
 
 ---
 
