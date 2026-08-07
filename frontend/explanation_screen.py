@@ -10,7 +10,7 @@ class ExplanationScreen(ctk.CTkFrame):
         self.grid_rowconfigure(4, weight=1)
         self.grid_columnconfigure(0, weight=1)
         
-        title = ctk.CTkLabel(self, text="> Conceptos Básicos_", 
+        title = ctk.CTkLabel(self, text="> Sobre Linux_", 
                              text_color="#00FF00",
                              font=ctk.CTkFont(family="Consolas", size=38, weight="bold"))
         title.grid(row=1, column=0, pady=(0, 20))
@@ -45,7 +45,13 @@ class ExplanationScreen(ctk.CTkFrame):
             "selección de software, su propio entorno gráfico y sus propias herramientas, "
             "creando un 'sabor' único. A estos sabores se les llama 'Distribuciones'.\n\n"
             "> Ubuntu, Fedora, Mint y Pop!_OS son ejemplos de distribuciones.\n"
-            "> Comparten el mismo 'motor', pero ofrecen diseños y herramientas diferentes."
+            "> Comparten el mismo 'motor', pero ofrecen diseños y herramientas diferentes.\n\n"
+            "[+] ¿Cómo instalamos una distro?\n"
+            "  Existen 3 métodos principales:\n"
+            "  1. Instalación nativa (Dual Boot): Consiste en instalar Linux en una partición del disco duro, junto con Windows.\n"
+            "  2. Máquina Virtual: Consiste en instalar Linux en una máquina virtual, que es un emulador de hardware que permite ejecutar otro sistema operativo dentro de Windows.\n"
+            "  3. Instalación limpia: Consiste en reemplazar Windows por Linux.\n\n"
+            "> Todos estos conceptos serán explicados detalladamente más adelante." 
         )
         
         self.typing_job = None

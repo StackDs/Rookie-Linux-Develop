@@ -119,12 +119,12 @@ class DistroInfoScreen(ctk.CTkFrame):
         apply_glow_effect(self.btn_volver, default_text="←    Volver", hover_text="←       Volver")
         self.btn_volver.pack(side="left", padx=15)
         
-        self.btn_ejecutar = ctk.CTkButton(btn_frame, text="Confirmar y Ejecutar", command=lambda: self.controller.show_frame("BuildProgressScreen"),
+        self.btn_ejecutar = ctk.CTkButton(btn_frame, text="Confirmar y Generar", command=lambda: self.controller.show_frame("BuildProgressScreen"),
                                      height=45, width=220, corner_radius=5,
                                      font=ctk.CTkFont(family="Consolas", size=15, weight="bold"), cursor="hand2",
                                      fg_color="transparent", border_width=2, border_color="#008800",
                                      hover_color="#001100", text_color="#008800")
-        apply_glow_effect(self.btn_ejecutar, default_text="Confirmar y Ejecutar", hover_text="Confirmar y Ejecutar")
+        apply_glow_effect(self.btn_ejecutar, default_text="Confirmar y Generar", hover_text="Confirmar y Generar")
         self.btn_ejecutar.pack(side="left", padx=15)
 
     def load_images(self, distro):

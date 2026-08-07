@@ -4,7 +4,7 @@ from PIL import Image
 from utils import get_project_root
 from utils import apply_glow_effect
 
-class BitlockerScreen(ctk.CTkFrame):
+class CleanInstallationScreen(ctk.CTkFrame):
     def __init__(self, parent, controller):
         super().__init__(parent, fg_color="transparent")
         self.controller = controller
@@ -13,7 +13,7 @@ class BitlockerScreen(ctk.CTkFrame):
         self.grid_rowconfigure(2, weight=1)
         self.grid_columnconfigure(0, weight=1)
         
-        self.title = ctk.CTkLabel(self, text="> BitLocker_", 
+        self.title = ctk.CTkLabel(self, text="> Instalación Limpia_", 
                                   text_color="#00FF00",
                                   font=ctk.CTkFont(family="Consolas", size=38, weight="bold"))
         self.title.grid(row=0, column=0, pady=(20, 10))
@@ -23,26 +23,25 @@ class BitlockerScreen(ctk.CTkFrame):
         content_frame.grid(row=1, column=0, padx=40, pady=10, sticky="nsew")
         self.grid_rowconfigure(1, weight=10)
         
-        bl_title = ctk.CTkLabel(content_frame, text=">_ ¿Qué es BitLocker?", text_color="#00E676", font=ctk.CTkFont(family="Consolas", size=20, weight="bold"))
-        bl_title.pack(anchor="w", pady=(10, 5))
+        ci_title = ctk.CTkLabel(content_frame, text=">_ ¿Qué es una Instalación Limpia?", text_color="#00E676", font=ctk.CTkFont(family="Consolas", size=20, weight="bold"))
+        ci_title.pack(anchor="w", pady=(10, 5))
         
-        bl_text = (
-            "BitLocker es una tecnología de Microsoft que cifra el disco duro para proteger tus archivos. "
-            "Si BitLocker está activado, el instalador de Linux no podrá 'ver' ni modificar el espacio libre de tu disco.\n\n"
-            "Para poder instalar Linux (especialmente en Dual Boot), es indispensable entrar a Windows, "
-            "buscar 'Administrar BitLocker' y desactivarlo antes de iniciar la instalación de Linux. "
-            "En muchos casos esto no basta para desactivarlo por completo; en ese caso te recomendamos formatear tu "
-            "computador por completo para instalar una versión de Windows sin BitLocker y así no tener problemas más tarde."
+        ci_text = (
+            "Una 'Instalación Limpia' consiste en formatear completamente tu disco duro o unidad de almacenamiento "
+            "y usar Linux como el único sistema operativo de tu computadora, eliminando Windows por completo.\n\n"
+            "Esta opción ofrece el mejor rendimiento posible, ya que Linux tendrá acceso a todos los recursos del hardware "
+            "de forma exclusiva. Es ideal si ya te sientes cómodo con Linux, si quieres revivir una PC antigua, o si estás "
+            "completamente seguro de que no necesitas usar aplicaciones exclusivas de Windows."
         )
-        bl_lbl = ctk.CTkLabel(content_frame, text=bl_text, text_color="#00E676", font=ctk.CTkFont(family="Consolas", size=15), wraplength=700, justify="left")
-        bl_lbl.pack(anchor="w", pady=(0, 15))
+        ci_lbl = ctk.CTkLabel(content_frame, text=ci_text, text_color="#00E676", font=ctk.CTkFont(family="Consolas", size=15), wraplength=700, justify="left")
+        ci_lbl.pack(anchor="w", pady=(0, 15))
         
-        self.load_image(content_frame, "bitlocker.jpg")
+        self.load_image(content_frame, "onlyLinux.jpg")
         
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
         btn_frame.grid(row=2, column=0, pady=(10, 20))
         
-        self.btn_volver = ctk.CTkButton(btn_frame, text="←    Volver", command=lambda: self.controller.show_frame("CleanInstallationScreen"),
+        self.btn_volver = ctk.CTkButton(btn_frame, text="←    Volver", command=lambda: self.controller.show_frame("VirtualMachineScreen"),
                                    height=45, width=150, corner_radius=5,
                                    font=ctk.CTkFont(family="Consolas", size=15, weight="bold"), cursor="hand2",
                                    fg_color="transparent", border_width=2, border_color="#008800",
@@ -50,13 +49,13 @@ class BitlockerScreen(ctk.CTkFrame):
         apply_glow_effect(self.btn_volver, default_text="←    Volver", hover_text="←       Volver")
         self.btn_volver.pack(side="left", padx=15)
         
-        self.btn_home = ctk.CTkButton(btn_frame, text="⌂ Volver a Opciones", command=lambda: self.controller.show_frame("OptionSelectionScreen"),
-                                       height=45, width=220, corner_radius=5,
+        self.btn_siguiente = ctk.CTkButton(btn_frame, text="Siguiente    →", command=lambda: self.controller.show_frame("BitlockerScreen"),
+                                       height=45, width=170, corner_radius=5,
                                        font=ctk.CTkFont(family="Consolas", size=15, weight="bold"), cursor="hand2",
                                        fg_color="transparent", border_width=2, border_color="#008800",
                                        hover_color="#001100", text_color="#008800")
-        apply_glow_effect(self.btn_home, default_text="⌂ Volver a Opciones", hover_text="⌂ Volver a Opciones")
-        self.btn_home.pack(side="left", padx=15)
+        apply_glow_effect(self.btn_siguiente, default_text="Siguiente    →", hover_text="Siguiente       →")
+        self.btn_siguiente.pack(side="left", padx=15)
         
     def load_image(self, parent, filename):
         base_path = os.path.join(get_project_root(), "assets")

@@ -1,7 +1,7 @@
 import customtkinter as ctk
 from utils import apply_glow_effect
 
-class InfoScreen(ctk.CTkFrame):
+class InstructionsScreen(ctk.CTkFrame):
     def __init__(self, parent, controller):
         super().__init__(parent, fg_color="transparent")
         self.controller = controller
@@ -10,7 +10,7 @@ class InfoScreen(ctk.CTkFrame):
         self.grid_rowconfigure(4, weight=1)
         self.grid_columnconfigure(0, weight=1)
         
-        title = ctk.CTkLabel(self, text="> ¿Qué hace este programa?_", 
+        title = ctk.CTkLabel(self, text="> Instrucciones de uso_", 
                              text_color="#00FF00",
                              font=ctk.CTkFont(family="Consolas", size=38, weight="bold"))
         title.grid(row=1, column=0, pady=(0, 20))
@@ -26,43 +26,27 @@ class InfoScreen(ctk.CTkFrame):
         self.info_textbox.configure(state="disabled")
         
         self.info_text = (
-            "> Inicializando Rookie-Linux-Develop v1.0...\n"
-            "> Cargando dependencias...\n"
+            "> Cargando manual de usuario...\n"
             "> Listo.\n\n"
-            "Rookie-Linux-Develop es una herramienta diseñada para generar una imagen "
-            "de Linux completamente equipada para el desarrollo. Su objetivo es evitar las "
-            "configuraciones tediosas y darte un entorno profesional desde el primer minuto.\n\n"
-            "A continuación, un resumen de la configuración del entorno:\n\n"
-            "[+] DISTRIBUCIONES SOPORTADAS\n"
-            "    - Ubuntu, Mint, Fedora, Pop!_OS, entre otras.\n\n"
-            "[+] ENTORNOS DE DESARROLLO (IDE's)\n"
-            "    - Visual Studio Code\n"
-            "    - IntelliJ IDEA\n"
-            "    - Emacs\n"
-            "    - Antigravity\n\n"
-            "[+] LENGUAJES Y COMPILADORES\n"
-            "    - C/C++ (gcc, clang, make, cmake, gdb, valgrind)\n"
-            "    - Java (OpenJDK 17/21, Maven)\n"
-            "    - Python (Python 3, pip, venv, flake8, ipython)\n"
-            "    - C# (.NET SDK)\n"
-            "    - JavaScript/TypeScript (Node.js LTS, npm)\n\n"
-            "[+] BASES DE DATOS\n"
-            "    - PostgreSQL, SQLite\n"
-            "    - Clientes: DBeaver, pgAdmin4\n\n"
-            "[+] LIBRERÍAS Y FRAMEWORKS\n"
-            "    - Data Science: Pandas, NumPy, JupyterLab\n"
-            "    - Desarrollo Web: Flask, Django, FastAPI\n"
-            "    - Gráficos (C++): SDL2, OpenGL, SFML\n"
-            "    - Móvil: Flutter, Dart SDK\n\n"
-            "[+] SISTEMA Y CONTENEDORES\n"
-            "    - Git, GitHub CLI\n"
-            "    - Docker Engine, Docker Compose\n"
-            "    - Utilidades: Zsh, tmux, htop, btop, ripgrep, fzf, jq\n\n"
-            "[+] USO DIARIO\n"
-            "    - Navegadores: Brave, Firefox\n"
-            "    - Multimedia/Ofimática: OBS Studio, VLC, LibreOffice\n"
-            "    - Otros: JFLAP\n\n"
-            "> Fin de la lectura de paquetes.\n"
+            "Aquí tienes una guía rápida de cómo utilizar cada sección de Rookie Linux Develop:\n\n"
+            "[1] SOBRE LINUX\n"
+            "    Aquí encontrarás información importante acerca de Linux y su funcionamiento, distribuciones, etc.\n"
+            "    Además de encontrar diferencias con Windows, formas de instalación y demás.\n\n"
+            "[2] CREAR IMAGEN PERSONALIZADA\n"
+            "    El sistema permite seleccionar una distribución de tu interés (ej. Ubuntu, Mint, Pop!).\n"
+            "    El sistema descargará la ISO oficial y le inyectará todas las\n"
+            "    herramientas de desarrollo, librerías y configuraciones predefinidas.\n\n"
+            "[3] MONTAR IMAGEN (REQUIERE USB)\n"
+            "    Una vez que hayas creado tu imagen personalizada, usa esta opción\n"
+            "    para 'flashearla' (grabarla) de forma segura en una memoria USB.\n"
+            "    Luego podrás usar ese USB para instalar Linux en tu computadora.\n\n"
+            "    Una vez que se instale el sistema, se ejecutará automáticamente.\n"
+            "    El script de bienvenida te pedirá iniciar sesión,\n"
+            "    y de ahí en adelante, se instalarán todas las herramientas.\n\n"
+            "[4] INSTALAR WSL\n"
+            "    Visita esta opción antes que nada, el sistema hace uso de WSL para funcionar.\n"
+            "    Por ende es necesario tener instalada esta herramienta para que todo funcione bien.\n\n"
+            "> Si tienes dudas, consulta la documentación oficial en el repositorio.\n"
             "> Esperando acción del usuario..."
         )
         
@@ -73,21 +57,13 @@ class InfoScreen(ctk.CTkFrame):
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
         btn_frame.grid(row=3, column=0, pady=(0, 40))
         
-        btn_home = ctk.CTkButton(btn_frame, text="⌂ Volver a Opciones", command=lambda: controller.show_frame("OptionSelectionScreen"),
+        btn_home = ctk.CTkButton(btn_frame, text="⌂ Volver a Información", command=lambda: controller.show_frame("InfoScreen"),
                                    height=45, width=220, corner_radius=5,
                                    font=ctk.CTkFont(family="Consolas", size=15, weight="bold"), cursor="hand2",
                                    fg_color="transparent", border_width=2, border_color="#008800",
                                    hover_color="#001100", text_color="#008800")
-        apply_glow_effect(btn_home, default_text="⌂ Volver a Opciones", hover_text="⌂ Volver a Opciones")
+        apply_glow_effect(btn_home, default_text="⌂ Volver a Información", hover_text="⌂ Volver a Información")
         btn_home.pack(side="left", padx=15)
-
-        btn_instructions = ctk.CTkButton(btn_frame, text="Instrucciones de uso →", command=lambda: controller.show_frame("InstructionsScreen"),
-                                         height=45, width=240, corner_radius=5,
-                                         font=ctk.CTkFont(family="Consolas", size=15, weight="bold"), cursor="hand2",
-                                         fg_color="transparent", border_width=2, border_color="#008800",
-                                         hover_color="#001100", text_color="#008800")
-        apply_glow_effect(btn_instructions, default_text="Instrucciones de uso →", hover_text="Instrucciones de uso →")
-        btn_instructions.pack(side="left", padx=15)
 
     def on_show(self):
         if not getattr(self, "has_animated", False):
