@@ -34,6 +34,8 @@ from wsl_install_screen import WslInstallScreen
 from instructions_screen import InstructionsScreen
 from virtual_machine_screen import VirtualMachineScreen
 from clean_installation_screen import CleanInstallationScreen
+from documentation_screen import DocumentationScreen
+from about_screen import AboutScreen
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("green")
@@ -74,7 +76,7 @@ class App(ctk.CTk):
         self.container.grid_columnconfigure(0, weight=1)
 
         self.frames = {}
-        for F in (StartScreen, OptionSelectionScreen, InfoScreen, ExplanationScreen, DistroSelectionScreen, DistroInfoScreen, BuildProgressScreen, UsbFlashScreen, BasicConceptsScreen, BitlockerScreen, WslInstallScreen, InstructionsScreen, VirtualMachineScreen, CleanInstallationScreen):
+        for F in (StartScreen, OptionSelectionScreen, InfoScreen, ExplanationScreen, DistroSelectionScreen, DistroInfoScreen, BuildProgressScreen, UsbFlashScreen, BasicConceptsScreen, BitlockerScreen, WslInstallScreen, InstructionsScreen, VirtualMachineScreen, CleanInstallationScreen, DocumentationScreen, AboutScreen):
             page_name = F.__name__
             frame = F(parent=self.container, controller=self)
             self.frames[page_name] = frame

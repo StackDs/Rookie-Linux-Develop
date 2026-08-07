@@ -17,25 +17,25 @@ class UsbFlashScreen(ctk.CTkFrame):
         self.controller = controller
         self.drives_info = []
         
-        self.grid_rowconfigure(6, weight=1)
+        self.grid_rowconfigure(5, weight=1)
         self.grid_columnconfigure(0, weight=1)
         
         self.title = ctk.CTkLabel(self, text="> Flasheador USB_", 
                                   text_color="#00FF00",
                                   font=ctk.CTkFont(family="Consolas", size=38, weight="bold"))
-        self.title.grid(row=1, column=0, pady=(0, 20))
+        self.title.grid(row=0, column=0, pady=(20, 10))
 
         self.info_lbl = ctk.CTkLabel(self, text="Selecciona una unidad USB para grabar la ISO", text_color="#00E676", font=ctk.CTkFont(family="Consolas", size=16))
-        self.info_lbl.grid(row=2, column=0, pady=(0, 20))
+        self.info_lbl.grid(row=1, column=0, pady=(0, 15))
         
         # Admin Warning
         self.admin_lbl = ctk.CTkLabel(self, text="Se te pedirá permisos de Administrador.", 
                                       text_color="#FFAA00", font=ctk.CTkFont(family="Consolas", size=14, weight="bold"))
-        self.admin_lbl.grid(row=3, column=0, pady=(0, 15))
+        self.admin_lbl.grid(row=2, column=0, pady=(0, 15))
         
         # ISO Selection Frame
         iso_frame = ctk.CTkFrame(self, fg_color="transparent")
-        iso_frame.grid(row=4, column=0, pady=(0, 15))
+        iso_frame.grid(row=3, column=0, pady=(0, 15))
         
         self.iso_var = ctk.StringVar(value="")
         self.iso_entry = ctk.CTkEntry(iso_frame, textvariable=self.iso_var, width=350, font=ctk.CTkFont(family="Consolas", size=13), state="disabled", fg_color="#001100", border_color="#008800", text_color="#00FF00")
@@ -46,7 +46,7 @@ class UsbFlashScreen(ctk.CTkFrame):
 
         # Selection Frame
         sel_frame = ctk.CTkFrame(self, fg_color="transparent")
-        sel_frame.grid(row=5, column=0, pady=(0, 20))
+        sel_frame.grid(row=4, column=0, pady=(0, 20))
         
         self.combo_var = ctk.StringVar(value="Buscando unidades...")
         self.usb_combo = ctk.CTkComboBox(sel_frame, variable=self.combo_var, values=["Buscando unidades..."], width=350,
@@ -64,7 +64,7 @@ class UsbFlashScreen(ctk.CTkFrame):
         
         # Progress Frame
         self.progress_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.progress_frame.grid(row=6, column=0, pady=(0, 20))
+        self.progress_frame.grid(row=5, column=0, pady=(0, 20))
         
         self.status_lbl = ctk.CTkLabel(self.progress_frame, text="Estado: Esperando confirmación...", text_color="#008800", font=ctk.CTkFont(family="Consolas", size=14))
         self.status_lbl.pack(pady=(0, 10))
@@ -77,7 +77,7 @@ class UsbFlashScreen(ctk.CTkFrame):
         
         # Action Buttons
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
-        btn_frame.grid(row=7, column=0, pady=(20, 40))
+        btn_frame.grid(row=6, column=0, pady=(10, 20))
         
         self.btn_action = ctk.CTkButton(btn_frame, text="← Volver", command=lambda: self.controller.show_frame("OptionSelectionScreen"),
                                    height=45, width=220, corner_radius=5,

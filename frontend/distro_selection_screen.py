@@ -16,7 +16,7 @@ class DistroSelectionScreen(ctk.CTkFrame):
         
         title = ctk.CTkLabel(self, text="> Selecciona una Distribución_", text_color="#00FF00",
                              font=ctk.CTkFont(family="Consolas", size=32, weight="bold"))
-        title.grid(row=0, column=0, pady=(40, 20))
+        title.grid(row=0, column=0, pady=(20, 10))
         
         self.distro_var = ctk.StringVar(value="Ubuntu")
         
@@ -28,7 +28,7 @@ class DistroSelectionScreen(ctk.CTkFrame):
         ]
         
         cards_frame = ctk.CTkFrame(self, fg_color="transparent")
-        cards_frame.grid(row=1, column=0, padx=20, pady=20)
+        cards_frame.grid(row=1, column=0, padx=20, pady=10)
         
         self.images = []
         
@@ -63,7 +63,7 @@ class DistroSelectionScreen(ctk.CTkFrame):
             rb.pack(pady=(0, 20))
         
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
-        btn_frame.grid(row=2, column=0, pady=(0, 40))
+        btn_frame.grid(row=2, column=0, pady=(10, 20))
         
         btn_volver = ctk.CTkButton(btn_frame, text="← Volver", command=lambda: controller.show_frame("OptionSelectionScreen"),
                                    height=45, width=220, corner_radius=5,
@@ -74,7 +74,7 @@ class DistroSelectionScreen(ctk.CTkFrame):
         btn_volver.pack(side="left", padx=15)
         
         btn_siguiente = ctk.CTkButton(btn_frame, text="Siguiente    →", command=self.check_and_proceed,
-                                      height=45, width=170, corner_radius=5,
+                                      height=45, width=220, corner_radius=5,
                                       font=ctk.CTkFont(family="Consolas", size=15, weight="bold"), cursor="hand2",
                                       fg_color="transparent", border_width=2, border_color="#008800",
                                       hover_color="#001100", text_color="#008800")

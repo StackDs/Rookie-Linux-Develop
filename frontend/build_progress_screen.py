@@ -14,19 +14,19 @@ class BuildProgressScreen(ctk.CTkFrame):
         super().__init__(parent, fg_color="transparent")
         self.controller = controller
         
-        self.grid_rowconfigure(3, weight=1)
+        self.grid_rowconfigure(2, weight=1)
         self.grid_columnconfigure(0, weight=1)
         
         self.title = ctk.CTkLabel(self, text="> Construyendo Sistema_", 
                                   text_color="#00FF00",
                                   font=ctk.CTkFont(family="Consolas", size=38, weight="bold"))
-        self.title.grid(row=1, column=0, pady=(0, 20))
+        self.title.grid(row=0, column=0, pady=(20, 10))
 
         self.info_lbl = ctk.CTkLabel(self, text="", text_color="#00E676", font=ctk.CTkFont(family="Consolas", size=16))
-        self.info_lbl.grid(row=2, column=0, pady=(0, 30))
+        self.info_lbl.grid(row=1, column=0, pady=(0, 20))
         
         self.progress_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.progress_frame.grid(row=3, column=0, pady=(0, 20))
+        self.progress_frame.grid(row=2, column=0, pady=(0, 20))
         
         self.status_lbl = ctk.CTkLabel(self.progress_frame, text="Estado: Iniciando...", text_color="#008800", font=ctk.CTkFont(family="Consolas", size=14))
         self.status_lbl.pack(pady=(0, 10))
@@ -44,7 +44,7 @@ class BuildProgressScreen(ctk.CTkFrame):
         self.progress_bar_generation.set(0)
         
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
-        btn_frame.grid(row=4, column=0, pady=(40, 40))
+        btn_frame.grid(row=3, column=0, pady=(10, 20))
         
         self.btn_flash_usb = ctk.CTkButton(btn_frame, text="Montar en USB", command=lambda: self.controller.show_frame("UsbFlashScreen"),
                                    height=45, width=220, corner_radius=5,

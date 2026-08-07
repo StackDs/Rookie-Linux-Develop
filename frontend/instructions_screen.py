@@ -11,11 +11,11 @@ class InstructionsScreen(ctk.CTkFrame):
         title = ctk.CTkLabel(self, text="> Instrucciones de uso_", 
                              text_color="#00FF00",
                              font=ctk.CTkFont(family="Consolas", size=38, weight="bold"))
-        title.grid(row=1, column=0, pady=(0, 20))
+        title.grid(row=0, column=0, pady=(20, 10))
         
         text_frame = ctk.CTkFrame(self, fg_color="transparent")
-        text_frame.grid(row=2, column=0, padx=40, pady=(0, 40), sticky="nsew")
-        self.grid_rowconfigure(2, weight=1)
+        text_frame.grid(row=1, column=0, padx=40, pady=10, sticky="nsew")
+        self.grid_rowconfigure(1, weight=10)
         
         self.info_textbox = ctk.CTkTextbox(text_frame, font=ctk.CTkFont(family="Consolas", size=15), 
                                            fg_color="transparent", text_color="#00E676", 
@@ -28,23 +28,28 @@ class InstructionsScreen(ctk.CTkFrame):
             "> Listo.\n\n"
             "Aquí tienes una guía rápida de cómo utilizar cada sección de Rookie Linux Develop:\n\n"
             "[1] SOBRE LINUX\n"
-            "    Aquí encontrarás información importante acerca de Linux y su funcionamiento, distribuciones, etc.\n"
-            "    Además de encontrar diferencias con Windows, formas de instalación y demás.\n\n"
+            "    Aquí encontrarás información importante acerca de Linux y su\n"
+            "    funcionamiento, distribuciones, etc. Además de encontrar\n"
+            "    diferencias con Windows, formas de instalación y demás.\n\n"
             "[2] INSTALAR WSL\n"
-            "    Visita esta opción antes que nada, el sistema hace uso de WSL para funcionar.\n"
-            "    Por ende es necesario tener instalada esta herramienta para que todo funcione bien.\n\n"
+            "    Visita esta opción antes que nada, el sistema hace uso de WSL\n"
+            "    para funcionar. Por ende es necesario tener instalada esta\n"
+            "    herramienta para que todo funcione bien.\n\n"
             "[3] CREAR IMAGEN PERSONALIZADA\n"
-            "    El sistema permite seleccionar una distribución de tu interés (ej. Ubuntu, Mint, Pop!).\n"
-            "    El sistema descargará la ISO oficial y le inyectará todas las\n"
-            "    herramientas de desarrollo, librerías y configuraciones predefinidas.\n"
-            "    Una vez terminada tendras en la carpeta output tu imagen custom, que podras flashear en un usb o usar en una maquina virtual.\n\n"
+            "    El sistema permite seleccionar una distribución de tu interés\n"
+            "    (ej. Ubuntu, Mint, Pop!). El sistema descargará la ISO oficial\n"
+            "    y le inyectará todas las herramientas de desarrollo, librerías\n"
+            "    y configuraciones predefinidas. Una vez terminada tendrás en\n"
+            "    la carpeta output tu imagen custom, que podrás flashear en un\n"
+            "    usb o usar en una máquina virtual.\n\n"
             "[4] MONTAR IMAGEN (REQUIERE USB)\n"
-            "    Una vez que hayas creado tu imagen personalizada, usa esta opción\n"
-            "    para 'flashearla' (grabarla) de forma segura en una memoria USB.\n"
-            "    Luego podrás usar ese USB para instalar Linux en tu computadora.\n\n"
-            "    Una vez que se instale el sistema, se ejecutará automáticamente.\n"
-            "    El script de bienvenida te pedirá iniciar sesión,\n"
-            "    y de ahí en adelante, se instalarán todas las herramientas.\n\n"
+            "    Una vez que hayas creado tu imagen personalizada, usa esta\n"
+            "    opción para 'flashearla' (grabarla) de forma segura en una\n"
+            "    memoria USB. Luego podrás usar ese USB para instalar Linux\n"
+            "    en tu computadora. Una vez que se instale el sistema, se\n"
+            "    ejecutará automáticamente. El script de bienvenida te pedirá\n"
+            "    iniciar sesión, y de ahí en adelante, se instalarán todas\n"
+            "    las herramientas.\n\n"
             
             "> Si tienes dudas, consulta la documentación oficial en el repositorio.\n"
             "> Esperando acción del usuario..."
@@ -55,7 +60,7 @@ class InstructionsScreen(ctk.CTkFrame):
         self.has_animated = False
         
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
-        btn_frame.grid(row=3, column=0, pady=(0, 40))
+        btn_frame.grid(row=2, column=0, pady=(10, 20))
         
         btn_home = ctk.CTkButton(btn_frame, text="⌂ Volver a Información", command=lambda: controller.show_frame("InfoScreen"),
                                    height=45, width=220, corner_radius=5,

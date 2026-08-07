@@ -11,20 +11,20 @@ class WslInstallScreen(ctk.CTkFrame):
         super().__init__(parent, fg_color="transparent")
         self.controller = controller
         
-        self.grid_rowconfigure(3, weight=1)
+        self.grid_rowconfigure(2, weight=1)
         self.grid_columnconfigure(0, weight=1)
         
         self.title_lbl = ctk.CTkLabel(self, text="> Instalador de WSL_", 
                                       font=ctk.CTkFont(family="Consolas", size=38, weight="bold"),
                                       text_color="#00FF00")
-        self.title_lbl.grid(row=1, column=0, pady=(0, 20))
+        self.title_lbl.grid(row=0, column=0, pady=(20, 10))
         
         self.desc_lbl = ctk.CTkLabel(self, text="Para compilar las imágenes, el sistema requiere el\nSubsistema de Windows para Linux (WSL).", 
                                      font=ctk.CTkFont(family="Consolas", size=16), text_color="#00E676", justify="center")
-        self.desc_lbl.grid(row=2, column=0, pady=(0, 30))
+        self.desc_lbl.grid(row=1, column=0, pady=(0, 20))
         
         self.progress_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.progress_frame.grid(row=3, column=0, pady=(0, 20))
+        self.progress_frame.grid(row=2, column=0, pady=(0, 20))
         
         self.status_lbl = ctk.CTkLabel(self.progress_frame, text="Estado: Esperando confirmación...", text_color="#008800", font=ctk.CTkFont(family="Consolas", size=14))
         self.status_lbl.pack(pady=(0, 10))
@@ -34,7 +34,7 @@ class WslInstallScreen(ctk.CTkFrame):
         self.progress_bar.set(0)
         
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
-        btn_frame.grid(row=4, column=0, pady=(30, 40))
+        btn_frame.grid(row=3, column=0, pady=(10, 20))
         
         self.btn_home = ctk.CTkButton(btn_frame, text="← Volver", command=self.go_home,
                                    height=45, width=220, corner_radius=5,

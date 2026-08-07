@@ -6,65 +6,49 @@ class OptionSelectionScreen(ctk.CTkFrame):
         super().__init__(parent, fg_color="transparent")
         self.controller = controller
         
-        self.grid_rowconfigure(7, weight=1)
+        for i in range(1, 9):
+            self.grid_rowconfigure(i, weight=1)
         self.grid_columnconfigure(0, weight=1)
         
         self.title_lbl = ctk.CTkLabel(self, text="> Selecciona una opción_", 
                                       font=ctk.CTkFont(family="Consolas", size=40, weight="bold"),
                                       text_color="#00FF00")
-        self.title_lbl.grid(row=1, column=0, pady=(0, 40))
+        self.title_lbl.grid(row=0, column=0, pady=(20, 10))
         
-        # Option A: Informacion del programa
-        self.btn_info = ctk.CTkButton(self, text="Manual de uso", 
-                                      command=lambda: controller.show_frame("InfoScreen"),
-                                      height=50, width=350, corner_radius=5,
-                                      font=ctk.CTkFont(family="Consolas", size=18, weight="bold"),
-                                      cursor="hand2", fg_color="transparent", 
-                                      border_width=2, border_color="#008800",
-                                      hover_color="#001100", text_color="#00FF00")
-        apply_glow_effect(self.btn_info, default_text="Manual de uso", hover_text="Manual de uso")
-        self.btn_info.grid(row=2, column=0, pady=(0, 15))
+        self.create_option(1, "Manual de uso", lambda: controller.show_frame("InfoScreen"))
+        self.create_option(2, "Sobre Linux", lambda: controller.show_frame("ExplanationScreen"))
+        self.create_option(3, "Crear imagen personalizada", lambda: controller.show_frame("DistroSelectionScreen"))
+        self.create_option(4, "Montar imagen (Requiere un USB)", lambda: controller.show_frame("UsbFlashScreen"))
+        self.create_option(5, "Instalar WSL (Necesario)", lambda: controller.show_frame("WslInstallScreen"))
+        self.create_option(6, "Documentación oficial", lambda: controller.show_frame("DocumentationScreen"))
+        self.create_option(7, "Acerca de Rookie Linux", lambda: controller.show_frame("AboutScreen"))
 
-        # Option B: Sobre Linux
-        self.btn_concepts = ctk.CTkButton(self, text="Sobre Linux", 
-                                          command=lambda: controller.show_frame("ExplanationScreen"),
-                                          height=50, width=350, corner_radius=5,
-                                          font=ctk.CTkFont(family="Consolas", size=18, weight="bold"),
-                                          cursor="hand2", fg_color="transparent", 
-                                          border_width=2, border_color="#008800",
-                                          hover_color="#001100", text_color="#00FF00")
-        apply_glow_effect(self.btn_concepts, default_text="Sobre Linux", hover_text="Sobre Linux")
-        self.btn_concepts.grid(row=3, column=0, pady=(0, 15))
-
-        # Option C: Crear imagen
-        self.btn_create = ctk.CTkButton(self, text="Crear imagen personalizada", 
-                                        command=lambda: controller.show_frame("DistroSelectionScreen"),
-                                        height=50, width=350, corner_radius=5,
-                                        font=ctk.CTkFont(family="Consolas", size=18, weight="bold"),
-                                        cursor="hand2", fg_color="transparent", 
-                                        border_width=2, border_color="#008800",
-                                        hover_color="#001100", text_color="#00FF00")
-        apply_glow_effect(self.btn_create, default_text="Crear imagen personalizada", hover_text="Crear imagen personalizada")
-        self.btn_create.grid(row=4, column=0, pady=(0, 15))
-
-        # Option D: Montar imagen
-        self.btn_mount = ctk.CTkButton(self, text="Montar imagen (Requiere un USB)", 
-                                       command=lambda: controller.show_frame("UsbFlashScreen"),
-                                       height=50, width=350, corner_radius=5,
-                                       font=ctk.CTkFont(family="Consolas", size=18, weight="bold"),
-                                       cursor="hand2", fg_color="transparent", 
-                                       border_width=2, border_color="#008800",
-                                       hover_color="#001100", text_color="#00FF00")
-        apply_glow_effect(self.btn_mount, default_text="Montar imagen (Requiere un USB)", hover_text="Montar imagen (Requiere un USB)")
-        self.btn_mount.grid(row=5, column=0, pady=(0, 15))
-
-        # Option E: Instalar WSL
-        self.btn_wsl = ctk.CTkButton(self, text="Instalar WSL (Necesario)", 
-                                       command=lambda: controller.show_frame("WslInstallScreen"),
-                                       height=50, width=350, corner_radius=5,
-                                       font=ctk.CTkFont(family="Consolas", size=18, weight="bold"),
-                                       cursor="hand2", fg_color="transparent", 
-                                       border_width=2, border_color="#008800",
-                                       hover_color="#001100", text_color="#00FF00")
-        apply_glow_effect(self.btn_wsl, default_text="Instalar WSL (Necesario)", hover_text="Instalar WSL (Necesario)")
-        self.btn_wsl.grid(row=6, column=0, pady=(0, 15))
+    def create_option(self, row, text, command):
+        frame = ctk.CTkFrame(self, fg_color="transparent")
+        frame.grid(row=row, column=0, pady=(0, 8))
+        
+        arrow = ctk.CTkLabel(frame, text="", font=ctk.CTkFont(family="Consolas", size=24, weight="bold"), text_color="#00FF00", width=30)
+        arrow.pack(side="left")
+        
+        btn = ctk.CTkButton(frame, text=text, command=command,
+                            height=40, width=350, corner_radius=5,
+                            font=ctk.CTkFont(family="Consolas", size=18, weight="bold"),
+                            cursor="hand2", fg_color="transparent", 
+                            border_width=2, border_color="#008800",
+                            hover_color="#001100", text_color="#00FF00")
+        btn.pack(side="left")
+        
+        dummy = ctk.CTkLabel(frame, text="", width=30)
+        dummy.pack(side="left")
+        
+        apply_glow_effect(btn, default_text=text, hover_text=text)
+        
+        def on_enter(e):
+            arrow.configure(text=">")
+        def on_leave(e):
+            arrow.configure(text="")
+            
+        btn.bind("<Enter>", on_enter, add="+")
+        btn.bind("<Leave>", on_leave, add="+")
+        
+        return btn

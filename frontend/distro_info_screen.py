@@ -13,11 +13,11 @@ class DistroInfoScreen(ctk.CTkFrame):
         self.title = ctk.CTkLabel(self, text="> Información_", 
                                   text_color="#00FF00",
                                   font=ctk.CTkFont(family="Consolas", size=38, weight="bold"))
-        self.title.grid(row=1, column=0, pady=(0, 20))
+        self.title.grid(row=0, column=0, pady=(20, 10))
         
         content_frame = ctk.CTkFrame(self, fg_color="transparent")
-        content_frame.grid(row=2, column=0, padx=40, pady=(0, 40), sticky="nsew")
-        self.grid_rowconfigure(2, weight=1)
+        content_frame.grid(row=1, column=0, padx=40, pady=10, sticky="nsew")
+        self.grid_rowconfigure(1, weight=10)
         
         content_frame.grid_columnconfigure(0, weight=3) # Lado texto
         content_frame.grid_columnconfigure(1, weight=2) # Lado imágenes
@@ -107,7 +107,7 @@ class DistroInfoScreen(ctk.CTkFrame):
         self.current_text = ""
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.last_distro = None
-        btn_frame.grid(row=4, column=0, pady=(0, 40))
+        btn_frame.grid(row=2, column=0, pady=(10, 20))
         
         self.btn_volver = ctk.CTkButton(btn_frame, text="←    Volver", command=lambda: self.controller.show_frame("DistroSelectionScreen"),
                                    height=45, width=220, corner_radius=5,

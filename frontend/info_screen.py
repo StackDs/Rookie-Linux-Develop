@@ -11,11 +11,11 @@ class InfoScreen(ctk.CTkFrame):
         title = ctk.CTkLabel(self, text="> ¿Qué hace este programa?_", 
                              text_color="#00FF00",
                              font=ctk.CTkFont(family="Consolas", size=38, weight="bold"))
-        title.grid(row=1, column=0, pady=(0, 20))
+        title.grid(row=0, column=0, pady=(20, 10))
         
         text_frame = ctk.CTkFrame(self, fg_color="transparent")
-        text_frame.grid(row=2, column=0, padx=40, pady=(0, 40), sticky="nsew")
-        self.grid_rowconfigure(2, weight=1)
+        text_frame.grid(row=1, column=0, padx=40, pady=10, sticky="nsew")
+        self.grid_rowconfigure(1, weight=10)
         
         self.info_textbox = ctk.CTkTextbox(text_frame, font=ctk.CTkFont(family="Consolas", size=15), 
                                            fg_color="transparent", text_color="#00E676", 
@@ -69,7 +69,7 @@ class InfoScreen(ctk.CTkFrame):
         self.has_animated = False
         
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
-        btn_frame.grid(row=3, column=0, pady=(0, 40))
+        btn_frame.grid(row=2, column=0, pady=(10, 20))
         
         btn_home = ctk.CTkButton(btn_frame, text="← Volver", command=lambda: controller.show_frame("OptionSelectionScreen"),
                                    height=45, width=220, corner_radius=5,
