@@ -42,31 +42,28 @@ def main():
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     os.chdir(project_root)
     
-    print("Iniciando empaquetado de Rookie Linux Builder...")
+    print("Iniciando empaquetado de Rookie Linux Builder para LINUX...")
     
     # 1. Instalar dependencias si faltan
-    subprocess.run([sys.executable, "-m", "pip", "install", "pyinstaller", "customtkinter", "--break-system-packages"], check=False)
+    subprocess.run([sys.executable, "-m", "pip", "install", "pyinstaller", "customtkinter", "pillow", "--break-system-packages"], check=False)
     
-    # 2. Construir el ejecutable con PyInstaller
-    print("Compilando con PyInstaller...")
+    # 2. Construir el ejecutable con PyInstaller (Nativo)
+    print("Compilando con PyInstaller nativamente para Linux...")
     subprocess.run([
         sys.executable, "-m", "PyInstaller", 
         "--noconfirm",
-        "--onefile",
         "--windowed",
         "--name", "Rookie-Linux-Builder",
         "frontend/main.py"
     ], check=True)
     
-    # 3. Preparar directorio de distribucion
-    dist_dir = "Rookie-Linux-Release"
-    print(f"Preparando directorio de lanzamiento: {dist_dir}...")
+    # 3. Preparar directorio de distribucion en la raiz
+    dist_dir = os.path.join(project_root, "Rookie-Linux-Release-Linux")
+    print(f"Preparando directorio de lanzamiento en: {dist_dir}...")
     force_remove_tree(dist_dir)
-    os.makedirs(dist_dir)
     
-    # Mover el ejecutable
-    exe_name = "Rookie-Linux-Builder.exe" if os.name == 'nt' else "Rookie-Linux-Builder"
-    shutil.move(f"dist/{exe_name}", os.path.join(dist_dir, exe_name))
+    # Mover la carpeta compilada
+    shutil.move("dist/Rookie-Linux-Builder", dist_dir)
     
     # Copiar carpetas necesarias
     folders_to_copy = ["assets", "builder", "templates", "configs", "scripts"]
@@ -80,16 +77,12 @@ def main():
     os.makedirs(os.path.join(dist_dir, "output"), exist_ok=True)
     os.makedirs(os.path.join(dist_dir, "logs"), exist_ok=True)
     
-    # 4. Crear el archivo RAR final en la raiz del proyecto
-    rar_filename = os.path.join(project_root, "Rookie-Linux-Builder-Release.rar")
+    # 4. Crear el archivo RAR final en la raiz
+    rar_filename = os.path.join(project_root, "Rookie-Linux-Builder-Linux.rar")
     
     print(f"Creando {rar_filename}...")
     
-    # Check if rar is installed
     if shutil.which("rar"):
-        # -ep1 excludes the base directory from the paths in the archive
-        # -r recurses subdirectories
-        # -y assumes yes (overwrites existing)
         subprocess.run(["rar", "a", "-ep1", "-r", "-y", rar_filename, dist_dir], check=True)
     else:
         print("Advertencia: El comando 'rar' no está instalado. Usando 'zip' como alternativa...")
@@ -108,7 +101,7 @@ def main():
     if os.path.exists("Rookie-Linux-Builder.spec"):
         os.remove("Rookie-Linux-Builder.spec")
         
-    print(f"¡Exito! Se ha creado el paquete en la raíz del proyecto.")
+    print(f"¡Exito! Se ha creado el paquete para Linux en la raíz del proyecto.")
     print(f"Las carpetas residuales han sido limpiadas.")
 
 if __name__ == "__main__":
