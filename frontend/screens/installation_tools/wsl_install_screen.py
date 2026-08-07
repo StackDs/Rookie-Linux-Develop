@@ -100,11 +100,14 @@ class WslInstallScreen(ctk.CTkFrame):
         self.progress_bar.set(1)
         self.status_lbl.configure(text="Estado: Instalación finalizada con éxito.", text_color="#00FF00")
         self.btn_home.configure(state="normal")
-        msg_show_info(
-            "Instalación Exitosa",
-            "WSL ha sido instalado o ya se encontraba habilitado.\n\n"
-            "¡MUY IMPORTANTE! Si es la primera vez que instalas WSL, DEBES REINICIAR TU PC AHORA para que los cambios surtan efecto."
-        )
+        
+        def show_popup():
+            msg_show_info(
+                "Instalación Exitosa",
+                "WSL ha sido instalado o ya se encontraba habilitado.\n\n"
+                "¡MUY IMPORTANTE! Si es la primera vez que instalas WSL, DEBES REINICIAR TU PC AHORA para que los cambios surtan efecto."
+            )
+        self.after(800, show_popup)
 
     def install_failed(self, err_msg):
         self.is_installing = False

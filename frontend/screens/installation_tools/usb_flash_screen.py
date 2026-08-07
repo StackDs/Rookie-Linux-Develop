@@ -324,7 +324,7 @@ class UsbFlashScreen(ctk.CTkFrame):
                             msg_show_info("Éxito", "El USB booteable ha sido creado correctamente. Ya puedes usarlo para instalar el sistema.")
                             self.controller.show_frame("OptionSelectionScreen")
                             
-                        self.after(0, on_success)
+                        self.after(800, on_success)
                         done = True
                     elif st == "error":
                         error_msg = err

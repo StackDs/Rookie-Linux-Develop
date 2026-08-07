@@ -457,7 +457,7 @@ class BuildProgressScreen(ctk.CTkFrame):
                     
                     self.controller.show_frame("OptionSelectionScreen")
                             
-                self.after(0, on_success_actions)
+                self.after(800, on_success_actions)
             else:
                 self.after(0, self.update_progress_generation, 0.0, "0,00")
                 error_details = "\n".join(last_lines)
