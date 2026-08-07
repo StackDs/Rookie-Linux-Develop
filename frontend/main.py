@@ -90,6 +90,8 @@ class App(ctk.CTk):
         self.container.grid_rowconfigure(0, weight=1)
         self.container.grid_columnconfigure(0, weight=1)
 
+        self.withdraw() # Ocultar ventana durante la carga inicial para evitar flickering
+        
         self.frames = {}
         for F in (StartScreen, OptionSelectionScreen, InfoScreen, ExplanationScreen, DistroSelectionScreen, DistroInfoScreen, BuildProgressScreen, UsbFlashScreen, BasicConceptsScreen, BitlockerScreen, WslInstallScreen, InstructionsScreen, VirtualMachineScreen, CleanInstallationScreen, DocumentationScreen, AboutScreen):
             page_name = F.__name__
@@ -98,6 +100,8 @@ class App(ctk.CTk):
             frame.grid(row=0, column=0, sticky="nsew")
 
         self.show_frame("StartScreen")
+        self.update_idletasks() # Forzar render
+        self.deiconify() # Mostrar ventana ya lista
 
     def show_frame(self, page_name):
         frame = self.frames[page_name]

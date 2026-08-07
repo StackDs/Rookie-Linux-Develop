@@ -93,11 +93,16 @@ class AboutScreen(ctk.CTkFrame):
         
         try:
             img = Image.open(img_path)
+            if img.mode != 'RGBA' and img.mode != 'RGB':
+                img = img.convert('RGBA')
+                
             width, height = img.size
             ratio = min(950/width, 650/height)
             new_w, new_h = int(width * ratio), int(height * ratio)
             
             ctk_img = ctk.CTkImage(light_image=img, dark_image=img, size=(new_w, new_h))
+            top.zoomed_img = ctk_img  # Mantener referencia para evitar Garbage Collection
+            
             lbl = ctk.CTkLabel(top, image=ctk_img, text="", cursor="hand2")
             lbl.pack(expand=True, fill="both", padx=20, pady=20)
             

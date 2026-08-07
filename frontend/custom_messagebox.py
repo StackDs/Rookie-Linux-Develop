@@ -14,17 +14,11 @@ class CustomMessageBox(ctk.CTkToplevel):
         self.transient(self.master)
         self.grab_set()
         
-        # Center it relative to parent or screen
+        # Center it relative to the screen to avoid Linux window manager mapping issues
         self.update_idletasks()
         try:
-            # Intentar centrar respecto a la ventana principal de la app
-            if self.master and self.master.winfo_viewable():
-                x = self.master.winfo_rootx() + (self.master.winfo_width() // 2) - (width // 2)
-                y = self.master.winfo_rooty() + (self.master.winfo_height() // 2) - (height // 2)
-            else:
-                # Fallback: centrar en la pantalla entera
-                x = (self.winfo_screenwidth() // 2) - (width // 2)
-                y = (self.winfo_screenheight() // 2) - (height // 2)
+            x = (self.winfo_screenwidth() // 2) - (width // 2)
+            y = (self.winfo_screenheight() // 2) - (height // 2)
                 
             self.geometry(f"+{int(x)}+{int(y)}")
         except Exception as e:

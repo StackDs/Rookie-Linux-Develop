@@ -25,10 +25,18 @@ class OptionSelectionScreen(ctk.CTkFrame):
         if sys.platform == "win32":
             self.create_option(5, "Instalar WSL (Necesario)", lambda: controller.show_frame("WslInstallScreen"))
         else:
-            self.create_option(5, "Instalar WSL (No requerido en Linux)", None)
+            self.create_option(5, "Instalar WSL (Necesario)", self.show_wsl_not_needed)
             
         self.create_option(6, "Documentación oficial", lambda: controller.show_frame("DocumentationScreen"))
         self.create_option(7, "Acerca de Rookie Linux", lambda: controller.show_frame("AboutScreen"))
+
+    def show_wsl_not_needed(self):
+        from custom_messagebox import msg_show_info
+        msg_show_info(
+            "Información del Sistema", 
+            "WSL (Windows Subsystem for Linux) es una herramienta exclusiva de Microsoft para ejecutar Linux dentro de Windows.\n\nComo ya te encuentras ejecutando este programa de forma nativa en Linux, no necesitas instalar nada adicional. ¡Puedes continuar directamente con las demás opciones!",
+            width=650, height=350
+        )
 
     def create_option(self, row, text, command):
         frame = ctk.CTkFrame(self, fg_color="transparent")

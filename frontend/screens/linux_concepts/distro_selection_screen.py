@@ -50,7 +50,8 @@ class DistroSelectionScreen(ctk.CTkFrame):
                     img_lbl = ctk.CTkLabel(card, image=ctk_img, text="")
                     img_lbl.pack(pady=(20, 10), padx=20)
                 except Exception as e:
-                    lbl = ctk.CTkLabel(card, text="[Imagen]", text_color="#00FF00", font=ctk.CTkFont(family="Consolas"), width=120, height=120)
+                    err_str = str(e)[:30]
+                    lbl = ctk.CTkLabel(card, text=f"[Err: {err_str}]", text_color="#FF0000", font=ctk.CTkFont(family="Consolas", size=10), width=120, height=120)
                     lbl.pack(pady=(20, 10), padx=20)
             else:
                 lbl = ctk.CTkLabel(card, text="[IMG NULL]", text_color="#00FF00", font=ctk.CTkFont(family="Consolas"), width=120, height=120)
