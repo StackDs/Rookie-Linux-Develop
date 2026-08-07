@@ -6,8 +6,6 @@ class InfoScreen(ctk.CTkFrame):
         super().__init__(parent, fg_color="transparent")
         self.controller = controller
             
-        self.grid_rowconfigure(0, weight=1)
-        self.grid_rowconfigure(4, weight=1)
         self.grid_columnconfigure(0, weight=1)
         
         title = ctk.CTkLabel(self, text="> ¿Qué hace este programa?_", 
@@ -73,16 +71,16 @@ class InfoScreen(ctk.CTkFrame):
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
         btn_frame.grid(row=3, column=0, pady=(0, 40))
         
-        btn_home = ctk.CTkButton(btn_frame, text="⌂ Volver a Opciones", command=lambda: controller.show_frame("OptionSelectionScreen"),
+        btn_home = ctk.CTkButton(btn_frame, text="← Volver", command=lambda: controller.show_frame("OptionSelectionScreen"),
                                    height=45, width=220, corner_radius=5,
                                    font=ctk.CTkFont(family="Consolas", size=15, weight="bold"), cursor="hand2",
                                    fg_color="transparent", border_width=2, border_color="#008800",
                                    hover_color="#001100", text_color="#008800")
-        apply_glow_effect(btn_home, default_text="⌂ Volver a Opciones", hover_text="⌂ Volver a Opciones")
+        apply_glow_effect(btn_home, default_text="← Volver", hover_text="← Volver")
         btn_home.pack(side="left", padx=15)
 
         btn_instructions = ctk.CTkButton(btn_frame, text="Instrucciones de uso →", command=lambda: controller.show_frame("InstructionsScreen"),
-                                         height=45, width=240, corner_radius=5,
+                                         height=45, width=220, corner_radius=5,
                                          font=ctk.CTkFont(family="Consolas", size=15, weight="bold"), cursor="hand2",
                                          fg_color="transparent", border_width=2, border_color="#008800",
                                          hover_color="#001100", text_color="#008800")

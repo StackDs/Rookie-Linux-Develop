@@ -6,7 +6,6 @@ class OptionSelectionScreen(ctk.CTkFrame):
         super().__init__(parent, fg_color="transparent")
         self.controller = controller
         
-        self.grid_rowconfigure(0, weight=1)
         self.grid_rowconfigure(7, weight=1)
         self.grid_columnconfigure(0, weight=1)
         
@@ -16,14 +15,14 @@ class OptionSelectionScreen(ctk.CTkFrame):
         self.title_lbl.grid(row=1, column=0, pady=(0, 40))
         
         # Option A: Informacion del programa
-        self.btn_info = ctk.CTkButton(self, text="Información e instrucciones de uso", 
+        self.btn_info = ctk.CTkButton(self, text="Manual de uso", 
                                       command=lambda: controller.show_frame("InfoScreen"),
                                       height=50, width=350, corner_radius=5,
                                       font=ctk.CTkFont(family="Consolas", size=18, weight="bold"),
                                       cursor="hand2", fg_color="transparent", 
                                       border_width=2, border_color="#008800",
                                       hover_color="#001100", text_color="#00FF00")
-        apply_glow_effect(self.btn_info, default_text="Información e instrucciones de uso", hover_text="Información e instrucciones de uso")
+        apply_glow_effect(self.btn_info, default_text="Manual de uso", hover_text="Manual de uso")
         self.btn_info.grid(row=2, column=0, pady=(0, 15))
 
         # Option B: Sobre Linux
@@ -60,12 +59,12 @@ class OptionSelectionScreen(ctk.CTkFrame):
         self.btn_mount.grid(row=5, column=0, pady=(0, 15))
 
         # Option E: Instalar WSL
-        self.btn_wsl = ctk.CTkButton(self, text="Instalar WSL (Necesario para el desarrollo)", 
+        self.btn_wsl = ctk.CTkButton(self, text="Instalar WSL (Necesario)", 
                                        command=lambda: controller.show_frame("WslInstallScreen"),
                                        height=50, width=350, corner_radius=5,
                                        font=ctk.CTkFont(family="Consolas", size=18, weight="bold"),
                                        cursor="hand2", fg_color="transparent", 
                                        border_width=2, border_color="#008800",
                                        hover_color="#001100", text_color="#00FF00")
-        apply_glow_effect(self.btn_wsl, default_text="Instalar WSL (Necesario para el desarrollo)", hover_text="Instalar WSL (Necesario para el desarrollo)")
+        apply_glow_effect(self.btn_wsl, default_text="Instalar WSL (Necesario)", hover_text="Instalar WSL (Necesario)")
         self.btn_wsl.grid(row=6, column=0, pady=(0, 15))

@@ -14,8 +14,7 @@ class BuildProgressScreen(ctk.CTkFrame):
         super().__init__(parent, fg_color="transparent")
         self.controller = controller
         
-        self.grid_rowconfigure(0, weight=1)
-        self.grid_rowconfigure(5, weight=1)
+        self.grid_rowconfigure(3, weight=1)
         self.grid_columnconfigure(0, weight=1)
         
         self.title = ctk.CTkLabel(self, text="> Construyendo Sistema_", 
@@ -45,17 +44,17 @@ class BuildProgressScreen(ctk.CTkFrame):
         self.progress_bar_generation.set(0)
         
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
-        btn_frame.grid(row=4, column=0, pady=(40, 0))
+        btn_frame.grid(row=4, column=0, pady=(40, 40))
         
         self.btn_flash_usb = ctk.CTkButton(btn_frame, text="Montar en USB", command=lambda: self.controller.show_frame("UsbFlashScreen"),
-                                   height=45, width=200, corner_radius=5,
+                                   height=45, width=220, corner_radius=5,
                                    font=ctk.CTkFont(family="Consolas", size=15, weight="bold"), cursor="hand2",
                                    fg_color="#004400", border_width=2, border_color="#00FF00",
                                    hover_color="#007700", text_color="#FFFFFF")
         apply_glow_effect(self.btn_flash_usb, default_text="Montar en USB", hover_text="Montar en USB")
         
         self.btn_action = ctk.CTkButton(btn_frame, text="Cancelar", command=self.cancel_process,
-                                   height=45, width=200, corner_radius=5,
+                                   height=45, width=220, corner_radius=5,
                                    font=ctk.CTkFont(family="Consolas", size=15, weight="bold"), cursor="hand2",
                                    fg_color="transparent", border_width=2, border_color="#FF0000",
                                    hover_color="#330000", text_color="#FF0000")
@@ -172,9 +171,9 @@ class BuildProgressScreen(ctk.CTkFrame):
         self.lbl_generation.configure(text="Generación: Procesando...")
 
     def set_btn_volver(self):
-        self.btn_action.configure(text="⌂ Volver a Opciones", command=lambda: self.controller.show_frame("OptionSelectionScreen"), 
+        self.btn_action.configure(text="← Volver", command=lambda: self.controller.show_frame("DistroInfoScreen"), 
                                   text_color="#008800", border_color="#008800", hover_color="#001100", state="normal")
-        apply_glow_effect(self.btn_action, default_text="⌂ Volver a Opciones", hover_text="⌂ Volver a Opciones")
+        apply_glow_effect(self.btn_action, default_text="← Volver", hover_text="← Volver")
 
     def cancel_process(self):
         self.is_cancelled = True
@@ -240,7 +239,7 @@ class BuildProgressScreen(ctk.CTkFrame):
         except Exception:
             msg_show_error(
                 "WSL Requerido", 
-                "El Subsistema de Windows para Linux (WSL) no está instalado o no se detecta correctamente.\\n\\n"
+                "El Subsistema de Windows para Linux (WSL) no está instalado o no se detecta correctamente.\n\n"
                 "Por favor, vuelve al menú de Opciones y utiliza la herramienta 'Instalar WSL'."
             )
             self.status_lbl.configure(text="Estado: Error de dependencia (WSL).", text_color="#FF0000")
@@ -378,7 +377,8 @@ class BuildProgressScreen(ctk.CTkFrame):
                 
             wsl_project_root = to_wsl_path(project_root)
             
-            cmd = f'wsl -u root -e bash -c "export ISO_DISTRO=\\"{distro_env}\\"; sed -i \\"s/\\\\r\\$//\\" {wsl_project_root}/builder/build_iso.sh 2>/dev/null; cd {wsl_project_root} && bash {wsl_project_root}/builder/build_iso.sh"'
+            custom_iso_name = f"{distro_seleccionada} custom by Stack"
+            cmd = f'wsl -u root -e bash -c "export ISO_DISTRO=\\"{distro_env}\\"; export CUSTOM_ISO_NAME=\\"{custom_iso_name}\\"; sed -i \\"s/\\\\r\\$//\\" {wsl_project_root}/builder/build_iso.sh 2>/dev/null; cd {wsl_project_root} && bash {wsl_project_root}/builder/build_iso.sh"'
             
             self.current_process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, creationflags=creationflags, bufsize=1, universal_newlines=True)
             
@@ -473,8 +473,22 @@ class BuildProgressScreen(ctk.CTkFrame):
             if self.current_process.returncode == 0:
                 self.after(0, self.update_progress_generation, 1.0, "100,00")
                 self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Sistema Construido Exitosamente.", text_color="#00FF00"))
-                self.after(0, lambda: msg_show_info("Éxito", f"¡La imagen de {distro_seleccionada} se ha construido correctamente!\n\nRevisa la carpeta 'output'."))
-                self.after(0, lambda: self.btn_flash_usb.pack(side="left", padx=10))
+                
+                def on_success_actions():
+                    msg_show_info("Éxito", f"¡La imagen de {distro_seleccionada} se ha construido correctamente!\nYa puedes usarla para flashear una USB o instalarla en una máquina virtual. \nTu imagen se encuentra en la carpeta output")
+                    self.btn_flash_usb.pack(side="left", padx=10)
+                    
+                    if msg_ask_yes_no("Ahorrar Espacio", "¿Deseas eliminar la ISO oficial descargada para ahorrar espacio en tu disco duro?\n\nTu imagen personalizada recién creada NO se borrará y se mantendrá segura en la carpeta 'output'."):
+                        try:
+                            import glob
+                            import os
+                            isos = glob.glob(os.path.join(self.current_iso_target_dir, "*.iso"))
+                            for iso in isos:
+                                os.remove(iso)
+                        except Exception:
+                            pass
+                            
+                self.after(0, on_success_actions)
             else:
                 self.after(0, self.update_progress_generation, 0.0, "0,00")
                 error_details = "\n".join(last_lines)

@@ -43,15 +43,33 @@ class App(ctk.CTk):
         super().__init__()
         self.title("Rookie Linux Develop - Terminal Mode")
         self.geometry("900x600")
-        self.resizable(True, True)
-        self.minsize(800, 500)
+        self.resizable(False, False)
+        self.minsize(900, 600)
 
-        self.grid_rowconfigure(0, weight=1)
+        self.grid_rowconfigure(0, weight=0)
+        self.grid_rowconfigure(1, weight=1)
         self.grid_columnconfigure(0, weight=1)
+
+        # Banner superior
+        self.banner = ctk.CTkFrame(self, height=40, fg_color="#0a0a0a", corner_radius=0)
+        self.banner.grid(row=0, column=0, sticky="ew")
+        
+        from utils import apply_glow_effect
+        self.btn_global_home = ctk.CTkButton(self.banner, text="⌂ Menú Principal", command=lambda: self.show_frame("OptionSelectionScreen"),
+                                      width=120, height=30, fg_color="transparent", text_color="#00FF00", 
+                                      hover_color="#003300", font=ctk.CTkFont(family="Consolas", size=14, weight="bold"))
+        self.btn_global_home.pack(side="left", padx=15, pady=5)
+        apply_glow_effect(self.btn_global_home, default_text="⌂ Menú Principal", hover_text="⌂ Menú Principal")
+
+        self.btn_start_screen = ctk.CTkButton(self.banner, text="Pantalla de Inicio ⏻", command=lambda: self.show_frame("StartScreen"),
+                                      width=120, height=30, fg_color="transparent", text_color="#00FF00", 
+                                      hover_color="#003300", font=ctk.CTkFont(family="Consolas", size=14, weight="bold"))
+        self.btn_start_screen.pack(side="right", padx=15, pady=5)
+        apply_glow_effect(self.btn_start_screen, default_text="Pantalla de Inicio ⏻", hover_text="Pantalla de Inicio ⏻")
 
         # Fondo negro sólido estilo terminal para toda la app
         self.container = ctk.CTkFrame(self, fg_color="#0a0a0a")
-        self.container.grid(row=0, column=0, sticky="nsew")
+        self.container.grid(row=1, column=0, sticky="nsew")
         self.container.grid_rowconfigure(0, weight=1)
         self.container.grid_columnconfigure(0, weight=1)
 

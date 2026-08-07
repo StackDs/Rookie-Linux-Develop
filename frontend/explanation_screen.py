@@ -6,8 +6,6 @@ class ExplanationScreen(ctk.CTkFrame):
         super().__init__(parent, fg_color="transparent")
         self.controller = controller
         
-        self.grid_rowconfigure(0, weight=1)
-        self.grid_rowconfigure(4, weight=1)
         self.grid_columnconfigure(0, weight=1)
         
         title = ctk.CTkLabel(self, text="> Sobre Linux_", 
@@ -48,8 +46,11 @@ class ExplanationScreen(ctk.CTkFrame):
             "> Comparten el mismo 'motor', pero ofrecen diseños y herramientas diferentes.\n\n"
             "[+] ¿Cómo instalamos una distro?\n"
             "  Existen 3 métodos principales:\n"
-            "  1. Instalación nativa (Dual Boot): Consiste en instalar Linux en una partición del disco duro, junto con Windows.\n"
-            "  2. Máquina Virtual: Consiste en instalar Linux en una máquina virtual, que es un emulador de hardware que permite ejecutar otro sistema operativo dentro de Windows.\n"
+            "  1. Instalación nativa (Dual Boot): Consiste en instalar Linux en\n"
+            "     una partición del disco duro, junto con Windows.\n"
+            "  2. Máquina Virtual: Consiste en instalar Linux en una máquina\n"
+            "     virtual, que es un emulador de hardware que permite ejecutar\n"
+            "     otro sistema operativo dentro de Windows.\n"
             "  3. Instalación limpia: Consiste en reemplazar Windows por Linux.\n\n"
             "> Todos estos conceptos serán explicados detalladamente más adelante." 
         )
@@ -62,7 +63,7 @@ class ExplanationScreen(ctk.CTkFrame):
         btn_frame.grid(row=3, column=0, pady=(0, 40))
         
         btn_volver = ctk.CTkButton(btn_frame, text="←    Volver", command=lambda: controller.show_frame("InfoScreen"),
-                                   height=45, width=150, corner_radius=5,
+                                   height=45, width=220, corner_radius=5,
                                    font=ctk.CTkFont(family="Consolas", size=15, weight="bold"), cursor="hand2",
                                    fg_color="transparent", border_width=2, border_color="#008800",
                                    hover_color="#001100", text_color="#008800")
@@ -70,7 +71,7 @@ class ExplanationScreen(ctk.CTkFrame):
         btn_volver.pack(side="left", padx=15)
         
         btn_siguiente = ctk.CTkButton(btn_frame, text="Siguiente    →", command=lambda: controller.show_frame("BasicConceptsScreen"),
-                                      height=45, width=180, corner_radius=5,
+                                      height=45, width=220, corner_radius=5,
                                       font=ctk.CTkFont(family="Consolas", size=15, weight="bold"), cursor="hand2",
                                       fg_color="transparent", border_width=2, border_color="#008800",
                                       hover_color="#001100", text_color="#008800")

@@ -305,7 +305,12 @@ elif [ "$ISO_DISTRO" = "fedora" ]; then
     sync; echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
 fi
 
-OUTPUT_ISO="$BUILD_DIR/custom-$ISO_NAME"
+if [ -n "$CUSTOM_ISO_NAME" ]; then
+    OUTPUT_ISO="$BUILD_DIR/$CUSTOM_ISO_NAME.iso"
+else
+    OUTPUT_ISO="$BUILD_DIR/custom-$ISO_NAME"
+fi
+
 rm -f "$OUTPUT_ISO"
 echo "=> Generando nueva ISO inyectada ($OUTPUT_ISO)..."
 

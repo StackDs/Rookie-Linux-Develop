@@ -9,8 +9,6 @@ class BitlockerScreen(ctk.CTkFrame):
         super().__init__(parent, fg_color="transparent")
         self.controller = controller
         
-        self.grid_rowconfigure(0, weight=1)
-        self.grid_rowconfigure(2, weight=1)
         self.grid_columnconfigure(0, weight=1)
         
         self.title = ctk.CTkLabel(self, text="> BitLocker_", 
@@ -43,20 +41,12 @@ class BitlockerScreen(ctk.CTkFrame):
         btn_frame.grid(row=2, column=0, pady=(10, 20))
         
         self.btn_volver = ctk.CTkButton(btn_frame, text="←    Volver", command=lambda: self.controller.show_frame("CleanInstallationScreen"),
-                                   height=45, width=150, corner_radius=5,
+                                   height=45, width=220, corner_radius=5,
                                    font=ctk.CTkFont(family="Consolas", size=15, weight="bold"), cursor="hand2",
                                    fg_color="transparent", border_width=2, border_color="#008800",
                                    hover_color="#001100", text_color="#008800")
         apply_glow_effect(self.btn_volver, default_text="←    Volver", hover_text="←       Volver")
         self.btn_volver.pack(side="left", padx=15)
-        
-        self.btn_home = ctk.CTkButton(btn_frame, text="⌂ Volver a Opciones", command=lambda: self.controller.show_frame("OptionSelectionScreen"),
-                                       height=45, width=220, corner_radius=5,
-                                       font=ctk.CTkFont(family="Consolas", size=15, weight="bold"), cursor="hand2",
-                                       fg_color="transparent", border_width=2, border_color="#008800",
-                                       hover_color="#001100", text_color="#008800")
-        apply_glow_effect(self.btn_home, default_text="⌂ Volver a Opciones", hover_text="⌂ Volver a Opciones")
-        self.btn_home.pack(side="left", padx=15)
         
     def load_image(self, parent, filename):
         base_path = os.path.join(get_project_root(), "assets")

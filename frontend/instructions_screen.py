@@ -6,8 +6,6 @@ class InstructionsScreen(ctk.CTkFrame):
         super().__init__(parent, fg_color="transparent")
         self.controller = controller
             
-        self.grid_rowconfigure(0, weight=1)
-        self.grid_rowconfigure(4, weight=1)
         self.grid_columnconfigure(0, weight=1)
         
         title = ctk.CTkLabel(self, text="> Instrucciones de uso_", 
@@ -32,20 +30,22 @@ class InstructionsScreen(ctk.CTkFrame):
             "[1] SOBRE LINUX\n"
             "    Aquí encontrarás información importante acerca de Linux y su funcionamiento, distribuciones, etc.\n"
             "    Además de encontrar diferencias con Windows, formas de instalación y demás.\n\n"
-            "[2] CREAR IMAGEN PERSONALIZADA\n"
+            "[2] INSTALAR WSL\n"
+            "    Visita esta opción antes que nada, el sistema hace uso de WSL para funcionar.\n"
+            "    Por ende es necesario tener instalada esta herramienta para que todo funcione bien.\n\n"
+            "[3] CREAR IMAGEN PERSONALIZADA\n"
             "    El sistema permite seleccionar una distribución de tu interés (ej. Ubuntu, Mint, Pop!).\n"
             "    El sistema descargará la ISO oficial y le inyectará todas las\n"
-            "    herramientas de desarrollo, librerías y configuraciones predefinidas.\n\n"
-            "[3] MONTAR IMAGEN (REQUIERE USB)\n"
+            "    herramientas de desarrollo, librerías y configuraciones predefinidas.\n"
+            "    Una vez terminada tendras en la carpeta output tu imagen custom, que podras flashear en un usb o usar en una maquina virtual.\n\n"
+            "[4] MONTAR IMAGEN (REQUIERE USB)\n"
             "    Una vez que hayas creado tu imagen personalizada, usa esta opción\n"
             "    para 'flashearla' (grabarla) de forma segura en una memoria USB.\n"
             "    Luego podrás usar ese USB para instalar Linux en tu computadora.\n\n"
             "    Una vez que se instale el sistema, se ejecutará automáticamente.\n"
             "    El script de bienvenida te pedirá iniciar sesión,\n"
             "    y de ahí en adelante, se instalarán todas las herramientas.\n\n"
-            "[4] INSTALAR WSL\n"
-            "    Visita esta opción antes que nada, el sistema hace uso de WSL para funcionar.\n"
-            "    Por ende es necesario tener instalada esta herramienta para que todo funcione bien.\n\n"
+            
             "> Si tienes dudas, consulta la documentación oficial en el repositorio.\n"
             "> Esperando acción del usuario..."
         )

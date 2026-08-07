@@ -9,11 +9,9 @@ class BasicConceptsScreen(ctk.CTkFrame):
         super().__init__(parent, fg_color="transparent")
         self.controller = controller
         
-        self.grid_rowconfigure(0, weight=1)
-        self.grid_rowconfigure(2, weight=1)
         self.grid_columnconfigure(0, weight=1)
         
-        self.title = ctk.CTkLabel(self, text="> Métodos de instalación (Dual Boot)_", 
+        self.title = ctk.CTkLabel(self, text="> Dual Boot_", 
                                   text_color="#00FF00",
                                   font=ctk.CTkFont(family="Consolas", size=38, weight="bold"))
         self.title.grid(row=0, column=0, pady=(20, 10))
@@ -43,7 +41,7 @@ class BasicConceptsScreen(ctk.CTkFrame):
         btn_frame.grid(row=2, column=0, pady=(10, 20))
         
         self.btn_volver = ctk.CTkButton(btn_frame, text="←    Volver", command=lambda: self.controller.show_frame("ExplanationScreen"),
-                                   height=45, width=150, corner_radius=5,
+                                   height=45, width=220, corner_radius=5,
                                    font=ctk.CTkFont(family="Consolas", size=15, weight="bold"), cursor="hand2",
                                    fg_color="transparent", border_width=2, border_color="#008800",
                                    hover_color="#001100", text_color="#008800")
@@ -51,7 +49,7 @@ class BasicConceptsScreen(ctk.CTkFrame):
         self.btn_volver.pack(side="left", padx=15)
         
         self.btn_siguiente = ctk.CTkButton(btn_frame, text="Siguiente    →", command=lambda: self.controller.show_frame("VirtualMachineScreen"),
-                                       height=45, width=170, corner_radius=5,
+                                       height=45, width=220, corner_radius=5,
                                        font=ctk.CTkFont(family="Consolas", size=15, weight="bold"), cursor="hand2",
                                        fg_color="transparent", border_width=2, border_color="#008800",
                                        hover_color="#001100", text_color="#008800")

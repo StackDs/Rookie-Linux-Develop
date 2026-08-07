@@ -17,8 +17,7 @@ class UsbFlashScreen(ctk.CTkFrame):
         self.controller = controller
         self.drives_info = []
         
-        self.grid_rowconfigure(0, weight=1)
-        self.grid_rowconfigure(8, weight=1)
+        self.grid_rowconfigure(6, weight=1)
         self.grid_columnconfigure(0, weight=1)
         
         self.title = ctk.CTkLabel(self, text="> Flasheador USB_", 
@@ -78,23 +77,23 @@ class UsbFlashScreen(ctk.CTkFrame):
         
         # Action Buttons
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
-        btn_frame.grid(row=7, column=0, pady=(20, 0))
+        btn_frame.grid(row=7, column=0, pady=(20, 40))
+        
+        self.btn_action = ctk.CTkButton(btn_frame, text="← Volver", command=lambda: self.controller.show_frame("OptionSelectionScreen"),
+                                   height=45, width=220, corner_radius=5,
+                                   font=ctk.CTkFont(family="Consolas", size=15, weight="bold"), cursor="hand2",
+                                   fg_color="transparent", border_width=2, border_color="#008800",
+                                   hover_color="#001100", text_color="#008800")
+        apply_glow_effect(self.btn_action, default_text="← Volver", hover_text="← Volver")
+        self.btn_action.pack(side="left", padx=10)
         
         self.btn_flash = ctk.CTkButton(btn_frame, text="Flashear USB", command=self.start_flash,
-                                   height=45, width=200, corner_radius=5,
+                                   height=45, width=220, corner_radius=5,
                                    font=ctk.CTkFont(family="Consolas", size=15, weight="bold"), cursor="hand2",
                                    fg_color="#004400", border_width=2, border_color="#00FF00",
                                    hover_color="#007700", text_color="#FFFFFF")
         apply_glow_effect(self.btn_flash, default_text="Flashear USB", hover_text="Flashear USB")
         self.btn_flash.pack(side="left", padx=10)
-        
-        self.btn_action = ctk.CTkButton(btn_frame, text="⌂ Volver a Opciones", command=lambda: self.controller.show_frame("OptionSelectionScreen"),
-                                   height=45, width=200, corner_radius=5,
-                                   font=ctk.CTkFont(family="Consolas", size=15, weight="bold"), cursor="hand2",
-                                   fg_color="transparent", border_width=2, border_color="#008800",
-                                   hover_color="#001100", text_color="#008800")
-        apply_glow_effect(self.btn_action, default_text="⌂ Volver a Opciones", hover_text="⌂ Volver a Opciones")
-        self.btn_action.pack(side="left", padx=10)
         
         self.is_flashing = False
         self.cancel_flag = os.path.join(tempfile.gettempdir(), "rookie_flash_cancel.flag")
@@ -115,9 +114,9 @@ class UsbFlashScreen(ctk.CTkFrame):
         threading.Thread(target=self.load_drives, daemon=True).start()
 
     def set_btn_volver(self):
-        self.btn_action.configure(text="⌂ Volver a Opciones", command=lambda: self.controller.show_frame("OptionSelectionScreen"),
+        self.btn_action.configure(text="← Volver", command=lambda: self.controller.show_frame("OptionSelectionScreen"),
                                   text_color="#008800", border_color="#008800", hover_color="#001100", state="normal")
-        apply_glow_effect(self.btn_action, default_text="⌂ Volver a Opciones", hover_text="⌂ Volver a Opciones")
+        apply_glow_effect(self.btn_action, default_text="← Volver", hover_text="← Volver")
 
     def cancel_flash(self):
         msg = "¿Estás seguro que deseas cancelar el flasheo?\n\nADVERTENCIA: Si cancelas ahora, tu USB quedará corrupto e inutilizable hasta que lo vuelvas a formatear."

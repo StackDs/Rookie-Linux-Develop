@@ -11,8 +11,7 @@ class WslInstallScreen(ctk.CTkFrame):
         super().__init__(parent, fg_color="transparent")
         self.controller = controller
         
-        self.grid_rowconfigure(0, weight=1)
-        self.grid_rowconfigure(5, weight=1)
+        self.grid_rowconfigure(3, weight=1)
         self.grid_columnconfigure(0, weight=1)
         
         self.title_lbl = ctk.CTkLabel(self, text="> Instalador de WSL_", 
@@ -35,7 +34,15 @@ class WslInstallScreen(ctk.CTkFrame):
         self.progress_bar.set(0)
         
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
-        btn_frame.grid(row=4, column=0, pady=(30, 0))
+        btn_frame.grid(row=4, column=0, pady=(30, 40))
+        
+        self.btn_home = ctk.CTkButton(btn_frame, text="← Volver", command=self.go_home,
+                                   height=45, width=220, corner_radius=5,
+                                   font=ctk.CTkFont(family="Consolas", size=15, weight="bold"), cursor="hand2",
+                                   fg_color="transparent", border_width=2, border_color="#008800",
+                                   hover_color="#001100", text_color="#008800")
+        apply_glow_effect(self.btn_home, default_text="← Volver", hover_text="← Volver")
+        self.btn_home.pack(side="left", padx=15)
         
         self.btn_install = ctk.CTkButton(btn_frame, text="Iniciar Instalación", command=self.start_install,
                                    height=45, width=220, corner_radius=5,
@@ -44,14 +51,6 @@ class WslInstallScreen(ctk.CTkFrame):
                                    hover_color="#007700", text_color="#FFFFFF")
         apply_glow_effect(self.btn_install, default_text="Iniciar Instalación", hover_text="Iniciar Instalación")
         self.btn_install.pack(side="left", padx=15)
-        
-        self.btn_home = ctk.CTkButton(btn_frame, text="⌂ Volver a Opciones", command=self.go_home,
-                                   height=45, width=220, corner_radius=5,
-                                   font=ctk.CTkFont(family="Consolas", size=15, weight="bold"), cursor="hand2",
-                                   fg_color="transparent", border_width=2, border_color="#008800",
-                                   hover_color="#001100", text_color="#008800")
-        apply_glow_effect(self.btn_home, default_text="⌂ Volver a Opciones", hover_text="⌂ Volver a Opciones")
-        self.btn_home.pack(side="left", padx=15)
         
         self.is_installing = False
         self.process = None
@@ -103,7 +102,7 @@ class WslInstallScreen(ctk.CTkFrame):
         self.btn_home.configure(state="normal")
         msg_show_info(
             "Instalación Exitosa",
-            "WSL ha sido instalado o ya se encontraba habilitado.\\n\\n"
+            "WSL ha sido instalado o ya se encontraba habilitado.\n\n"
             "¡MUY IMPORTANTE! Si es la primera vez que instalas WSL, DEBES REINICIAR TU PC AHORA para que los cambios surtan efecto."
         )
 
@@ -116,6 +115,6 @@ class WslInstallScreen(ctk.CTkFrame):
         self.btn_install.configure(state="normal")
         msg_show_error(
             "Error",
-            f"No se pudo instalar WSL.\\nError: {err_msg}\\n\\n"
+            f"No se pudo instalar WSL.\nError: {err_msg}\n\n"
             "Puedes intentar abrir PowerShell como Administrador y ejecutar 'wsl --install' manualmente."
         )

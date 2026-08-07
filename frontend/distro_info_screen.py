@@ -8,8 +8,6 @@ class DistroInfoScreen(ctk.CTkFrame):
         super().__init__(parent, fg_color="transparent")
         self.controller = controller
         
-        self.grid_rowconfigure(0, weight=1)
-        self.grid_rowconfigure(4, weight=1)
         self.grid_columnconfigure(0, weight=1)
         
         self.title = ctk.CTkLabel(self, text="> Información_", 
@@ -112,7 +110,7 @@ class DistroInfoScreen(ctk.CTkFrame):
         btn_frame.grid(row=4, column=0, pady=(0, 40))
         
         self.btn_volver = ctk.CTkButton(btn_frame, text="←    Volver", command=lambda: self.controller.show_frame("DistroSelectionScreen"),
-                                   height=45, width=150, corner_radius=5,
+                                   height=45, width=220, corner_radius=5,
                                    font=ctk.CTkFont(family="Consolas", size=15, weight="bold"), cursor="hand2",
                                    fg_color="transparent", border_width=2, border_color="#008800",
                                    hover_color="#001100", text_color="#008800")
