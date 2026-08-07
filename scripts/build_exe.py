@@ -80,11 +80,8 @@ def main():
     os.makedirs(os.path.join(dist_dir, "output"), exist_ok=True)
     os.makedirs(os.path.join(dist_dir, "logs"), exist_ok=True)
     
-    # 4. Crear el archivo RAR final en el Escritorio
-    home_dir = os.environ.get("USERPROFILE", os.environ.get("HOME", ""))
-    desktop_path = os.path.join(home_dir, "Escritorio") if os.path.exists(os.path.join(home_dir, "Escritorio")) else os.path.join(home_dir, "Desktop")
-    
-    rar_filename = os.path.join(desktop_path, "Rookie-Linux-Builder-Release.rar")
+    # 4. Crear el archivo RAR final en la raiz del proyecto
+    rar_filename = os.path.join(project_root, "Rookie-Linux-Builder-Release.rar")
     
     print(f"Creando {rar_filename}...")
     
@@ -111,7 +108,7 @@ def main():
     if os.path.exists("Rookie-Linux-Builder.spec"):
         os.remove("Rookie-Linux-Builder.spec")
         
-    print(f"¡Exito! Se ha creado el paquete en tu Escritorio.")
+    print(f"¡Exito! Se ha creado el paquete en la raíz del proyecto.")
     print(f"Las carpetas residuales han sido limpiadas.")
 
 if __name__ == "__main__":
