@@ -1,8 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=Rookie Linux Installer
-Comment=Completa la instalación de Rookie Linux en el primer arranque
-Exec=bash /opt/rookie-scripts/rookie-terminal-wrapper.sh
-Hidden=false
-NoDisplay=false
-X-GNOME-Autostart-enabled=true

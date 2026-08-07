@@ -29,6 +29,8 @@ class DocumentationScreen(ctk.CTkFrame):
         self.tabview.add("Lenguajes")
         self.tabview.add("IDEs y Terminal")
         self.tabview.add("Bases de Datos")
+        self.tabview.add("Librerías y Frameworks")
+        self.tabview.add("Ofimática")
         
         def create_link(parent, text, url, row, col=0):
             btn = ctk.CTkButton(parent, text=f"🔗 {text}", 
@@ -55,9 +57,18 @@ class DocumentationScreen(ctk.CTkFrame):
         create_link(tab_lang, "C++ Reference", "https://en.cppreference.com/", 1, 0)
         create_link(tab_lang, "CMake Docs", "https://cmake.org/cmake/help/latest/", 2, 0)
         create_link(tab_lang, "Java SE Docs", "https://docs.oracle.com/en/java/", 3, 0)
+        create_link(tab_lang, "GCC Docs", "https://gcc.gnu.org/onlinedocs/", 4, 0)
+        create_link(tab_lang, "Clang Documentation", "https://clang.llvm.org/docs/", 5, 0)
+        create_link(tab_lang, "Make Manual", "https://www.gnu.org/software/make/manual/", 6, 0)
+        create_link(tab_lang, "GDB Documentation", "https://sourceware.org/gdb/documentation/", 7, 0)
+        create_link(tab_lang, "Valgrind Manual", "https://valgrind.org/docs/manual/manual.html", 8, 0)
+
         create_link(tab_lang, "Node.js Docs", "https://nodejs.org/en/docs/", 0, 1)
         create_link(tab_lang, "TypeScript Handbook", "https://www.typescriptlang.org/docs/", 1, 1)
         create_link(tab_lang, ".NET Microsoft Docs", "https://learn.microsoft.com/es-es/dotnet/", 2, 1)
+        create_link(tab_lang, "Maven Guides", "https://maven.apache.org/guides/", 3, 1)
+        create_link(tab_lang, "Flake8 Docs", "https://flake8.pycqa.org/en/latest/", 4, 1)
+        create_link(tab_lang, "IPython", "https://ipython.readthedocs.io/", 5, 1)
 
         # --- IDEs y Terminal ---
         tab_ide = self.tabview.tab("IDEs y Terminal")
@@ -66,9 +77,16 @@ class DocumentationScreen(ctk.CTkFrame):
         create_link(tab_ide, "IntelliJ IDEA", "https://www.jetbrains.com/help/idea/", 1, 0)
         create_link(tab_ide, "Git (Pro Git Book)", "https://git-scm.com/book/es/v2", 2, 0)
         create_link(tab_ide, "Oh My Zsh", "https://ohmyz.sh/", 3, 0)
+        create_link(tab_ide, "Emacs Manual", "https://www.gnu.org/software/emacs/manual/", 4, 0)
+        create_link(tab_ide, "GitHub CLI", "https://cli.github.com/manual/", 5, 0)
+        create_link(tab_ide, "htop", "https://htop.dev/", 6, 0)
+        
         create_link(tab_ide, "Tmux Cheat Sheet", "https://tmuxcheatsheet.com/", 0, 1)
         create_link(tab_ide, "Ripgrep (rg)", "https://github.com/BurntSushi/ripgrep", 1, 1)
         create_link(tab_ide, "FZF (Fuzzy Finder)", "https://github.com/junegunn/fzf", 2, 1)
+        create_link(tab_ide, "btop", "https://github.com/aristocratos/btop", 3, 1)
+        create_link(tab_ide, "jq Manual", "https://jqlang.github.io/jq/manual/", 4, 1)
+        create_link(tab_ide, "Antigravity (XKCD)", "https://xkcd.com/353/", 5, 1) # El easter egg de Python
         
         # --- Base de Datos ---
         tab_db = self.tabview.tab("Bases de Datos")
@@ -76,6 +94,41 @@ class DocumentationScreen(ctk.CTkFrame):
         create_link(tab_db, "Docker & Docker Compose", "https://docs.docker.com/", 0, 0)
         create_link(tab_db, "PostgreSQL Oficial", "https://www.postgresql.org/docs/", 1, 0)
         create_link(tab_db, "DBeaver Docs", "https://dbeaver.com/docs/wiki/", 2, 0)
+        create_link(tab_db, "SQLite Oficial", "https://www.sqlite.org/docs.html", 0, 1)
+        create_link(tab_db, "pgAdmin 4", "https://www.pgadmin.org/docs/", 1, 1)
+
+        # --- Librerías y Frameworks ---
+        tab_libs = self.tabview.tab("Librerías y Frameworks")
+        tab_libs.grid_columnconfigure((0,1), weight=1)
+        
+        # Columna 0: Python y Web
+        create_link(tab_libs, "Pandas", "https://pandas.pydata.org/docs/", 0, 0)
+        create_link(tab_libs, "NumPy", "https://numpy.org/doc/stable/", 1, 0)
+        create_link(tab_libs, "JupyterLab", "https://jupyterlab.readthedocs.io/", 2, 0)
+        create_link(tab_libs, "Flask", "https://flask.palletsprojects.com/", 3, 0)
+        create_link(tab_libs, "Django", "https://docs.djangoproject.com/", 4, 0)
+        create_link(tab_libs, "FastAPI", "https://fastapi.tiangolo.com/", 5, 0)
+        
+        # Columna 1: Gráficos y Móvil
+        create_link(tab_libs, "SDL2 Wiki", "https://wiki.libsdl.org/", 0, 1)
+        create_link(tab_libs, "OpenGL", "https://www.opengl.org/documentation/", 1, 1)
+        create_link(tab_libs, "SFML", "https://www.sfml-dev.org/learn.php", 2, 1)
+        create_link(tab_libs, "Flutter Docs", "https://docs.flutter.dev/", 3, 1)
+        create_link(tab_libs, "Dart Docs", "https://dart.dev/guides", 4, 1)
+
+        # --- Ofimática ---
+        tab_daily = self.tabview.tab("Ofimática")
+        tab_daily.grid_columnconfigure((0,1), weight=1)
+        
+        # Columna 0
+        create_link(tab_daily, "Brave Browser", "https://brave.com/linux/", 0, 0)
+        create_link(tab_daily, "Firefox", "https://support.mozilla.org/es/products/firefox", 1, 0)
+        create_link(tab_daily, "LibreOffice", "https://documentation.libreoffice.org/es/", 2, 0)
+        
+        # Columna 1
+        create_link(tab_daily, "OBS Studio Wiki", "https://obsproject.com/wiki/", 0, 1)
+        create_link(tab_daily, "VLC Media Player", "https://wiki.videolan.org/Documentation:Documentation/", 1, 1)
+        create_link(tab_daily, "JFLAP", "https://www.jflap.org/tutorial/", 2, 1)
         
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
         btn_frame.grid(row=2, column=0, pady=(10, 20))

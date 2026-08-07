@@ -3,6 +3,7 @@ logs/
 work/
 workdir/
 output/
+app release/
 
 # Downloaded ISO artifacts
 downloads/iso/
