@@ -69,8 +69,14 @@ class UsbFlashScreen(ctk.CTkFrame):
         self.status_lbl = ctk.CTkLabel(self.progress_frame, text="Estado: Esperando confirmación...", text_color="#008800", font=ctk.CTkFont(family="Consolas", size=14))
         self.status_lbl.pack(pady=(0, 10))
         
-        self.lbl_progress = ctk.CTkLabel(self.progress_frame, text="Progreso: 0%", text_color="#008800", font=ctk.CTkFont(family="Consolas", size=12))
-        self.lbl_progress.pack(anchor="w")
+        lbl_frame_prog = ctk.CTkFrame(self.progress_frame, fg_color="transparent")
+        lbl_frame_prog.pack(fill="x")
+        
+        self.lbl_progress = ctk.CTkLabel(lbl_frame_prog, text="Progreso: 0%", text_color="#008800", font=ctk.CTkFont(family="Consolas", size=12))
+        self.lbl_progress.pack(side="left")
+        self.eta_lbl_progress = ctk.CTkLabel(lbl_frame_prog, text="", text_color="#006600", font=ctk.CTkFont(family="Consolas", size=12))
+        self.eta_lbl_progress.pack(side="right")
+        
         self.progress_bar = ctk.CTkProgressBar(self.progress_frame, mode="determinate", width=500, progress_color="#00FF00", fg_color="#002200")
         self.progress_bar.pack(pady=(0, 10))
         self.progress_bar.set(0)
@@ -98,7 +104,7 @@ class UsbFlashScreen(ctk.CTkFrame):
         self.is_flashing = False
         self.cancel_flag = os.path.join(tempfile.gettempdir(), "rookie_flash_cancel.flag")
         
-        self.prog_manager = ProgressManager(self, self.progress_bar, self.lbl_progress, "Progreso: ")
+        self.prog_manager = ProgressManager(self, self.progress_bar, self.lbl_progress, "Progreso: ", eta_label=self.eta_lbl_progress)
 
     def on_show(self):
         self.prog_manager.reset()
@@ -313,7 +319,12 @@ class UsbFlashScreen(ctk.CTkFrame):
                     elif st == "done":
                         self.after(0, self.update_progress, 1.0, "100,00")
                         self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: ¡Flasheo completado con éxito!", text_color="#00FF00"))
-                        self.after(0, lambda: msg_show_info("Éxito", "El USB booteable ha sido creado correctamente. Ya puedes usarlo para instalar el sistema."))
+                        
+                        def on_success():
+                            msg_show_info("Éxito", "El USB booteable ha sido creado correctamente. Ya puedes usarlo para instalar el sistema.")
+                            self.controller.show_frame("OptionSelectionScreen")
+                            
+                        self.after(0, on_success)
                         done = True
                     elif st == "error":
                         error_msg = err

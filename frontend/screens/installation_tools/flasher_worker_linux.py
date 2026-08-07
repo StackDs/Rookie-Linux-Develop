@@ -51,9 +51,13 @@ def main():
         except Exception as e:
             pass
             
-        # Limpiar tabla de particiones vieja (wipefs)
+        # Limpiar tabla de particiones vieja profundamente para evitar volúmenes "zombies"
         try:
             subprocess.run(['wipefs', '-a', drive_path], check=False)
+            # Destruir MBR/GPT escribiendo ceros en los primeros 16MB
+            subprocess.run(['dd', 'if=/dev/zero', f'of={drive_path}', 'bs=1M', 'count=16'], stderr=subprocess.DEVNULL)
+            # Crear tabla de particiones completamente nueva y vacía
+            subprocess.run(['parted', '-s', drive_path, 'mklabel', 'msdos'], stderr=subprocess.DEVNULL)
         except:
             pass
             

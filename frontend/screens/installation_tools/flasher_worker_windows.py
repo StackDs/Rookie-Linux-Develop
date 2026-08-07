@@ -38,8 +38,8 @@ def main():
     write_progress(prog_file, "cleaning", 0, "Preparando disco...")
     
     try:
-        # Diskpart clean con reintentos y clear readonly
-        dp_script = f"select disk {drive_num}\nattributes disk clear readonly\nclean\n"
+        # Diskpart clean con reintentos y formateo completo para asegurar que no queden volúmenes "zombies"
+        dp_script = f"select disk {drive_num}\nattributes disk clear readonly\noffline disk\nonline disk\nclean\ncreate partition primary\nformat fs=exfat quick\nassign\n"
         dp_path = os.path.join(tempfile.gettempdir(), "dp_clean_worker.txt")
         
         for attempt in range(3):

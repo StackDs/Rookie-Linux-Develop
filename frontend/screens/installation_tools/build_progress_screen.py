@@ -31,14 +31,26 @@ class BuildProgressScreen(ctk.CTkFrame):
         self.status_lbl = ctk.CTkLabel(self.progress_frame, text="Estado: Iniciando...", text_color="#008800", font=ctk.CTkFont(family="Consolas", size=14))
         self.status_lbl.pack(pady=(0, 10))
         
-        self.lbl_download = ctk.CTkLabel(self.progress_frame, text="Descarga: 0%", text_color="#008800", font=ctk.CTkFont(family="Consolas", size=12))
-        self.lbl_download.pack(anchor="w")
+        lbl_frame_dl = ctk.CTkFrame(self.progress_frame, fg_color="transparent")
+        lbl_frame_dl.pack(fill="x")
+        
+        self.lbl_download = ctk.CTkLabel(lbl_frame_dl, text="Descarga: 0%", text_color="#008800", font=ctk.CTkFont(family="Consolas", size=12))
+        self.lbl_download.pack(side="left")
+        self.eta_lbl_download = ctk.CTkLabel(lbl_frame_dl, text="", text_color="#006600", font=ctk.CTkFont(family="Consolas", size=12))
+        self.eta_lbl_download.pack(side="right")
+        
         self.progress_bar_download = ctk.CTkProgressBar(self.progress_frame, mode="determinate", width=500, progress_color="#00FF00", fg_color="#002200")
         self.progress_bar_download.pack(pady=(0, 10))
         self.progress_bar_download.set(0)
         
-        self.lbl_generation = ctk.CTkLabel(self.progress_frame, text="Generación: 0%", text_color="#008800", font=ctk.CTkFont(family="Consolas", size=12))
-        self.lbl_generation.pack(anchor="w")
+        lbl_frame_gen = ctk.CTkFrame(self.progress_frame, fg_color="transparent")
+        lbl_frame_gen.pack(fill="x")
+        
+        self.lbl_generation = ctk.CTkLabel(lbl_frame_gen, text="Generación: 0%", text_color="#008800", font=ctk.CTkFont(family="Consolas", size=12))
+        self.lbl_generation.pack(side="left")
+        self.eta_lbl_generation = ctk.CTkLabel(lbl_frame_gen, text="", text_color="#006600", font=ctk.CTkFont(family="Consolas", size=12))
+        self.eta_lbl_generation.pack(side="right")
+        
         self.progress_bar_generation = ctk.CTkProgressBar(self.progress_frame, mode="determinate", width=500, progress_color="#00FF00", fg_color="#002200")
         self.progress_bar_generation.pack()
         self.progress_bar_generation.set(0)
@@ -67,8 +79,8 @@ class BuildProgressScreen(ctk.CTkFrame):
         self.current_iso_target_dir = None
         self.is_cancelled = False
         
-        self.prog_mgr_dl = ProgressManager(self, self.progress_bar_download, self.lbl_download, "Descarga: ")
-        self.prog_mgr_gen = ProgressManager(self, self.progress_bar_generation, self.lbl_generation, "Generación: ")
+        self.prog_mgr_dl = ProgressManager(self, self.progress_bar_download, self.lbl_download, "Descarga: ", eta_label=self.eta_lbl_download)
+        self.prog_mgr_gen = ProgressManager(self, self.progress_bar_generation, self.lbl_generation, "Generación: ", eta_label=self.eta_lbl_generation)
 
     def on_show(self):
         distro_seleccionada = self.controller.frames["DistroSelectionScreen"].distro_var.get()
@@ -442,6 +454,8 @@ class BuildProgressScreen(ctk.CTkFrame):
                                     pass
                             if deleted:
                                 msg_show_info("Ahorrar Espacio", "La imagen original (oficial) ha sido eliminada correctamente para liberar espacio.")
+                    
+                    self.controller.show_frame("OptionSelectionScreen")
                             
                 self.after(0, on_success_actions)
             else:
