@@ -1,3 +1,7 @@
+<div align="right">
+  <b>🇪🇸 Español</b> | <a href="./README.en.md">🇺🇸 English</a>
+</div>
+
 <div align="center">
 
 # 🐧 Rookie Linux Develop
@@ -211,7 +215,7 @@ Las ideas originales, objetivos y dirección del proyecto son autoría del desar
 
 ---
 
-## 📄 Licencia y agradecimientos
+## 📄 Licencia
 
 ### Licencia
 
