@@ -20,12 +20,12 @@ class OptionSelectionScreen(ctk.CTkFrame):
         self.create_option(1, "Manual de uso", lambda: controller.show_frame("InfoScreen"))
         self.create_option(2, "Sobre Linux", lambda: controller.show_frame("ExplanationScreen"))
         self.create_option(3, "Crear imagen personalizada", lambda: controller.show_frame("DistroSelectionScreen"))
-        self.create_option(4, "Montar imagen (Requiere un USB)", lambda: controller.show_frame("UsbFlashScreen"))
+        self.create_option(4, "Montar imagen (Requiere USB)", lambda: controller.show_frame("UsbFlashScreen"))
         
         if sys.platform == "win32":
             self.create_option(5, "Instalar WSL (Necesario)", lambda: controller.show_frame("WslInstallScreen"))
         else:
-            self.create_option(5, "Instalar WSL (Necesario)", self.show_wsl_not_needed)
+            self.create_option(5, "Instalar WSL (Necesario)", self.show_wsl_not_needed, dimmed=True)
             
         self.create_option(6, "Documentación oficial", lambda: controller.show_frame("DocumentationScreen"))
         self.create_option(7, "Acerca de Rookie Linux", lambda: controller.show_frame("AboutScreen"))
@@ -38,7 +38,7 @@ class OptionSelectionScreen(ctk.CTkFrame):
             width=650, height=350
         )
 
-    def create_option(self, row, text, command):
+    def create_option(self, row, text, command, dimmed=False):
         frame = ctk.CTkFrame(self, fg_color="transparent")
         frame.grid(row=row, column=0, pady=(0, 8))
         
@@ -60,12 +60,17 @@ class OptionSelectionScreen(ctk.CTkFrame):
             btn.configure(state="disabled", fg_color="transparent", text_color="#003300", border_color="#003300")
             return btn
             
-        apply_glow_effect(btn, default_text=text, hover_text=text)
-        
+        if dimmed:
+            btn.configure(text_color="#003300", border_color="#003300")
+        else:
+            apply_glow_effect(btn, default_text=text, hover_text=text)
+            
         def on_enter(e):
-            arrow.configure(text=">")
+            if not dimmed:
+                arrow.configure(text=">")
         def on_leave(e):
-            arrow.configure(text="")
+            if not dimmed:
+                arrow.configure(text="")
             
         btn.bind("<Enter>", on_enter, add="+")
         btn.bind("<Leave>", on_leave, add="+")

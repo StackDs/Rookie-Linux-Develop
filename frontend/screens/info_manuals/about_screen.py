@@ -75,26 +75,29 @@ class AboutScreen(ctk.CTkFrame):
                 new_h = int(height * (new_w / width))
                 ctk_img = ctk.CTkImage(light_image=img, dark_image=img, size=(new_w, new_h))
                 lbl = ctk.CTkLabel(parent, image=ctk_img, text="", cursor="hand2")
+                lbl.image_ref = ctk_img  # Mantener referencia
                 lbl.pack(pady=(0, 15))
                 lbl.bind("<Button-1>", lambda e, p=img_path: self.zoom_image(p))
         except Exception as e:
             print(f"Error loading image {filename}: {e}")
 
     def zoom_image(self, img_path):
-        top = ctk.CTkToplevel(self)
+        root = self.winfo_toplevel()
+        top = ctk.CTkToplevel(root)  # Usar root como padre, evita bugs de jerarquia en Linux con ScrollableFrame
         top.title("Visor de Imagen")
         w, h = 1000, 700
         ws, hs = top.winfo_screenwidth(), top.winfo_screenheight()
         x, y = (ws // 2) - (w // 2), (hs // 2) - (h // 2)
         top.geometry(f"{w}x{h}+{x}+{y}")
         top.configure(fg_color="#0a0a0a")
-        top.transient(self.winfo_toplevel())
-        top.grab_set()
+        top.transient(root)
+        top.lift()
+        top.after(50, top.grab_set)  # Diferir grab_set para que Linux termine de mapear la ventana
         
         try:
             img = Image.open(img_path)
-            if img.mode != 'RGBA' and img.mode != 'RGB':
-                img = img.convert('RGBA')
+            # Forzar conversión a RGBA siempre, soluciona bugs de renderizado de JPEG (RGB) en Linux Tkinter
+            img = img.convert('RGBA')
                 
             width, height = img.size
             ratio = min(950/width, 650/height)

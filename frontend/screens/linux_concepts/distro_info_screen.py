@@ -162,8 +162,8 @@ class DistroInfoScreen(ctk.CTkFrame):
         
         try:
             img = Image.open(img_path)
-            if img.mode != 'RGBA' and img.mode != 'RGB':
-                img = img.convert('RGBA')
+            # Forzar conversión a RGBA siempre, soluciona bugs de renderizado en Linux Tkinter
+            img = img.convert('RGBA')
                 
             width, height = img.size
             ratio = min(950/width, 650/height)

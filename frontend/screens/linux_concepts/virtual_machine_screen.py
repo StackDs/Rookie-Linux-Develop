@@ -67,6 +67,7 @@ class VirtualMachineScreen(ctk.CTkFrame):
                 new_h = int(height * (new_w / width))
                 ctk_img = ctk.CTkImage(light_image=img, dark_image=img, size=(new_w, new_h))
                 lbl = ctk.CTkLabel(parent, image=ctk_img, text="")
+                lbl.image_ref = ctk_img
                 lbl.pack(pady=10)
         except Exception as e:
             print(f"Error loading image {filename}: {e}")
