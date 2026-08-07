@@ -32,7 +32,7 @@ class BasicConceptsScreen(ctk.CTkFrame):
             "juegos de Windows.\n\n"
             "Una vez ejecutado el instalador mediante un USB, tendrás la opción de instalar Linux en dual boot o eliminar Windows por completo."
         )
-        db_lbl = ctk.CTkLabel(content_frame, text=db_text, text_color="#00E676", font=ctk.CTkFont(family="Consolas", size=15), wraplength=700, justify="left")
+        db_lbl = ctk.CTkLabel(content_frame, text=db_text, text_color="#00E676", font=ctk.CTkFont(family="Consolas", size=15), wraplength=700, justify="center")
         db_lbl.pack(anchor="w", pady=(0, 15))
         
         self.load_image(content_frame, "dualboot.jpg")

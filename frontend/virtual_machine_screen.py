@@ -32,7 +32,7 @@ class VirtualMachineScreen(ctk.CTkFrame):
             "Sin embargo, requiere que tu computadora asigne parte de su memoria RAM y procesador a esta máquina virtual, "
             "por lo que el rendimiento suele ser menor en comparación a instalarlo de forma nativa (como en el método Dual Boot)."
         )
-        vm_lbl = ctk.CTkLabel(content_frame, text=vm_text, text_color="#00E676", font=ctk.CTkFont(family="Consolas", size=15), wraplength=700, justify="left")
+        vm_lbl = ctk.CTkLabel(content_frame, text=vm_text, text_color="#00E676", font=ctk.CTkFont(family="Consolas", size=15), wraplength=700, justify="center")
         vm_lbl.pack(anchor="w", pady=(0, 15))
         
         self.load_image(content_frame, "maquinaVirtual.jpg")

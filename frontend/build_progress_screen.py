@@ -188,7 +188,7 @@ class BuildProgressScreen(ctk.CTkFrame):
             
             try:
                 cflags = 0x08000000 if sys.platform == "win32" else 0
-                subprocess.run('wsl -u root -e pkill -f "build_iso.sh|download_iso.sh"', shell=True, creationflags=cflags, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                subprocess.run('wsl --cd ~ -u root -e pkill -f "build_iso.sh|download_iso.sh"', shell=True, creationflags=cflags, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             except Exception:
                 pass
                 
@@ -248,7 +248,7 @@ class BuildProgressScreen(ctk.CTkFrame):
 
         # Limpieza proactiva de procesos huérfanos de WSL
         try:
-            subprocess.run('wsl -u root -e pkill -f "build_iso.sh|download_iso.sh"', shell=True, creationflags=cflags, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run('wsl --cd ~ -u root -e pkill -f "build_iso.sh|download_iso.sh"', shell=True, creationflags=cflags, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         except Exception:
             pass
 
@@ -294,7 +294,7 @@ class BuildProgressScreen(ctk.CTkFrame):
             
             # Instalar dependencias en WSL (reemplaza a docker build)
             self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Instalando dependencias de Linux en WSL..."))
-            wsl_deps_cmd = 'wsl -u root -e bash -c "apt-get update && apt-get install -y xorriso squashfs-tools e2fsprogs mtools dosfstools p7zip-full wget curl aria2 syslinux-utils isolinux coreutils"'
+            wsl_deps_cmd = 'wsl --cd ~ -u root -e bash -c "apt-get update && apt-get install -y xorriso squashfs-tools e2fsprogs mtools dosfstools p7zip-full wget curl aria2 syslinux-utils isolinux coreutils"'
             subprocess.run(wsl_deps_cmd, shell=True, creationflags=creationflags, check=False)
             
             def to_wsl_path(win_path):
@@ -302,9 +302,12 @@ class BuildProgressScreen(ctk.CTkFrame):
                 return f"/mnt/{drive[0].lower()}{rest.replace(os.sep, '/')}"
                 
             wsl_project_root = to_wsl_path(project_root)
+            drive_letter = os.path.splitdrive(project_root)[0][0].lower()
+            
+            mount_logic = f'if [ ! -d /mnt/{drive_letter} ]; then mkdir -p /mnt/{drive_letter}; fi; if ! mountpoint -q /mnt/{drive_letter}; then mount -t drvfs {drive_letter.upper()}: /mnt/{drive_letter}; fi; '
             
             # Ejecutar run de la descarga usando WSL en vez de docker
-            cmd = f'wsl -u root -e bash -c "export ISO_DISTRO=\\"{distro_env}\\"; sed -i \\"s/\\\\r\\$//\\" {wsl_project_root}/builder/download_iso.sh 2>/dev/null; cd {wsl_project_root} && bash {wsl_project_root}/builder/download_iso.sh \\"{distro_env}\\""'
+            cmd = f'wsl --cd ~ -u root -e bash -c "{mount_logic}export ISO_DISTRO=\\"{distro_env}\\"; sed -i \\"s/\\\\r\\$//\\" {wsl_project_root}/builder/download_iso.sh 2>/dev/null; cd {wsl_project_root} && bash {wsl_project_root}/builder/download_iso.sh \\"{distro_env}\\""'
             
             self.current_process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, creationflags=creationflags, bufsize=1, universal_newlines=True)
             
@@ -376,9 +379,12 @@ class BuildProgressScreen(ctk.CTkFrame):
                 return f"/mnt/{drive[0].lower()}{rest.replace(os.sep, '/')}"
                 
             wsl_project_root = to_wsl_path(project_root)
+            drive_letter = os.path.splitdrive(project_root)[0][0].lower()
+            
+            mount_logic = f'if [ ! -d /mnt/{drive_letter} ]; then mkdir -p /mnt/{drive_letter}; fi; if ! mountpoint -q /mnt/{drive_letter}; then mount -t drvfs {drive_letter.upper()}: /mnt/{drive_letter}; fi; '
             
             custom_iso_name = f"{distro_seleccionada} custom by Stack"
-            cmd = f'wsl -u root -e bash -c "export ISO_DISTRO=\\"{distro_env}\\"; export CUSTOM_ISO_NAME=\\"{custom_iso_name}\\"; sed -i \\"s/\\\\r\\$//\\" {wsl_project_root}/builder/build_iso.sh 2>/dev/null; cd {wsl_project_root} && bash {wsl_project_root}/builder/build_iso.sh"'
+            cmd = f'wsl --cd ~ -u root -e bash -c "{mount_logic}export ISO_DISTRO=\\"{distro_env}\\"; export CUSTOM_ISO_NAME=\\"{custom_iso_name}\\"; sed -i \\"s/\\\\r\\$//\\" {wsl_project_root}/builder/build_iso.sh 2>/dev/null; cd {wsl_project_root} && bash {wsl_project_root}/builder/build_iso.sh"'
             
             self.current_process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, creationflags=creationflags, bufsize=1, universal_newlines=True)
             

@@ -43,7 +43,7 @@ ctk.set_default_color_theme("green")
 class App(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.title("Rookie Linux Develop - Terminal Mode")
+        self.title("Rookie Linux Develop")
         self.geometry("900x600")
         self.resizable(False, False)
         self.minsize(900, 600)

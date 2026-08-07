@@ -1,5 +1,7 @@
 import customtkinter as ctk
-from utils import apply_glow_effect
+import os
+from PIL import Image
+from utils import apply_glow_effect, get_project_root
 
 class AboutScreen(ctk.CTkFrame):
     def __init__(self, parent, controller):
@@ -13,9 +15,41 @@ class AboutScreen(ctk.CTkFrame):
                                   font=ctk.CTkFont(family="Consolas", size=38, weight="bold"))
         self.title.grid(row=0, column=0, pady=(20, 10))
         
-        # Placeholder para el contenido futuro
-        self.info_lbl = ctk.CTkLabel(self, text="[Espacio reservado para licencia y créditos]", text_color="#00E676", font=ctk.CTkFont(family="Consolas", size=16))
-        self.info_lbl.grid(row=1, column=0, pady=10)
+        text_frame = ctk.CTkScrollableFrame(self, fg_color="transparent")
+        text_frame.grid(row=1, column=0, padx=40, pady=10, sticky="nsew")
+        
+        initial_text = (
+            "> Rookie Linux Develop v1.0\n"
+            "Desarrollado por: Stack\n\n"
+            "¡Gracias por descargar y utilizar Rookie Linux Develop!\n\n"
+            "Este proyecto nació con la intención de facilitar el acceso al mundo del\n"
+            "desarrollo en Linux, ahorrando horas de configuración tediosa. Esperamos\n"
+            "que esta herramienta te sea de gran utilidad y mejore tu productividad."
+        )
+        
+        lbl_initial = ctk.CTkLabel(text_frame, text=initial_text, 
+                                   font=ctk.CTkFont(family="Consolas", size=16), 
+                                   text_color="#00E676", justify="center")
+        lbl_initial.pack(anchor="w", pady=(0, 20))
+        
+        # Cargar imagen de bienvenida en medio
+        self.load_image(text_frame, "welcome.jpg")
+        
+        license_text = (
+            "[+] LICENCIA Y CÓDIGO ABIERTO (MIT License - Simplificada)\n"
+            "Rookie Linux Develop es un proyecto de código abierto (Open Source).\n"
+            "Eres completamente libre de utilizar, estudiar, copiar, modificar y\n"
+            "distribuir este software y su código fuente a voluntad.\n\n"
+            "La única condición (y muestra de compañerismo) es que se debe mantener\n"
+            "el reconocimiento y otorgar el crédito correspondiente a los creadores\n"
+            "originales de este proyecto\n\n"
+            "El software se proporciona 'tal cual', sin garantías de ningún tipo."
+        )
+        
+        lbl_license = ctk.CTkLabel(text_frame, text=license_text, 
+                                   font=ctk.CTkFont(family="Consolas", size=16), 
+                                   text_color="#00E676", justify="center")
+        lbl_license.pack(anchor="w", pady=(20, 10))
         
         self.grid_rowconfigure(1, weight=1)
         
@@ -29,3 +63,44 @@ class AboutScreen(ctk.CTkFrame):
                                    hover_color="#001100", text_color="#00FF00")
         apply_glow_effect(self.btn_action, default_text="← Volver", hover_text="← Volver")
         self.btn_action.pack(side="left", padx=10)
+
+    def load_image(self, parent, filename):
+        base_path = os.path.join(get_project_root(), "assets")
+        img_path = os.path.join(base_path, filename)
+        try:
+            if os.path.exists(img_path):
+                img = Image.open(img_path)
+                width, height = img.size
+                new_w = 400
+                new_h = int(height * (new_w / width))
+                ctk_img = ctk.CTkImage(light_image=img, dark_image=img, size=(new_w, new_h))
+                lbl = ctk.CTkLabel(parent, image=ctk_img, text="", cursor="hand2")
+                lbl.pack(pady=(0, 15))
+                lbl.bind("<Button-1>", lambda e, p=img_path: self.zoom_image(p))
+        except Exception as e:
+            print(f"Error loading image {filename}: {e}")
+
+    def zoom_image(self, img_path):
+        top = ctk.CTkToplevel(self)
+        top.title("Visor de Imagen")
+        top.geometry("1000x700")
+        top.configure(fg_color="#0a0a0a")
+        top.transient(self.winfo_toplevel())
+        top.grab_set()
+        
+        try:
+            img = Image.open(img_path)
+            width, height = img.size
+            ratio = min(950/width, 650/height)
+            new_w, new_h = int(width * ratio), int(height * ratio)
+            
+            ctk_img = ctk.CTkImage(light_image=img, dark_image=img, size=(new_w, new_h))
+            lbl = ctk.CTkLabel(top, image=ctk_img, text="", cursor="hand2")
+            lbl.pack(expand=True, fill="both", padx=20, pady=20)
+            
+            lbl.bind("<Button-1>", lambda e: top.destroy())
+        except Exception:
+            err = ctk.CTkLabel(top, text="Error cargando zoom.", text_color="#FF0000")
+            err.pack(expand=True)
+            
+        top.bind("<Escape>", lambda e: top.destroy())
