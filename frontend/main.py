@@ -3,16 +3,21 @@ from custom_messagebox import msg_show_error
 import sys
 
 # Worker hook para flasheo como Admin
-if "--worker" in sys.argv:
+if "--worker-windows" in sys.argv:
     try:
-        import flasher_worker
-        flasher_worker.main()
+        from screens.installation_tools import flasher_worker_windows
+        flasher_worker_windows.main()
     except Exception as e:
-        open('C:/Users/Stack/Desktop/error_main.txt', 'w').write(str(e))
+        pass
+    sys.exit(0)
 
-    flasher_worker.main()
-    import sys as _sys
-    _sys.exit(0)
+if "--worker-linux" in sys.argv:
+    try:
+        from screens.installation_tools import flasher_worker_linux
+        flasher_worker_linux.main()
+    except Exception as e:
+        pass
+    sys.exit(0)
 
 try:
     import customtkinter as ctk
@@ -20,22 +25,22 @@ except ImportError:
     msg_show_error("Error", "Faltan librerías. Ejecuta 'pip install customtkinter pillow'.")
     sys.exit(1)
 
-from start_screen import StartScreen
-from option_selection_screen import OptionSelectionScreen
-from info_screen import InfoScreen
-from explanation_screen import ExplanationScreen
-from distro_selection_screen import DistroSelectionScreen
-from distro_info_screen import DistroInfoScreen
-from build_progress_screen import BuildProgressScreen
-from usb_flash_screen import UsbFlashScreen
-from basic_concepts_screen import BasicConceptsScreen
-from bitlocker_screen import BitlockerScreen
-from wsl_install_screen import WslInstallScreen
-from instructions_screen import InstructionsScreen
-from virtual_machine_screen import VirtualMachineScreen
-from clean_installation_screen import CleanInstallationScreen
-from documentation_screen import DocumentationScreen
-from about_screen import AboutScreen
+from screens.core.start_screen import StartScreen
+from screens.core.option_selection_screen import OptionSelectionScreen
+from screens.info_manuals.info_screen import InfoScreen
+from screens.info_manuals.explanation_screen import ExplanationScreen
+from screens.linux_concepts.distro_selection_screen import DistroSelectionScreen
+from screens.linux_concepts.distro_info_screen import DistroInfoScreen
+from screens.installation_tools.build_progress_screen import BuildProgressScreen
+from screens.installation_tools.usb_flash_screen import UsbFlashScreen
+from screens.linux_concepts.basic_concepts_screen import BasicConceptsScreen
+from screens.info_manuals.bitlocker_screen import BitlockerScreen
+from screens.installation_tools.wsl_install_screen import WslInstallScreen
+from screens.info_manuals.instructions_screen import InstructionsScreen
+from screens.linux_concepts.virtual_machine_screen import VirtualMachineScreen
+from screens.linux_concepts.clean_installation_screen import CleanInstallationScreen
+from screens.info_manuals.documentation_screen import DocumentationScreen
+from screens.info_manuals.about_screen import AboutScreen
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("green")

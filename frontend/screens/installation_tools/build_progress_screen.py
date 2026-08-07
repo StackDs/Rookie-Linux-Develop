@@ -115,8 +115,10 @@ class BuildProgressScreen(ctk.CTkFrame):
                 pass
             
             try:
-                cflags = 0x08000000 if sys.platform == "win32" else 0
-                subprocess.run('wsl --cd ~ -u root -e pkill -f "build_iso.sh|download_iso.sh"', shell=True, creationflags=cflags, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                if sys.platform == "win32":
+                    subprocess.run('wsl --cd ~ -u root -e pkill -f "build_iso.sh|download_iso.sh"', shell=True, creationflags=0x08000000, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                else:
+                    subprocess.run('pkill -f "build_iso.sh|download_iso.sh"', shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             except Exception:
                 pass
                 
@@ -158,27 +160,33 @@ class BuildProgressScreen(ctk.CTkFrame):
         return True
 
     def ejecutar_script(self):
-        # 1. Verificar si WSL está disponible
-        try:
-            cflags = 0x08000000 if sys.platform == "win32" else 0
-            res = subprocess.run(["wsl", "--status"], capture_output=True, text=True, creationflags=cflags)
-            if res.returncode != 0:
-                raise Exception("WSL no instalado")
-        except Exception:
-            msg_show_error(
-                "WSL Requerido", 
-                "El Subsistema de Windows para Linux (WSL) no está instalado o no se detecta correctamente.\n\n"
-                "Por favor, vuelve al menú de Opciones y utiliza la herramienta 'Instalar WSL'."
-            )
-            self.status_lbl.configure(text="Estado: Error de dependencia (WSL).", text_color="#FF0000")
-            self.set_btn_volver()
-            return
+        # 1. Verificar si WSL está disponible (Solo Windows)
+        if sys.platform == "win32":
+            try:
+                res = subprocess.run(["wsl", "--status"], capture_output=True, text=True, creationflags=0x08000000)
+                if res.returncode != 0:
+                    raise Exception("WSL no instalado")
+            except Exception:
+                msg_show_error(
+                    "WSL Requerido", 
+                    "El Subsistema de Windows para Linux (WSL) no está instalado o no se detecta correctamente.\n\n"
+                    "Por favor, vuelve al menú de Opciones y utiliza la herramienta 'Instalar WSL'."
+                )
+                self.status_lbl.configure(text="Estado: Error de dependencia (WSL).", text_color="#FF0000")
+                self.set_btn_volver()
+                return
 
-        # Limpieza proactiva de procesos huérfanos de WSL
-        try:
-            subprocess.run('wsl --cd ~ -u root -e pkill -f "build_iso.sh|download_iso.sh"', shell=True, creationflags=cflags, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        except Exception:
-            pass
+            # Limpieza proactiva de procesos huérfanos de WSL
+            try:
+                subprocess.run('wsl --cd ~ -u root -e pkill -f "build_iso.sh|download_iso.sh"', shell=True, creationflags=0x08000000, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            except Exception:
+                pass
+        else:
+            # En Linux nativo limpiamos los procesos huérfanos locales
+            try:
+                subprocess.run('pkill -f "build_iso.sh|download_iso.sh"', shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            except Exception:
+                pass
 
         distro_seleccionada = self.controller.frames["DistroSelectionScreen"].distro_var.get()
         
@@ -218,26 +226,30 @@ class BuildProgressScreen(ctk.CTkFrame):
         self.after(0, self.start_indeterminate_download)
         
         try:
-            creationflags = 0x08000000 if sys.platform == "win32" else 0
-            
-            # Instalar dependencias en WSL (reemplaza a docker build)
-            self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Instalando dependencias de Linux en WSL..."))
-            wsl_deps_cmd = 'wsl --cd ~ -u root -e bash -c "apt-get update && apt-get install -y xorriso squashfs-tools e2fsprogs mtools dosfstools p7zip-full wget curl aria2 syslinux-utils isolinux coreutils"'
-            subprocess.run(wsl_deps_cmd, shell=True, creationflags=creationflags, check=False)
-            
-            def to_wsl_path(win_path):
-                drive, rest = os.path.splitdrive(win_path)
-                return f"/mnt/{drive[0].lower()}{rest.replace(os.sep, '/')}"
+            if sys.platform == "win32":
+                self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Detectando dependencias de Linux en WSL..."))
+                wsl_deps_cmd = 'wsl --cd ~ -u root -e bash -c "apt-get update && apt-get install -y xorriso squashfs-tools e2fsprogs mtools dosfstools p7zip-full wget curl aria2 syslinux-utils isolinux coreutils"'
+                subprocess.run(wsl_deps_cmd, shell=True, creationflags=0x08000000, check=False)
                 
-            wsl_project_root = to_wsl_path(project_root)
-            drive_letter = os.path.splitdrive(project_root)[0][0].lower()
-            
-            mount_logic = f'if [ ! -d /mnt/{drive_letter} ]; then mkdir -p /mnt/{drive_letter}; fi; if ! mountpoint -q /mnt/{drive_letter}; then mount -t drvfs {drive_letter.upper()}: /mnt/{drive_letter}; fi; '
-            
-            # Ejecutar run de la descarga usando WSL en vez de docker
-            cmd = f'wsl --cd ~ -u root -e bash -c "{mount_logic}export ISO_DISTRO=\\"{distro_env}\\"; sed -i \\"s/\\\\r\\$//\\" {wsl_project_root}/builder/download_iso.sh 2>/dev/null; cd {wsl_project_root} && bash {wsl_project_root}/builder/download_iso.sh \\"{distro_env}\\""'
-            
-            self.current_process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, creationflags=creationflags, bufsize=1, universal_newlines=True)
+                def to_wsl_path(win_path):
+                    drive, rest = os.path.splitdrive(win_path)
+                    return f"/mnt/{drive[0].lower()}{rest.replace(os.sep, '/')}"
+                    
+                wsl_project_root = to_wsl_path(project_root)
+                drive_letter = os.path.splitdrive(project_root)[0][0].lower()
+                
+                mount_logic = f'if [ ! -d /mnt/{drive_letter} ]; then mkdir -p /mnt/{drive_letter}; fi; if ! mountpoint -q /mnt/{drive_letter}; then mount -t drvfs {drive_letter.upper()}: /mnt/{drive_letter}; fi; '
+                
+                cmd = f'wsl --cd ~ -u root -e bash -c "{mount_logic}export ISO_DISTRO=\\"{distro_env}\\"; sed -i \\"s/\\\\r\\$//\\" {wsl_project_root}/builder/download_iso.sh 2>/dev/null; cd {wsl_project_root} && bash {wsl_project_root}/builder/download_iso.sh \\"{distro_env}\\""'
+                
+                self.current_process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, creationflags=0x08000000, bufsize=1, universal_newlines=True)
+            else:
+                self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Instalando dependencias nativas de Linux..."))
+                linux_deps_cmd = 'pkexec bash -c "apt-get update && apt-get install -y xorriso squashfs-tools e2fsprogs mtools dosfstools p7zip-full wget curl aria2 syslinux-utils isolinux coreutils"'
+                subprocess.run(linux_deps_cmd, shell=True, check=False)
+                
+                cmd = f'export ISO_DISTRO="{distro_env}"; cd "{project_root}" && bash "{project_root}/builder/download_iso.sh" "{distro_env}"'
+                self.current_process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, universal_newlines=True)
             
             self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Descargando imagen oficial de la ISO..."))
             
@@ -300,21 +312,24 @@ class BuildProgressScreen(ctk.CTkFrame):
         current_phase = "processing"
         
         try:
-            creationflags = 0x08000000 if sys.platform == "win32" else 0
-            
-            def to_wsl_path(win_path):
-                drive, rest = os.path.splitdrive(win_path)
-                return f"/mnt/{drive[0].lower()}{rest.replace(os.sep, '/')}"
-                
-            wsl_project_root = to_wsl_path(project_root)
-            drive_letter = os.path.splitdrive(project_root)[0][0].lower()
-            
-            mount_logic = f'if [ ! -d /mnt/{drive_letter} ]; then mkdir -p /mnt/{drive_letter}; fi; if ! mountpoint -q /mnt/{drive_letter}; then mount -t drvfs {drive_letter.upper()}: /mnt/{drive_letter}; fi; '
-            
             custom_iso_name = f"{distro_seleccionada} custom by Stack"
-            cmd = f'wsl --cd ~ -u root -e bash -c "{mount_logic}export ISO_DISTRO=\\"{distro_env}\\"; export CUSTOM_ISO_NAME=\\"{custom_iso_name}\\"; sed -i \\"s/\\\\r\\$//\\" {wsl_project_root}/builder/build_iso.sh 2>/dev/null; cd {wsl_project_root} && bash {wsl_project_root}/builder/build_iso.sh"'
             
-            self.current_process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, creationflags=creationflags, bufsize=1, universal_newlines=True)
+            if sys.platform == "win32":
+                def to_wsl_path(win_path):
+                    drive, rest = os.path.splitdrive(win_path)
+                    return f"/mnt/{drive[0].lower()}{rest.replace(os.sep, '/')}"
+                    
+                wsl_project_root = to_wsl_path(project_root)
+                drive_letter = os.path.splitdrive(project_root)[0][0].lower()
+                
+                mount_logic = f'if [ ! -d /mnt/{drive_letter} ]; then mkdir -p /mnt/{drive_letter}; fi; if ! mountpoint -q /mnt/{drive_letter}; then mount -t drvfs {drive_letter.upper()}: /mnt/{drive_letter}; fi; '
+                
+                cmd = f'wsl --cd ~ -u root -e bash -c "{mount_logic}export ISO_DISTRO=\\"{distro_env}\\"; export CUSTOM_ISO_NAME=\\"{custom_iso_name}\\"; sed -i \\"s/\\\\r\\$//\\" {wsl_project_root}/builder/build_iso.sh 2>/dev/null; cd {wsl_project_root} && bash {wsl_project_root}/builder/build_iso.sh"'
+                
+                self.current_process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, creationflags=0x08000000, bufsize=1, universal_newlines=True)
+            else:
+                cmd = f'pkexec bash -c "export ISO_DISTRO=\\"{distro_env}\\"; export CUSTOM_ISO_NAME=\\"{custom_iso_name}\\"; cd \\"{project_root}\\" && bash \\"{project_root}/builder/build_iso.sh\\""'
+                self.current_process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, universal_newlines=True)
             
             self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Modificando e inyectando código en la ISO..."))
             self.after(0, self.update_progress_download, 1.0, "100,00")

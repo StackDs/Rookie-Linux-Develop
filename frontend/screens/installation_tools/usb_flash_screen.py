@@ -128,37 +128,69 @@ class UsbFlashScreen(ctk.CTkFrame):
         self.drives_info = []
         
         try:
-            cmd = 'powershell -NoProfile -Command "Get-Disk | Where-Object {$_.BusType -eq \'USB\'} | Select-Object Number, FriendlyName, Size | ConvertTo-Json -Compress"'
-            creationflags = 0x08000000 if sys.platform == "win32" else 0
-            
-            result = subprocess.run(cmd, shell=True, capture_output=True, text=True, creationflags=creationflags)
-            if result.stdout.strip():
-                try:
-                    data = json.loads(result.stdout)
-                    if isinstance(data, dict):
-                        data = [data]
-                    
-                    values = []
-                    for disk in data:
-                        size_gb = disk.get("Size", 0) / (1024**3)
-                        name = disk.get("FriendlyName", "USB Drive")
-                        num = disk.get("Number", -1)
-                        if num != -1:
-                            display_str = f"Disco {num}: {name} ({size_gb:.1f} GB)"
-                            values.append(display_str)
-                            self.drives_info.append({"num": num, "display": display_str})
-                    
-                    if values:
-                        self.usb_combo.configure(values=values)
-                        self.combo_var.set(values[0])
-                    else:
-                        self.combo_var.set("No se encontraron USBs")
-                        self.usb_combo.configure(values=["No se encontraron USBs"])
-                except Exception as e:
-                    self.combo_var.set("Error procesando USBs")
+            if sys.platform == "win32":
+                cmd = 'powershell -NoProfile -Command "Get-Disk | Where-Object {$_.BusType -eq \'USB\'} | Select-Object Number, FriendlyName, Size | ConvertTo-Json -Compress"'
+                result = subprocess.run(cmd, shell=True, capture_output=True, text=True, creationflags=0x08000000)
+                if result.stdout.strip():
+                    try:
+                        data = json.loads(result.stdout)
+                        if isinstance(data, dict):
+                            data = [data]
+                        
+                        values = []
+                        for disk in data:
+                            size_gb = disk.get("Size", 0) / (1024**3)
+                            name = disk.get("FriendlyName", "USB Drive")
+                            num = disk.get("Number", -1)
+                            if num != -1:
+                                display_str = f"Disco {num}: {name} ({size_gb:.1f} GB)"
+                                values.append(display_str)
+                                self.drives_info.append({"num": num, "display": display_str})
+                        
+                        if values:
+                            self.usb_combo.configure(values=values)
+                            self.combo_var.set(values[0])
+                        else:
+                            self.combo_var.set("No se encontraron USBs")
+                            self.usb_combo.configure(values=["No se encontraron USBs"])
+                    except Exception as e:
+                        self.combo_var.set("Error procesando USBs")
+                else:
+                    self.combo_var.set("No se encontraron USBs")
+                    self.usb_combo.configure(values=["No se encontraron USBs"])
             else:
-                self.combo_var.set("No se encontraron USBs")
-                self.usb_combo.configure(values=["No se encontraron USBs"])
+                # LINUX NATIVE LOGIC
+                cmd = "lsblk -J -o NAME,SIZE,TYPE,RM,MODEL"
+                result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+                if result.stdout.strip():
+                    try:
+                        data = json.loads(result.stdout)
+                        devices = data.get("blockdevices", [])
+                        values = []
+                        for dev in devices:
+                            # Consideramos USBs si RM (removable) es true/1 o tipo disk (podria ser un externo)
+                            if dev.get("type") == "disk" and str(dev.get("rm", "0")) == "1":
+                                name = dev.get("name", "")
+                                size_str = dev.get("size", "0G")
+                                model = dev.get("model", "USB Drive")
+                                
+                                path = f"/dev/{name}"
+                                display_str = f"Disco {path}: {model} ({size_str})"
+                                values.append(display_str)
+                                self.drives_info.append({"num": path, "display": display_str}) # Usamos la ruta como 'num'
+                                
+                        if values:
+                            self.usb_combo.configure(values=values)
+                            self.combo_var.set(values[0])
+                        else:
+                            self.combo_var.set("No se encontraron USBs")
+                            self.usb_combo.configure(values=["No se encontraron USBs"])
+                    except Exception as e:
+                        self.combo_var.set("Error procesando USBs (Linux)")
+                else:
+                    self.combo_var.set("No se encontraron USBs")
+                    self.usb_combo.configure(values=["No se encontraron USBs"])
+                    
         except Exception as e:
             self.combo_var.set("Error al buscar unidades")
 
@@ -226,19 +258,28 @@ class UsbFlashScreen(ctk.CTkFrame):
         try:
             python_exe = sys.executable
             
-            # Lanzamos el proceso trabajador elevado usando --worker
-            if getattr(sys, 'frozen', False):
-                # Exe empaquetado: relanzarse a sí mismo con --worker como proceso Admin
-                args_list = f'--worker --iso "{iso_path}" --drive {drive_num} --progress "{prog_file}"'
-                ps_cmd = f'Start-Process -FilePath "{python_exe}" -ArgumentList \'{args_list}\' -Verb RunAs -WindowStyle Hidden'
+            if sys.platform == "win32":
+                # Windows Logic
+                if getattr(sys, 'frozen', False):
+                    args_list = f'--worker-windows --iso "{iso_path}" --drive {drive_num} --progress "{prog_file}"'
+                    ps_cmd = f'Start-Process -FilePath "{python_exe}" -ArgumentList \'{args_list}\' -Verb RunAs -WindowStyle Hidden'
+                else:
+                    worker_script = os.path.join(os.path.dirname(__file__), "flasher_worker_windows.py")
+                    args_list = f'"{worker_script}" --iso "{iso_path}" --drive {drive_num} --progress "{prog_file}"'
+                    ps_cmd = f'Start-Process -FilePath "{python_exe}" -ArgumentList \'{args_list}\' -Verb RunAs -WindowStyle Hidden'
+                
+                res = subprocess.run(['powershell', '-NoProfile', '-Command', ps_cmd], capture_output=True, text=True, creationflags=0x08000000)
             else:
-                # Modo código fuente: lanzar flasher_worker.py directamente
-                worker_script = os.path.join(os.path.dirname(__file__), "flasher_worker.py")
-                args_list = f'"{worker_script}" --iso "{iso_path}" --drive {drive_num} --progress "{prog_file}"'
-                ps_cmd = f'Start-Process -FilePath "{python_exe}" -ArgumentList \'{args_list}\' -Verb RunAs -WindowStyle Hidden'
-            
-            creationflags = 0x08000000 if sys.platform == "win32" else 0
-            res = subprocess.run(['powershell', '-NoProfile', '-Command', ps_cmd], capture_output=True, text=True, creationflags=creationflags)
+                # Linux Logic
+                if getattr(sys, 'frozen', False):
+                    args_list = f'--worker-linux --iso "{iso_path}" --drive {drive_num} --progress "{prog_file}"'
+                    # Usamos pkexec para pedir permisos
+                    cmd = f'pkexec "{python_exe}" {args_list}'
+                else:
+                    worker_script = os.path.join(os.path.dirname(__file__), "flasher_worker_linux.py")
+                    cmd = f'pkexec "{python_exe}" "{worker_script}" --iso "{iso_path}" --drive "{drive_num}" --progress "{prog_file}"'
+                    
+                res = subprocess.run(cmd, shell=True, capture_output=True, text=True)
             
             if res.returncode != 0:
                 self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Flasheo cancelado o fallido.", text_color="#FF0000"))

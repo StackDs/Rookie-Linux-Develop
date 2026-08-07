@@ -19,14 +19,14 @@ def force_remove_tree(path):
         except Exception:
             pass
     time.sleep(1)
-    # Intentar borrar; si falla usar rd /s /q (Windows) o rm -rf (Linux) como último recurso
+    # Intentar borrar; si falla usar rd /s /q (Windows) o sudo rm -rf (Linux) como último recurso
     try:
         shutil.rmtree(path)
     except OSError:
         if os.name == 'nt':
             subprocess.run(["cmd", "/c", "rd", "/s", "/q", path], check=False)
         else:
-            subprocess.run(["rm", "-rf", path], check=False)
+            subprocess.run(["sudo", "rm", "-rf", path], check=False)
         time.sleep(0.5)
 
 def copy_folder_robust(src, dst):
@@ -42,27 +42,51 @@ def main():
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     os.chdir(project_root)
     
-    print("Iniciando empaquetado de Rookie Linux Builder para LINUX...")
+    print("Iniciando empaquetado de Rookie Linux Builder para WINDOWS...")
     
-    # 1. Instalar dependencias si faltan
-    subprocess.run([sys.executable, "-m", "pip", "install", "pyinstaller", "customtkinter", "pillow", "--break-system-packages"], check=False)
-    
-    # 2. Construir el ejecutable con PyInstaller (Nativo)
-    print("Compilando con PyInstaller nativamente para Linux...")
-    subprocess.run([
-        sys.executable, "-m", "PyInstaller", 
-        "--noconfirm",
-        "--windowed",
-        "--name", "Rookie-Linux-Builder",
-        "frontend/main.py"
-    ], check=True)
+    if os.name == 'nt':
+        print("Entorno Windows detectado. Compilando nativamente...")
+        # 1. Instalar dependencias
+        subprocess.run([sys.executable, "-m", "pip", "install", "pyinstaller", "customtkinter", "pillow"], check=False)
+        
+        # 2. Construir el ejecutable
+        subprocess.run([
+            sys.executable, "-m", "PyInstaller", 
+            "--noconfirm",
+            "--windowed",
+            "--name", "Rookie-Linux-Builder",
+            "frontend/main.py"
+        ], check=True)
+    else:
+        print("Entorno Linux detectado. Usando Docker (tobix/pywine:3.12) para compilar el .exe de Windows...")
+        print("Se solicitará tu contraseña (sudo) si Docker la requiere.")
+        
+        # 1 y 2. Instalar dependencias y compilar en el MISMO contenedor
+        print("Instalando dependencias y compilando con PyInstaller (Windows via Docker)...")
+        docker_command = (
+            "wine python -m pip install pyinstaller customtkinter pillow && "
+            "wine pyinstaller --noconfirm --windowed --collect-all customtkinter "
+            "--name Rookie-Linux-Builder frontend/main.py"
+        )
+        subprocess.run([
+            "sudo", "docker", "run", "--rm", 
+            "-v", f"{project_root}:/workspace", 
+            "-w", "/workspace", 
+            "tobix/pywine:3.12", 
+            "sh", "-c", docker_command
+        ], check=True)
+        
+        # Corregir permisos: Docker crea los archivos como 'root'
+        uid = os.getuid()
+        gid = os.getgid()
+        subprocess.run(["sudo", "chown", "-R", f"{uid}:{gid}", "build", "dist", "Rookie-Linux-Builder.spec"], check=False)
     
     # 3. Preparar directorio de distribucion en la raiz
-    dist_dir = os.path.join(project_root, "Rookie-Linux-Release-Linux")
+    dist_dir = os.path.join(project_root, "Rookie-Linux-Release-Windows")
     print(f"Preparando directorio de lanzamiento en: {dist_dir}...")
     force_remove_tree(dist_dir)
     
-    # Mover la carpeta compilada
+    # Mover la carpeta compilada (que ahora tiene todas las DLLs)
     shutil.move("dist/Rookie-Linux-Builder", dist_dir)
     
     # Copiar carpetas necesarias
@@ -77,8 +101,10 @@ def main():
     os.makedirs(os.path.join(dist_dir, "output"), exist_ok=True)
     os.makedirs(os.path.join(dist_dir, "logs"), exist_ok=True)
     
-    # 4. Crear el archivo RAR final en la raiz
-    rar_filename = os.path.join(project_root, "Rookie-Linux-Builder-Linux.rar")
+    # 4. Crear el archivo RAR final en la carpeta 'Application release'
+    release_dir = os.path.join(project_root, "Application release")
+    os.makedirs(release_dir, exist_ok=True)
+    rar_filename = os.path.join(release_dir, "Rookie-Linux-Builder-Windows.rar")
     
     print(f"Creando {rar_filename}...")
     
@@ -101,7 +127,7 @@ def main():
     if os.path.exists("Rookie-Linux-Builder.spec"):
         os.remove("Rookie-Linux-Builder.spec")
         
-    print(f"¡Exito! Se ha creado el paquete para Linux en la raíz del proyecto.")
+    print(f"¡Exito! Se ha creado el paquete en la raíz del proyecto.")
     print(f"Las carpetas residuales han sido limpiadas.")
 
 if __name__ == "__main__":

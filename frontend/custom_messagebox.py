@@ -14,14 +14,21 @@ class CustomMessageBox(ctk.CTkToplevel):
         self.transient(self.master)
         self.grab_set()
         
-        # Center it relative to parent
+        # Center it relative to parent or screen
         self.update_idletasks()
         try:
-            x = self.master.winfo_x() + (self.master.winfo_width() // 2) - (width // 2)
-            y = self.master.winfo_y() + (self.master.winfo_height() // 2) - (height // 2)
-            self.geometry(f"+{x}+{y}")
-        except:
-            pass # fallback if master doesn't have winfo ready
+            # Intentar centrar respecto a la ventana principal de la app
+            if self.master and self.master.winfo_viewable():
+                x = self.master.winfo_rootx() + (self.master.winfo_width() // 2) - (width // 2)
+                y = self.master.winfo_rooty() + (self.master.winfo_height() // 2) - (height // 2)
+            else:
+                # Fallback: centrar en la pantalla entera
+                x = (self.winfo_screenwidth() // 2) - (width // 2)
+                y = (self.winfo_screenheight() // 2) - (height // 2)
+                
+            self.geometry(f"+{int(x)}+{int(y)}")
+        except Exception as e:
+            pass # Fallback silencioso si falla la obtención geométrica
         
         self.configure(fg_color="#0a0a0a")
         
