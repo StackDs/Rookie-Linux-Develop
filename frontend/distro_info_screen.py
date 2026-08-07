@@ -152,7 +152,10 @@ class DistroInfoScreen(ctk.CTkFrame):
     def zoom_image(self, img_path):
         top = ctk.CTkToplevel(self)
         top.title("Visor de Imagen")
-        top.geometry("1000x700")
+        w, h = 1000, 700
+        ws, hs = top.winfo_screenwidth(), top.winfo_screenheight()
+        x, y = (ws // 2) - (w // 2), (hs // 2) - (h // 2)
+        top.geometry(f"{w}x{h}+{x}+{y}")
         top.configure(fg_color="#0a0a0a")
         top.transient(self.winfo_toplevel())
         top.grab_set()

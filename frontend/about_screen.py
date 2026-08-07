@@ -29,7 +29,7 @@ class AboutScreen(ctk.CTkFrame):
         
         lbl_initial = ctk.CTkLabel(text_frame, text=initial_text, 
                                    font=ctk.CTkFont(family="Consolas", size=16), 
-                                   text_color="#00E676", justify="center")
+                                   text_color="#00E676", justify="left")
         lbl_initial.pack(anchor="w", pady=(0, 20))
         
         # Cargar imagen de bienvenida en medio
@@ -48,7 +48,7 @@ class AboutScreen(ctk.CTkFrame):
         
         lbl_license = ctk.CTkLabel(text_frame, text=license_text, 
                                    font=ctk.CTkFont(family="Consolas", size=16), 
-                                   text_color="#00E676", justify="center")
+                                   text_color="#00E676", justify="left")
         lbl_license.pack(anchor="w", pady=(20, 10))
         
         self.grid_rowconfigure(1, weight=1)
@@ -83,7 +83,10 @@ class AboutScreen(ctk.CTkFrame):
     def zoom_image(self, img_path):
         top = ctk.CTkToplevel(self)
         top.title("Visor de Imagen")
-        top.geometry("1000x700")
+        w, h = 1000, 700
+        ws, hs = top.winfo_screenwidth(), top.winfo_screenheight()
+        x, y = (ws // 2) - (w // 2), (hs // 2) - (h // 2)
+        top.geometry(f"{w}x{h}+{x}+{y}")
         top.configure(fg_color="#0a0a0a")
         top.transient(self.winfo_toplevel())
         top.grab_set()

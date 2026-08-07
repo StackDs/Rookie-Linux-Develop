@@ -35,7 +35,7 @@ class OptionSelectionScreen(ctk.CTkFrame):
                             font=ctk.CTkFont(family="Consolas", size=18, weight="bold"),
                             cursor="hand2", fg_color="transparent", 
                             border_width=2, border_color="#008800",
-                            hover_color="#001100", text_color="#00FF00")
+                            hover_color="#001100", text_color="#008800")
         btn.pack(side="left")
         
         dummy = ctk.CTkLabel(frame, text="", width=30)

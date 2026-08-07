@@ -31,7 +31,7 @@ class CleanInstallationScreen(ctk.CTkFrame):
             "de forma exclusiva. Es ideal si ya te sientes cómodo con Linux, si quieres revivir una PC antigua, o si estás "
             "completamente seguro de que no necesitas usar aplicaciones exclusivas de Windows."
         )
-        ci_lbl = ctk.CTkLabel(content_frame, text=ci_text, text_color="#00E676", font=ctk.CTkFont(family="Consolas", size=15), wraplength=700, justify="center")
+        ci_lbl = ctk.CTkLabel(content_frame, text=ci_text, text_color="#00E676", font=ctk.CTkFont(family="Consolas", size=15), wraplength=700, justify="left")
         ci_lbl.pack(anchor="w", pady=(0, 15))
         
         self.load_image(content_frame, "onlyLinux.jpg")

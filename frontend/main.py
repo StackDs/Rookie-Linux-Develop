@@ -45,6 +45,16 @@ class App(ctk.CTk):
         super().__init__()
         self.title("Rookie Linux Develop")
         self.geometry("900x600")
+        
+        # Cargar icono de la ventana (si existe)
+        import os
+        from utils import get_project_root
+        icon_path = os.path.join(get_project_root(), "assets", "icon.ico")
+        if os.path.exists(icon_path):
+            try:
+                self.iconbitmap(icon_path)
+            except: pass
+            
         self.resizable(False, False)
         self.minsize(900, 600)
 

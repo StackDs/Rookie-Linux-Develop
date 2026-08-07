@@ -32,7 +32,7 @@ class BitlockerScreen(ctk.CTkFrame):
             "En muchos casos esto no basta para desactivarlo por completo; en ese caso te recomendamos formatear tu "
             "computador por completo para instalar una versión de Windows sin BitLocker y así no tener problemas más tarde."
         )
-        bl_lbl = ctk.CTkLabel(content_frame, text=bl_text, text_color="#00E676", font=ctk.CTkFont(family="Consolas", size=15), wraplength=700, justify="center")
+        bl_lbl = ctk.CTkLabel(content_frame, text=bl_text, text_color="#00E676", font=ctk.CTkFont(family="Consolas", size=15), wraplength=700, justify="left")
         bl_lbl.pack(anchor="w", pady=(0, 15))
         
         self.load_image(content_frame, "bitlocker.jpg")

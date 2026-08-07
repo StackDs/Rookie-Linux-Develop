@@ -7,7 +7,7 @@ import glob
 import time
 import re
 from custom_messagebox import msg_show_info, msg_show_error, msg_show_warning, msg_ask_yes_no
-from utils import apply_glow_effect, get_project_root
+from utils import apply_glow_effect, get_project_root, ProgressManager
 
 class BuildProgressScreen(ctk.CTkFrame):
     def __init__(self, parent, controller):
@@ -67,13 +67,8 @@ class BuildProgressScreen(ctk.CTkFrame):
         self.current_iso_target_dir = None
         self.is_cancelled = False
         
-        self.target_download = 0.0
-        self.current_download = 0.0
-        self.is_animating_dl = False
-        
-        self.target_gen = 0.0
-        self.current_gen = 0.0
-        self.is_animating_gen = False
+        self.prog_mgr_dl = ProgressManager(self, self.progress_bar_download, self.lbl_download, "Descarga: ")
+        self.prog_mgr_gen = ProgressManager(self, self.progress_bar_generation, self.lbl_generation, "Generación: ")
 
     def on_show(self):
         distro_seleccionada = self.controller.frames["DistroSelectionScreen"].distro_var.get()
@@ -85,90 +80,23 @@ class BuildProgressScreen(ctk.CTkFrame):
         self.btn_action.configure(text="Cancelar", command=self.cancel_process, text_color="#FF0000", border_color="#FF0000", hover_color="#330000", state="normal")
         apply_glow_effect(self.btn_action, default_text="Cancelar", hover_text="Cancelar", color_base="#AA0000", color_glow="#FF0000")
         
-        self.target_download = 0.0
-        self.current_download = 0.0
-        self.is_animating_dl = False
-        self.target_gen = 0.0
-        self.current_gen = 0.0
-        self.is_animating_gen = False
-        
-        self.update_progress_download(0.0, "0,00")
-        self.update_progress_generation(0.0, "0,00")
+        self.prog_mgr_dl.reset()
+        self.prog_mgr_gen.reset()
         self.ejecutar_script()
 
     def update_progress_download(self, val, text_val):
-        if self.progress_bar_download.cget("mode") == "indeterminate":
-            self.progress_bar_download.stop()
-            self.progress_bar_download.configure(mode="determinate")
-        self.target_download = val
-        if not self.is_animating_dl:
-            self.is_animating_dl = True
-            self.animate_download()
+        self.prog_mgr_dl.set_determinate()
+        self.prog_mgr_dl.update_progress(val)
 
     def update_progress_generation(self, val, text_val):
-        if self.progress_bar_generation.cget("mode") == "indeterminate":
-            self.progress_bar_generation.stop()
-            self.progress_bar_generation.configure(mode="determinate")
-        self.target_gen = val
-        if not self.is_animating_gen:
-            self.is_animating_gen = True
-            self.animate_generation()
-
-    def animate_download(self):
-        if self.is_cancelled:
-            self.is_animating_dl = False
-            return
-            
-        step = 0.005 # 0.5% por frame
-        if self.current_download < self.target_download:
-            self.current_download += step
-            if self.current_download > self.target_download:
-                self.current_download = self.target_download
-        elif self.current_download > self.target_download:
-            self.current_download = self.target_download
-            
-        self.progress_bar_download.set(self.current_download)
-        val = self.current_download * 100.0
-        text_val = f"{val:.2f}".replace('.', ',')
-        self.lbl_download.configure(text=f"Descarga: {text_val}%")
-        
-        if self.current_download < self.target_download:
-            self.after(20, self.animate_download)
-        else:
-            self.is_animating_dl = False
-            
-    def animate_generation(self):
-        if self.is_cancelled:
-            self.is_animating_gen = False
-            return
-            
-        step = 0.005
-        if self.current_gen < self.target_gen:
-            self.current_gen += step
-            if self.current_gen > self.target_gen:
-                self.current_gen = self.target_gen
-        elif self.current_gen > self.target_gen:
-            self.current_gen = self.target_gen
-            
-        self.progress_bar_generation.set(self.current_gen)
-        val = self.current_gen * 100.0
-        text_val = f"{val:.2f}".replace('.', ',')
-        self.lbl_generation.configure(text=f"Generación: {text_val}%")
-        
-        if self.current_gen < self.target_gen:
-            self.after(20, self.animate_generation)
-        else:
-            self.is_animating_gen = False
+        self.prog_mgr_gen.set_determinate()
+        self.prog_mgr_gen.update_progress(val)
 
     def start_indeterminate_download(self):
-        self.progress_bar_download.configure(mode="indeterminate")
-        self.progress_bar_download.start()
-        self.lbl_download.configure(text="Descarga: Conectando...")
+        self.prog_mgr_dl.set_indeterminate("Descarga: Conectando...")
 
     def start_indeterminate_generation(self):
-        self.progress_bar_generation.configure(mode="indeterminate")
-        self.progress_bar_generation.start()
-        self.lbl_generation.configure(text="Generación: Procesando...")
+        self.prog_mgr_gen.set_indeterminate("Generación: Procesando...")
 
     def set_btn_volver(self):
         self.btn_action.configure(text="← Volver", command=lambda: self.controller.show_frame("DistroInfoScreen"), 
@@ -485,14 +413,20 @@ class BuildProgressScreen(ctk.CTkFrame):
                     self.btn_flash_usb.pack(side="left", padx=10)
                     
                     if msg_ask_yes_no("Ahorrar Espacio", "¿Deseas eliminar la ISO oficial descargada para ahorrar espacio en tu disco duro?\n\nTu imagen personalizada recién creada NO se borrará y se mantendrá segura en la carpeta 'output'."):
-                        try:
                             import glob
                             import os
-                            isos = glob.glob(os.path.join(self.current_iso_target_dir, "*.iso"))
+                            from utils import get_project_root
+                            download_dir = os.path.join(get_project_root(), "downloads", "iso", distro_env)
+                            isos = glob.glob(os.path.join(download_dir, "*.iso"))
+                            deleted = False
                             for iso in isos:
-                                os.remove(iso)
-                        except Exception:
-                            pass
+                                try:
+                                    os.remove(iso)
+                                    deleted = True
+                                except Exception:
+                                    pass
+                            if deleted:
+                                msg_show_info("Ahorrar Espacio", "La imagen original (oficial) ha sido eliminada correctamente para liberar espacio.")
                             
                 self.after(0, on_success_actions)
             else:

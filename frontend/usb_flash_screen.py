@@ -9,7 +9,7 @@ import time
 import tempfile
 from tkinter import filedialog
 from custom_messagebox import msg_show_info, msg_show_error, msg_show_warning, msg_ask_yes_no
-from utils import apply_glow_effect, get_project_root
+from utils import apply_glow_effect, get_project_root, ProgressManager
 
 class UsbFlashScreen(ctk.CTkFrame):
     def __init__(self, parent, controller):
@@ -98,16 +98,10 @@ class UsbFlashScreen(ctk.CTkFrame):
         self.is_flashing = False
         self.cancel_flag = os.path.join(tempfile.gettempdir(), "rookie_flash_cancel.flag")
         
-        self.target_progress = 0.0
-        self.current_progress = 0.0
-        self.is_animating = False
+        self.prog_manager = ProgressManager(self, self.progress_bar, self.lbl_progress, "Progreso: ")
 
     def on_show(self):
-        self.target_progress = 0.0
-        self.current_progress = 0.0
-        self.is_animating = False
-        self.progress_bar.set(0)
-        self.lbl_progress.configure(text="Progreso: 0,00%")
+        self.prog_manager.reset()
         self.status_lbl.configure(text="Estado: Esperando confirmación...", text_color="#008800")
         self.btn_flash.configure(state="normal")
         self.set_btn_volver()
@@ -219,29 +213,7 @@ class UsbFlashScreen(ctk.CTkFrame):
         threading.Thread(target=self.flash_worker, args=(iso_path, target_num), daemon=True).start()
 
     def update_progress(self, percent, text):
-        self.target_progress = percent
-        if not self.is_animating:
-            self.is_animating = True
-            self.animate_progress()
-
-    def animate_progress(self):
-        step = 0.005 # 0.5% por frame
-        if self.current_progress < self.target_progress:
-            self.current_progress += step
-            if self.current_progress > self.target_progress:
-                self.current_progress = self.target_progress
-        elif self.current_progress > self.target_progress:
-            self.current_progress = self.target_progress
-            
-        self.progress_bar.set(self.current_progress)
-        val = self.current_progress * 100.0
-        text_val = f"{val:.2f}".replace('.', ',')
-        self.lbl_progress.configure(text=f"Progreso: {text_val}%")
-        
-        if self.current_progress < self.target_progress:
-            self.after(20, self.animate_progress)
-        else:
-            self.is_animating = False
+        self.prog_manager.update_progress(percent)
 
     def flash_worker(self, iso_path, drive_num):
         prog_file = os.path.join(tempfile.gettempdir(), "rookie_flash_progress.json")
