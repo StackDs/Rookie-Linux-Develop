@@ -46,19 +46,18 @@ if [ -d /opt/rookie-scripts/scripts ] && [ -f /opt/rookie-scripts/scripts/instal
     # Ejecutar el script (con sudo, pero manteniendo SUDO_USER para appearance.sh)
     sudo bash /opt/rookie-scripts/scripts/install.sh 2>&1 | tee -a "$LOG"
     
-    echo "Verificando instalación y aplicando retoques finales..." | tee -a "$LOG"
-    bash /opt/rookie-scripts/scripts/verify_installation.sh 2>&1 | tee -a "$LOG"
+    echo "Fase 1 completada. Abriendo terminal para la Fase 2 (Verificación)..." | tee -a "$LOG"
+    
+    # Desactivar este script para que no vuelva a ejecutarse
+    echo "Desactivando autostart de Rookie Linux..." | tee -a "$LOG"
+    sudo rm -f /etc/xdg/autostart/rookie-firstboot.desktop
+    
+    # Lanzar la fase 2 en una nueva terminal
+    sudo chmod +x /opt/rookie-scripts/scripts/rookie-verify.sh
+    bash /opt/rookie-scripts/rookie-terminal-wrapper.sh "/opt/rookie-scripts/scripts/rookie-verify.sh" &
+    exit 0
 else
     echo "[ERROR] No se encontraron los scripts en /opt/rookie-scripts/scripts/" | tee -a "$LOG"
+    sudo rm -f /etc/xdg/autostart/rookie-firstboot.desktop
+    read -p "Presiona Enter para cerrar esta ventana..."
 fi
-
-# Desactivar este script para que no vuelva a ejecutarse
-echo "Desactivando autostart de Rookie Linux..." | tee -a "$LOG"
-sudo rm -f /etc/xdg/autostart/rookie-firstboot.desktop
-
-echo ""
-echo "=========================================="
-echo "¡Instalación completada!"
-echo "Revisa $LOG si hubo algún error."
-echo "=========================================="
-read -p "Presiona Enter para cerrar esta ventana..."

@@ -113,13 +113,9 @@ echo "-> Paso 17: Instalando frameworks (Flutter, Dart, Unity)..."
 echo "-> Paso 18: Instalando programas adicionales..."
 "$SCRIPT_DIR/extras.sh" || echo "[!] Fallo en Paso 18, pero continuando..."
 
-# Ejecutar script de Apariencia
-echo "-> Paso 19: Configurando apariencia y modo oscuro..."
-"$SCRIPT_DIR/appearance.sh" || echo "[!] Fallo en Paso 19, pero continuando..."
-
 # Ejecutar script de Easter Eggs
-echo "-> Paso 20: Instalando easter eggs y chistes internos..."
-"$SCRIPT_DIR/easter_eggs.sh" || echo "[!] Fallo en Paso 20, pero continuando..."
+echo "-> Paso 19: Instalando easter eggs y chistes internos..."
+"$SCRIPT_DIR/easter_eggs.sh" || echo "[!] Fallo en Paso 19, pero continuando..."
 
 echo "=========================================="
 echo "Todo el proceso de instalacion ha finalizado exitosamente!"

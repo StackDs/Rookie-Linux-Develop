@@ -87,6 +87,14 @@ if [ "$ISO_DISTRO" = "ubuntu" ]; then
     cp "$TEMPLATES_DIR/user-data" "$EXTRACT_DIR/nocloud/"
     cp "$TEMPLATES_DIR/meta-data" "$EXTRACT_DIR/nocloud/"
     find "$EXTRACT_DIR/nocloud/" -type f -exec sed -i 's/\r$//' {} + 2>/dev/null || true
+    
+    echo "=> Preparando scripts de primer arranque para Ubuntu..."
+    cp "$TEMPLATES_DIR/rookie-firstboot.sh" "$EXTRACT_DIR/custom_scripts/" 2>/dev/null || true
+    cp "$TEMPLATES_DIR/rookie-terminal-wrapper.sh" "$EXTRACT_DIR/custom_scripts/" 2>/dev/null || true
+    cp "$TEMPLATES_DIR/rookie-firstboot.desktop" "$EXTRACT_DIR/custom_scripts/" 2>/dev/null || true
+    chmod +x "$EXTRACT_DIR/custom_scripts/rookie-firstboot.sh" "$EXTRACT_DIR/custom_scripts/rookie-terminal-wrapper.sh" 2>/dev/null || true
+    find "$EXTRACT_DIR/custom_scripts/" -type f -name "rookie-*.sh" -exec sed -i 's/\r$//' {} + 2>/dev/null || true
+    find "$EXTRACT_DIR/custom_scripts/" -type f -name "*.desktop" -exec sed -i 's/\r$//' {} + 2>/dev/null || true
 
     echo "=> Extrayendo configuracion GRUB original de la ISO..."
     xorriso -osirrox on -indev "$ISO_PATH" -extract /boot/grub/grub.cfg "$EXTRACT_DIR/grub.cfg" 2>/dev/null || true

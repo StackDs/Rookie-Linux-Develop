@@ -18,10 +18,13 @@ autoinstall:
     # 1. Mover nuestros scripts desde la ISO (/cdrom) al disco duro instalado (/target/opt/)
     - cp -r /cdrom/custom_scripts /target/opt/rookie-scripts
     - chmod +x /target/opt/rookie-scripts/scripts/*.sh
+    - chmod +x /target/opt/rookie-scripts/rookie-firstboot.sh
+    - chmod +x /target/opt/rookie-scripts/rookie-terminal-wrapper.sh
     
-    # 2. Ejecutar la bateria de scripts (install.sh) "chrootando" al sistema recien instalado
-    # Todo el log de instalacion se enviara a /var/log/rookie-install.log
-    - curtin in-target -- bash -c "/opt/rookie-scripts/scripts/install.sh > /var/log/rookie-install.log 2>&1"
+    # 2. Configurar autostart para el primer inicio de sesión
+    - mkdir -p /target/etc/xdg/autostart
+    - cp /target/opt/rookie-scripts/rookie-firstboot.desktop /target/etc/xdg/autostart/
+    - chmod 644 /target/etc/xdg/autostart/rookie-firstboot.desktop
     
     # 3. Desactivar cloud-init en el sistema instalado para que no se ejecute en cada arranque
     - curtin in-target -- touch /etc/cloud/cloud-init.disabled
