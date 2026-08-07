@@ -7,7 +7,7 @@ class OptionSelectionScreen(ctk.CTkFrame):
         self.controller = controller
         
         self.grid_rowconfigure(0, weight=1)
-        self.grid_rowconfigure(6, weight=1)
+        self.grid_rowconfigure(7, weight=1)
         self.grid_columnconfigure(0, weight=1)
         
         self.title_lbl = ctk.CTkLabel(self, text="> Selecciona una opción_", 
@@ -58,3 +58,14 @@ class OptionSelectionScreen(ctk.CTkFrame):
                                        hover_color="#001100", text_color="#00FF00")
         apply_glow_effect(self.btn_mount, default_text="[d] Montar imagen", hover_text="[d] Montar imagen")
         self.btn_mount.grid(row=5, column=0, pady=(0, 15))
+
+        # Option E: Instalar WSL
+        self.btn_wsl = ctk.CTkButton(self, text="[e] Instalar WSL", 
+                                       command=lambda: controller.show_frame("WslInstallScreen"),
+                                       height=50, width=350, corner_radius=5,
+                                       font=ctk.CTkFont(family="Consolas", size=18, weight="bold"),
+                                       cursor="hand2", fg_color="transparent", 
+                                       border_width=2, border_color="#008800",
+                                       hover_color="#001100", text_color="#00FF00")
+        apply_glow_effect(self.btn_wsl, default_text="[e] Instalar WSL", hover_text="[e] Instalar WSL")
+        self.btn_wsl.grid(row=6, column=0, pady=(0, 15))

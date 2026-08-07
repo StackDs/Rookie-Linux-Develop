@@ -30,6 +30,7 @@ from build_progress_screen import BuildProgressScreen
 from usb_flash_screen import UsbFlashScreen
 from basic_concepts_screen import BasicConceptsScreen
 from bitlocker_screen import BitlockerScreen
+from wsl_install_screen import WslInstallScreen
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("green")
@@ -52,7 +53,7 @@ class App(ctk.CTk):
         self.container.grid_columnconfigure(0, weight=1)
 
         self.frames = {}
-        for F in (StartScreen, OptionSelectionScreen, InfoScreen, ExplanationScreen, DistroSelectionScreen, DistroInfoScreen, BuildProgressScreen, UsbFlashScreen, BasicConceptsScreen, BitlockerScreen):
+        for F in (StartScreen, OptionSelectionScreen, InfoScreen, ExplanationScreen, DistroSelectionScreen, DistroInfoScreen, BuildProgressScreen, UsbFlashScreen, BasicConceptsScreen, BitlockerScreen, WslInstallScreen):
             page_name = F.__name__
             frame = F(parent=self.container, controller=self)
             self.frames[page_name] = frame

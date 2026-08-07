@@ -238,24 +238,12 @@ class BuildProgressScreen(ctk.CTkFrame):
             if res.returncode != 0:
                 raise Exception("WSL no instalado")
         except Exception:
-            instalar = msg_ask_yes_no(
+            msg_show_error(
                 "WSL Requerido", 
-                "El Subsistema de Windows para Linux (WSL) no está instalado y es necesario para construir la ISO.\n\n"
-                "¿Deseas instalarlo ahora automáticamente? (Se pedirán permisos de administrador)"
+                "El Subsistema de Windows para Linux (WSL) no está instalado o no se detecta correctamente.\\n\\n"
+                "Por favor, vuelve al menú de Opciones y utiliza la herramienta 'Instalar WSL'."
             )
-            
-            if instalar:
-                try:
-                    ps_cmd = 'Start-Process powershell -ArgumentList "-NoExit", "-Command", "wsl --install" -Verb RunAs'
-                    subprocess.run(['powershell', '-Command', ps_cmd], creationflags=cflags)
-                    msg_show_info(
-                        "Instalando WSL",
-                        "Se ha abierto una ventana de PowerShell (como Administrador) para instalar WSL.\n\n"
-                        "Por favor, espera a que termine el proceso en esa ventana. Una vez finalizado, REINICIA TU PC para aplicar los cambios."
-                    )
-                except Exception as e:
-                    msg_show_error("Error", f"No se pudo lanzar el instalador de WSL.\nPor favor ejecuta 'wsl --install' manualmente como Administrador.\nError: {e}")
-            
+            self.status_lbl.configure(text="Estado: Error de dependencia (WSL).", text_color="#FF0000")
             self.set_btn_volver()
             return
 
