@@ -70,6 +70,7 @@ def main():
         iso_size = os.path.getsize(iso_path)
         chunk_size = 1024 * 1024 * 1  # 1 MB chunks
         written = 0
+        last_sync = 0
         
         cancel_flag = os.path.join(tempfile.gettempdir(), "rookie_flash_cancel.flag")
         
@@ -121,6 +122,12 @@ def main():
                 percent = written / iso_size
                 text_val = f"{percent * 100:.2f}".replace('.', ',')
                 write_progress(prog_file, "writing", percent, text_val)
+                
+                # Sincronizar físicamente al USB cada ~100MB para que la barra de progreso sea real
+                if written - last_sync >= 100 * 1024 * 1024:
+                    f_out.flush()
+                    os.fsync(f_out.fileno())
+                    last_sync = written
             
             # Al final, volver al inicio y escribir el primer chunk! (Magia anti-Windows)
             if first_chunk:

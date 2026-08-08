@@ -262,7 +262,7 @@ class BuildProgressScreen(ctk.CTkFrame):
                 
                 mount_logic = f'if [ ! -d /mnt/{drive_letter} ]; then mkdir -p /mnt/{drive_letter}; fi; if ! mountpoint -q /mnt/{drive_letter}; then mount -t drvfs {drive_letter.upper()}: /mnt/{drive_letter}; fi; '
                 
-                cmd = f'wsl --cd ~ -u root -e bash -c "{mount_logic}export ISO_DISTRO=\\"{distro_env}\\"; sed -i \\"s/\\\\r\\$//\\" {wsl_project_root}/builder/download_iso.sh 2>/dev/null; cd {wsl_project_root} && bash {wsl_project_root}/builder/download_iso.sh \\"{distro_env}\\""'
+                cmd = f'wsl --cd ~ -u root -e bash -c "{mount_logic}export ISO_DISTRO=\\"{distro_env}\\"; sed -i \\"s/\\\\r\\$//\\" \\"{wsl_project_root}/builder/download_iso.sh\\" 2>/dev/null; cd \\"{wsl_project_root}\\" && bash \\"{wsl_project_root}/builder/download_iso.sh\\" \\"{distro_env}\\""'
                 
                 self.current_process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, creationflags=0x08000000, bufsize=1, universal_newlines=True)
             else:
@@ -349,7 +349,7 @@ class BuildProgressScreen(ctk.CTkFrame):
                 
                 mount_logic = f'if [ ! -d /mnt/{drive_letter} ]; then mkdir -p /mnt/{drive_letter}; fi; if ! mountpoint -q /mnt/{drive_letter}; then mount -t drvfs {drive_letter.upper()}: /mnt/{drive_letter}; fi; '
                 
-                cmd = f'wsl --cd ~ -u root -e bash -c "{mount_logic}export ISO_DISTRO=\\"{distro_env}\\"; export CUSTOM_ISO_NAME=\\"{custom_iso_name}\\"; sed -i \\"s/\\\\r\\$//\\" {wsl_project_root}/builder/build_iso.sh 2>/dev/null; cd {wsl_project_root} && bash {wsl_project_root}/builder/build_iso.sh"'
+                cmd = f'wsl --cd ~ -u root -e bash -c "{mount_logic}export ISO_DISTRO=\\"{distro_env}\\"; export CUSTOM_ISO_NAME=\\"{custom_iso_name}\\"; sed -i \\"s/\\\\r\\$//\\" \\"{wsl_project_root}/builder/build_iso.sh\\" 2>/dev/null; cd \\"{wsl_project_root}\\" && bash \\"{wsl_project_root}/builder/build_iso.sh\\""'
                 
                 self.current_process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, creationflags=0x08000000, bufsize=1, universal_newlines=True)
             else:
