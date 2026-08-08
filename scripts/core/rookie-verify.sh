@@ -15,7 +15,7 @@ echo ""
 
 if [ -f /opt/rookie-scripts/scripts/verify_installation.sh ]; then
     echo "-> Ejecutando scripts de verificación..." | tee -a "$LOG"
-    sudo bash /opt/rookie-scripts/scripts/verify_installation.sh 2>&1 | tee -a "$LOG"
+    bash /opt/rookie-scripts/scripts/verify_installation.sh 2>&1 | tee -a "$LOG"
 else
     echo "[ERROR] No se encontró verify_installation.sh" | tee -a "$LOG"
 fi

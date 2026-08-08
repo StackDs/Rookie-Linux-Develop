@@ -113,6 +113,7 @@ class UsbFlashScreen(ctk.CTkFrame):
         self.status_lbl.configure(text="Estado: Esperando confirmación...", text_color="#008800")
         self.btn_flash.configure(state="normal")
         self.set_btn_volver()
+        # Solo cargar unidades al mostrar la pantalla para evitar que Windows Defender lo bloquee en el arranque
         threading.Thread(target=self.load_drives, daemon=True).start()
 
     def set_btn_volver(self):

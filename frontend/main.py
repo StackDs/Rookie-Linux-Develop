@@ -1,14 +1,85 @@
-import tkinter as tk
-from custom_messagebox import msg_show_error, msg_ask_yes_no, register_app_window
 import sys
+import os
+import traceback
 
-# Worker hook para flasheo como Admin
+# =============================================================================
+# LOGGER DE ERRORES FATALES (debe estar antes de cualquier import que pueda fallar)
+# Cuando el .exe corra en modo --windowed, cualquier excepción se pierde
+# silenciosamente. Este bloque la captura y la escribe en un archivo de log.
+# =============================================================================
+def _get_log_path():
+    """Retorna la ruta del log junto al ejecutable o en el escritorio como fallback."""
+    try:
+        base = os.path.dirname(sys.executable) if getattr(sys, 'frozen', False) else os.path.dirname(os.path.abspath(__file__))
+        return os.path.join(base, "rookie_error.log")
+    except Exception:
+        return os.path.join(os.path.expanduser("~"), "rookie_error.log")
+
+def _fatal_error_handler(exc_type, exc_value, exc_tb):
+    """Escribe el traceback completo a un archivo de log y lo muestra en pantalla."""
+    log_path = _get_log_path()
+    error_msg = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
+    try:
+        with open(log_path, "a", encoding="utf-8") as f:
+            f.write("=== ROOKIE LINUX BUILDER - ERROR FATAL ===\n")
+            f.write(f"Python: {sys.version}\n")
+            f.write(f"Platform: {sys.platform}\n")
+            f.write(f"Frozen: {getattr(sys, 'frozen', False)}\n\n")
+            f.write(error_msg)
+    except Exception:
+        pass
+        
+    try:
+        import tkinter as tk
+        from tkinter import messagebox
+        root = tk.Tk()
+        root.withdraw()
+        root.attributes("-topmost", True)
+        messagebox.showerror("Rookie Linux - Error Fatal", 
+                             f"La aplicación ha colapsado. Se ha guardado el log en:\n{log_path}\n\nDetalles del error:\n{error_msg[-600:]}")
+        root.destroy()
+    except Exception:
+        pass
+
+# Redirigir stdout y stderr para evitar crashes en modo --windowed
+class _LoggerWriter:
+    def __init__(self, is_err=False):
+        self.is_err = is_err
+        self.log_path = _get_log_path()
+        self.encoding = 'utf-8'
+    def write(self, message):
+        if message:
+            try:
+                with open(self.log_path, "a", encoding="utf-8") as f:
+                    f.write(message)
+            except Exception:
+                pass
+    def flush(self):
+        pass
+    def isatty(self):
+        return False
+
+sys.stdout = _LoggerWriter(is_err=False)
+sys.stderr = _LoggerWriter(is_err=True)
+
+sys.excepthook = _fatal_error_handler
+
+import tkinter as tk
+
+def _tk_error_handler(exc_type, exc_value, exc_tb):
+    _fatal_error_handler(exc_type, exc_value, exc_tb)
+
+tk.Tk.report_callback_exception = _tk_error_handler
+# Importar utils UI sólo después del logger
+from custom_messagebox import msg_show_error, msg_ask_yes_no, register_app_window
+
+# Worker hook para flasheo como Admin (debe ir antes de otros imports pesados)
 if "--worker-windows" in sys.argv:
     try:
         from screens.installation_tools import flasher_worker_windows
         flasher_worker_windows.main()
     except Exception as e:
-        pass
+        _fatal_error_handler(type(e), e, e.__traceback__)
     sys.exit(0)
 
 if "--worker-linux" in sys.argv:
@@ -16,13 +87,17 @@ if "--worker-linux" in sys.argv:
         from screens.installation_tools import flasher_worker_linux
         flasher_worker_linux.main()
     except Exception as e:
-        pass
+        _fatal_error_handler(type(e), e, e.__traceback__)
     sys.exit(0)
 
 try:
     import customtkinter as ctk
 except ImportError:
-    msg_show_error("Error", "Faltan librerías. Ejecuta 'pip install customtkinter pillow'.")
+    import tkinter.messagebox as messagebox
+    import tkinter as tk_temp
+    root = tk_temp.Tk()
+    root.withdraw()
+    messagebox.showerror("Error", "Faltan librerías. Ejecuta 'pip install customtkinter pillow'.")
     sys.exit(1)
 
 from screens.core.start_screen import StartScreen
@@ -89,8 +164,6 @@ class App(ctk.CTk):
         self.container.grid(row=1, column=0, sticky="nsew")
         self.container.grid_rowconfigure(0, weight=1)
         self.container.grid_columnconfigure(0, weight=1)
-
-        self.withdraw() # Ocultar ventana durante la carga inicial para evitar flickering
         
         self.frames = {}
         for F in (StartScreen, OptionSelectionScreen, InfoScreen, ExplanationScreen, DistroSelectionScreen, DistroInfoScreen, BuildProgressScreen, UsbFlashScreen, BasicConceptsScreen, BitlockerScreen, WslInstallScreen, InstructionsScreen, VirtualMachineScreen, CleanInstallationScreen, DocumentationScreen, AboutScreen):
@@ -100,8 +173,6 @@ class App(ctk.CTk):
             frame.grid(row=0, column=0, sticky="nsew")
 
         self.show_frame("StartScreen")
-        self.update_idletasks() # Forzar render
-        self.deiconify() # Mostrar ventana ya lista
 
     def request_navigation(self, page_name):
         build_screen = self.frames.get("BuildProgressScreen")
@@ -130,6 +201,10 @@ class App(ctk.CTk):
             frame.on_show()
 
 if __name__ == "__main__":
-    app = App()
-    register_app_window(app)  # Registrar ventana para centrar diálogos correctamente
-    app.mainloop()
+    try:
+        app = App()
+        register_app_window(app)  # Registrar ventana para centrar diálogos correctamente
+        app.mainloop()
+    except Exception as e:
+        _fatal_error_handler(type(e), e, e.__traceback__)
+        sys.exit(1)

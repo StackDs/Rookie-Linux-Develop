@@ -24,5 +24,6 @@ else
     pkg_install docker docker-compose
 fi
 
-sudo usermod -aG docker develop || true
+TARGET_USER="${SUDO_USER:-$USER}"
+sudo usermod -aG docker "$TARGET_USER" || true
 echo "  [OK] Docker Engine y Compose instalados exitosamente."

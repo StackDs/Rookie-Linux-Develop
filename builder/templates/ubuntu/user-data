@@ -17,7 +17,7 @@ autoinstall:
   late-commands:
     # 1. Mover nuestros scripts desde la ISO (/cdrom) al disco duro instalado (/target/opt/)
     - cp -r /cdrom/custom_scripts /target/opt/rookie-scripts
-    - chmod +x /target/opt/rookie-scripts/scripts/*.sh
+    - curtin in-target -- find /opt/rookie-scripts/scripts/ -name "*.sh" -exec chmod +x {} +
     - chmod +x /target/opt/rookie-scripts/rookie-firstboot.sh
     - chmod +x /target/opt/rookie-scripts/rookie-terminal-wrapper.sh
     

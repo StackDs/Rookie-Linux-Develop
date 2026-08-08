@@ -92,7 +92,18 @@ EOF
     mkdir -p "$ROOT_COSMIC_DIR"
     cp "$COSMIC_BG_DIR/all" "$ROOT_COSMIC_DIR/all"
 
-    echo "   [OK] Config Cosmic creada en /etc/skel y /root"
+    # Aplicar al usuario actual (SUDO_USER) porque el usuario ya fue creado
+    if [ -n "$SUDO_USER" ] && [ "$SUDO_USER" != "root" ]; then
+        USER_HOME=$(getent passwd "$SUDO_USER" | cut -d: -f6)
+        if [ -n "$USER_HOME" ]; then
+            USER_COSMIC_DIR="$USER_HOME/.config/cosmic/com.system76.CosmicBackground/v1"
+            mkdir -p "$USER_COSMIC_DIR"
+            cp "$COSMIC_BG_DIR/all" "$USER_COSMIC_DIR/all"
+            chown -R "$SUDO_USER:$SUDO_USER" "$USER_HOME/.config/cosmic"
+        fi
+    fi
+
+    echo "   [OK] Config Cosmic creada en /etc/skel, /root y \$USER_HOME"
 fi
 
 # 5. Reemplazar wallpapers por defecto de las distros (fuerza bruta como fallback)
