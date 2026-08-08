@@ -1,7 +1,7 @@
 #!/bin/bash
 
-SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
-source "$SCRIPT_DIR/utils.sh"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../core/utils.sh"
 
 echo "=========================================="
 echo "Instalando Comandos Personalizados"
@@ -12,7 +12,7 @@ cat << 'EOF' > /usr/local/bin/doc-stack
 #!/bin/bash
 
 SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
-source "$SCRIPT_DIR/utils.sh"
+UTILS_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && cd ../core && pwd)/utils.sh"; source "$UTILS_PATH"
 echo "> ./stack-doctor"
 echo ""
 echo "Initializing diagnostics..."

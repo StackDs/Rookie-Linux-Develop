@@ -70,7 +70,9 @@ def main():
         
         cancel_flag = os.path.join(tempfile.gettempdir(), "rookie_flash_cancel.flag")
         
-        with open(iso_path, 'rb') as f_in, open(drive_path, 'wb', buffering=0) as f_out:
+        last_sync = 0
+        
+        with open(iso_path, 'rb') as f_in, open(drive_path, 'wb') as f_out:
             while True:
                 if os.path.exists(cancel_flag):
                     write_progress(prog_file, "error", percent, text_val, "Flasheo cancelado por el usuario.")
@@ -86,6 +88,12 @@ def main():
                 percent = written / iso_size
                 text_val = f"{percent * 100:.2f}".replace('.', ',')
                 write_progress(prog_file, "writing", percent, text_val)
+                
+                # Sincronizar físicamente al USB cada ~100MB para que la barra de progreso sea real
+                if written - last_sync >= 100 * 1024 * 1024:
+                    f_out.flush()
+                    os.fsync(f_out.fileno())
+                    last_sync = written
                 
             write_progress(prog_file, "writing", 1.0, "100,00")
             f_out.flush()

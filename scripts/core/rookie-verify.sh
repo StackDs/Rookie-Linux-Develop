@@ -24,8 +24,8 @@ echo ""
 echo "=========================================="
 echo " Configurando Apariencia "
 echo "=========================================="
-if [ -f /opt/rookie-scripts/scripts/appearance.sh ]; then
-    sudo bash /opt/rookie-scripts/scripts/appearance.sh 2>&1 | tee -a "$LOG"
+if [ -f /opt/rookie-scripts/scripts/system_utils/appearance.sh ]; then
+    sudo bash /opt/rookie-scripts/scripts/system_utils/appearance.sh 2>&1 | tee -a "$LOG"
 else
     echo "[ERROR] No se encontró appearance.sh" | tee -a "$LOG"
 fi

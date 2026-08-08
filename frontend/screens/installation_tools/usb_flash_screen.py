@@ -7,6 +7,7 @@ import glob
 import json
 import time
 import tempfile
+import uuid
 from tkinter import filedialog
 from custom_messagebox import msg_show_info, msg_show_error, msg_show_warning, msg_ask_yes_no
 from custom_messagebox import msg_show_info, msg_show_error, msg_show_warning, msg_ask_yes_no
@@ -255,13 +256,17 @@ class UsbFlashScreen(ctk.CTkFrame):
         
         self.status_lbl.configure(text="Estado: Preparando disco...", text_color="#FFAA00")
         
+        # Activar simulación para que la barra nunca se quede quieta durante esperas del Kernel (fsync)
+        self.prog_manager.enable_simulation(cap=0.99, rate=0.0003)
+        
         threading.Thread(target=self.flash_worker, args=(iso_path, target_num), daemon=True).start()
 
     def update_progress(self, percent, text):
         self.prog_manager.update_progress(percent)
 
     def flash_worker(self, iso_path, drive_num):
-        prog_file = os.path.join(tempfile.gettempdir(), "rookie_flash_progress.json")
+        unique_id = uuid.uuid4().hex
+        prog_file = os.path.join(tempfile.gettempdir(), f"rookie_flash_{unique_id}.json")
         try:
             if os.path.exists(prog_file):
                 os.remove(prog_file)
@@ -326,6 +331,7 @@ class UsbFlashScreen(ctk.CTkFrame):
                         self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Escribiendo ISO a bajo nivel (Modo DD)...", text_color="#00FF00"))
                         self.after(0, self.update_progress, pct, txt)
                     elif st == "done":
+                        self.prog_manager.disable_simulation()
                         self.after(0, self.update_progress, 1.0, "100,00")
                         self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: ¡Flasheo completado con éxito!", text_color="#00FF00"))
                         
@@ -338,6 +344,7 @@ class UsbFlashScreen(ctk.CTkFrame):
                         self.prog_manager.set_on_complete(on_success)
                         done = True
                     elif st == "error":
+                        self.prog_manager.disable_simulation()
                         self.is_flashing = False
                         error_msg = err
                         done = True

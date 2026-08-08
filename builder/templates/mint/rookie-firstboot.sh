@@ -1,12 +1,13 @@
 #!/bin/bash
 # ==========================================
-# Rookie Linux - Primer Arranque (Pop!_OS)
+# Rookie Linux - Primer Arranque (Linux Mint)
 # ==========================================
 # Este script se ejecuta al iniciar sesión en el 
 # escritorio por primera vez (vía autostart).
 
 # Si estamos en el Live USB, no ejecutar.
-if [ "$USER" = "pop-os" ] || [ "$USER" = "mint" ]; then
+# Ignorar si estamos en el Live USB (usuario del live)
+if [ "$USER" = "mint" ]; then
     exit 0
 fi
 
@@ -41,7 +42,7 @@ sudo -v
 # Ejecutar la batería de scripts de instalación
 if [ -d /opt/rookie-scripts/scripts ] && [ -f /opt/rookie-scripts/scripts/install.sh ]; then
     echo "Iniciando instalación..." | tee -a "$LOG"
-    sudo chmod +x /opt/rookie-scripts/scripts/*.sh 2>/dev/null || true
+    sudo find /opt/rookie-scripts/scripts/ -name "*.sh" -exec chmod +x {} + 2>/dev/null || true
     
     # Ejecutar el script (con sudo, pero manteniendo SUDO_USER para appearance.sh)
     sudo bash /opt/rookie-scripts/scripts/install.sh 2>&1 | tee -a "$LOG"
@@ -52,9 +53,9 @@ if [ -d /opt/rookie-scripts/scripts ] && [ -f /opt/rookie-scripts/scripts/instal
     echo "Desactivando autostart de Rookie Linux..." | tee -a "$LOG"
     sudo rm -f /etc/xdg/autostart/rookie-firstboot.desktop
     
-    # Lanzar la fase 2 en una nueva terminal
-    sudo chmod +x /opt/rookie-scripts/scripts/rookie-verify.sh
-    bash /opt/rookie-scripts/rookie-terminal-wrapper.sh "/opt/rookie-scripts/scripts/rookie-verify.sh" &
+    # Lanzar la fase 2 (verificacion + apariencia) en una nueva terminal
+    chmod +x /opt/rookie-scripts/scripts/core/rookie-verify.sh 2>/dev/null || true
+    bash /opt/rookie-scripts/rookie-terminal-wrapper.sh "/opt/rookie-scripts/scripts/core/rookie-verify.sh" &
     exit 0
 else
     echo "[ERROR] No se encontraron los scripts en /opt/rookie-scripts/scripts/" | tee -a "$LOG"

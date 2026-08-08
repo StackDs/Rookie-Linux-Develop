@@ -3,22 +3,16 @@
 
 SCRIPT="${1:-/opt/rookie-scripts/rookie-firstboot.sh}"
 
-if command -v cosmic-term >/dev/null 2>&1; then
-    # Cosmic DE (Pop!_OS 24.04+)
-    cosmic-term -e bash -c "$SCRIPT"
-elif command -v gnome-terminal >/dev/null 2>&1; then
-    # GNOME (Pop!_OS 22.04 y Ubuntu)
-    gnome-terminal -- bash -c "$SCRIPT"
-elif command -v ptyxis >/dev/null 2>&1; then
-    # GNOME Fedora 40+ (Ptyxis)
-    ptyxis -- bash -c "$SCRIPT"
-elif command -v kgx >/dev/null 2>&1; then
-    # GNOME Console (Fedora 39)
-    kgx -e "bash -c '$SCRIPT'"
+if command -v gnome-terminal >/dev/null 2>&1; then
+    # GNOME (Ubuntu, Pop!_OS 22.04, Mint con metapaquete GNOME)
+    gnome-terminal -- bash -c "$SCRIPT; exec bash"
 elif command -v x-terminal-emulator >/dev/null 2>&1; then
-    # Fallback genérico Debian/Ubuntu
-    x-terminal-emulator -e "bash -c '$SCRIPT'"
+    # Fallback genérico Debian/Ubuntu/Mint (suele apuntar a xterm o nemo-terminal)
+    x-terminal-emulator -e "bash -c '$SCRIPT; exec bash'"
+elif command -v xterm >/dev/null 2>&1; then
+    # xterm como último recurso
+    xterm -e "bash -c '$SCRIPT; exec bash'"
 else
-    # Si todo falla, intentar ejecutarlo de todas formas
+    # Si todo falla, ejecutar directamente en el proceso actual
     bash -c "$SCRIPT"
 fi
