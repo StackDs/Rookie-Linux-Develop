@@ -26,14 +26,14 @@
 <table>
   <tr>
     <td align="center"><img src="assets/AppScreeShots/app1.png" width="380" alt="Home Screen"/><br/><sub><b>Home Screen</b></sub></td>
-    <td align="center"><img src="assets/AppScreeShots/app2.png" width="380" alt="Main Menu"/><br/><sub><b>Main Menu</b></sub></td>
+    <td align="center"><img src="assets/AppScreeShots/app2.png" width="380" alt="Main Menu"/><br/><sub><b>Distribution Selection</b></sub></td>
   </tr>
   <tr>
-    <td align="center"><img src="assets/AppScreeShots/app3.png" width="380" alt="Distribution Selection"/><br/><sub><b>Distribution Selection</b></sub></td>
-    <td align="center"><img src="assets/AppScreeShots/app4.png" width="380" alt="Build Progress"/><br/><sub><b>Build Progress</b></sub></td>
+    <td align="center"><img src="assets/AppScreeShots/app3.png" width="380" alt="Distribution Selection"/><br/><sub><b>Distribution Information</b></sub></td>
+    <td align="center"><img src="assets/AppScreeShots/app4.png" width="380" alt="Build Progress"/><br/><sub><b>USB Flasher</b></sub></td>
   </tr>
   <tr>
-    <td align="center" colspan="2"><img src="assets/AppScreeShots/app5.png" width="380" alt="USB Flashing"/><br/><sub><b>USB Flashing</b></sub></td>
+    <td align="center" colspan="2"><img src="assets/AppScreeShots/app5.png" width="380" alt="USB Flashing"/><br/><sub><b>Documentation</b></sub></td>
   </tr>
 </table>
 

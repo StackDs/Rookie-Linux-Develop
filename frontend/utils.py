@@ -51,6 +51,10 @@ class ProgressManager:
         
         self.history = []
         self.last_eta_update = 0
+        
+        self.simulating = False
+        self.sim_cap = 0.99
+        self.sim_rate = 0.0001
 
     def update_progress(self, target_percent):
         self.target_progress = target_percent
@@ -64,6 +68,17 @@ class ProgressManager:
         if not self.is_animating:
             self.is_animating = True
             self.animate()
+            
+    def enable_simulation(self, cap=0.99, rate=0.00005):
+        self.simulating = True
+        self.sim_cap = cap
+        self.sim_rate = rate
+        if not self.is_animating:
+            self.is_animating = True
+            self.animate()
+
+    def disable_simulation(self):
+        self.simulating = False
             
     def set_indeterminate(self, text):
         self.is_animating = False
@@ -79,6 +94,7 @@ class ProgressManager:
         
     def reset(self, text=None):
         self.is_animating = False
+        self.simulating = False
         self.current_progress = 0.0
         self.target_progress = 0.0
         self.history = []
@@ -92,6 +108,17 @@ class ProgressManager:
             self.eta_label.configure(text="")
             
     def animate(self):
+        if self.simulating and self.target_progress < self.sim_cap:
+            if abs(self.target_progress - self.current_progress) < 0.05:
+                self.target_progress += self.sim_rate
+                if self.target_progress > self.sim_cap:
+                    self.target_progress = self.sim_cap
+                
+                # Mantener el ETA actualizado usando el progreso simulado
+                current_time = time.time()
+                self.history.append((current_time, self.target_progress))
+                self.history = [(t, p) for t, p in self.history if current_time - t <= 15]
+
         diff = self.target_progress - self.current_progress
         
         # Exponential smoothing para un incremento fluido y constante de los decimales
@@ -147,7 +174,7 @@ class ProgressManager:
                         
                 self.last_eta_update = current_time
         
-        if abs(self.current_progress - self.target_progress) < 0.00001:
+        if abs(self.current_progress - self.target_progress) < 0.00001 and not self.simulating:
             self.current_progress = self.target_progress
             self.is_animating = False
         else:

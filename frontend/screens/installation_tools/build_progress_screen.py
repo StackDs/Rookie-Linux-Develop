@@ -78,6 +78,7 @@ class BuildProgressScreen(ctk.CTkFrame):
         self.current_process = None
         self.current_iso_target_dir = None
         self.is_cancelled = False
+        self.is_building = False
         
         self.prog_mgr_dl = ProgressManager(self, self.progress_bar_download, self.lbl_download, "Descarga: ", eta_label=self.eta_lbl_download)
         self.prog_mgr_gen = ProgressManager(self, self.progress_bar_generation, self.lbl_generation, "Generación: ", eta_label=self.eta_lbl_generation)
@@ -88,6 +89,7 @@ class BuildProgressScreen(ctk.CTkFrame):
         self.status_lbl.configure(text="Estado: Iniciando motor de Docker...", text_color="#00FF00")
         
         self.is_cancelled = False
+        self.is_building = True
         self.btn_flash_usb.pack_forget()
         self.btn_action.configure(text="Cancelar", command=self.cancel_process, text_color="#FF0000", border_color="#FF0000", hover_color="#330000", state="normal")
         apply_glow_effect(self.btn_action, default_text="Cancelar", hover_text="Cancelar", color_base="#AA0000", color_glow="#FF0000")
@@ -108,16 +110,24 @@ class BuildProgressScreen(ctk.CTkFrame):
         self.prog_mgr_dl.set_indeterminate("Descarga: Conectando...")
 
     def start_indeterminate_generation(self):
-        self.prog_mgr_gen.set_indeterminate("Generación: Procesando...")
+        self.prog_mgr_gen.set_determinate()
+        self.prog_mgr_gen.enable_simulation(cap=0.99, rate=0.00015) # Sube ~7.5% por minuto si no hay datos
 
     def set_btn_volver(self):
         self.btn_action.configure(text="← Volver", command=lambda: self.controller.show_frame("DistroInfoScreen"), 
                                   text_color="#008800", border_color="#008800", hover_color="#001100", state="normal")
         apply_glow_effect(self.btn_action, default_text="← Volver", hover_text="← Volver")
 
-    def cancel_process(self):
+    def cancel_process(self, ask_confirm=True):
+        if ask_confirm and not self.is_cancelled:
+            if not msg_ask_yes_no("Confirmar", "¿Estás seguro de que deseas cancelar la construcción actual?"):
+                return
+                
         self.is_cancelled = True
+        self.is_building = False
         self.btn_action.configure(state="disabled")
+        self.prog_mgr_gen.disable_simulation()
+        self.prog_mgr_dl.disable_simulation()
         self.status_lbl.configure(text="Estado: Cancelando proceso y limpiando...", text_color="#FF0000")
         
         if self.current_process:
@@ -295,12 +305,14 @@ class BuildProgressScreen(ctk.CTkFrame):
                 self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Error en la descarga.", text_color="#FF0000"))
                 self.after(0, lambda err=error_details: msg_show_error("Error", f"Ocurrió un error durante la descarga de la ISO.\nDetalles:\n{err}"))
                 self.after(0, self.set_btn_volver)
+                self.is_building = False
                 
         except Exception as e:
             if not self.is_cancelled:
                 self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Error inesperado.", text_color="#FF0000"))
                 self.after(0, lambda: msg_show_error("Error", str(e)))
                 self.after(0, self.set_btn_volver)
+                self.is_building = False
 
     def check_output_iso_and_build(self, project_root, distro_env, distro_seleccionada):
         if self.is_cancelled:
@@ -318,6 +330,7 @@ class BuildProgressScreen(ctk.CTkFrame):
                 self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Usando ISO generada previamente.", text_color="#00FF00"))
                 self.after(0, lambda: self.btn_flash_usb.pack(side="left", padx=10))
                 self.after(0, self.set_btn_volver)
+                self.is_building = False
 
     def run_build_thread(self, project_root, distro_env, distro_seleccionada):
         self.after(0, self.start_indeterminate_generation)
@@ -380,12 +393,14 @@ class BuildProgressScreen(ctk.CTkFrame):
                         base_percent = 0.0
                         scale_percent = 0.25
                         self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Desempaquetando sistema de archivos base (1/3)..."))
+                        self.after(0, lambda: self.prog_mgr_gen.enable_simulation(cap=0.24, rate=0.0001))
                     elif "reempaquetando squashfs" in line_lower:
                         current_phase = "generating"
                         current_subphase = "repacking"
                         base_percent = 0.25
                         scale_percent = 0.50
                         self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Comprimiendo nuevo sistema de archivos (2/3)..."))
+                        self.after(0, lambda: self.prog_mgr_gen.enable_simulation(cap=0.74, rate=0.00005)) # mksquashfs tarda mucho, simulación más lenta
                     elif "generando nueva iso" in line_lower:
                         current_phase = "generating"
                         current_subphase = "generating"
@@ -393,10 +408,12 @@ class BuildProgressScreen(ctk.CTkFrame):
                             base_percent = 0.75
                             scale_percent = 0.25
                             self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Empaquetando y exportando ISO final (3/3)..."))
+                            self.after(0, lambda: self.prog_mgr_gen.enable_simulation(cap=0.99, rate=0.0001))
                         else:
                             base_percent = 0.0
                             scale_percent = 1.0
                             self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Empaquetando y exportando ISO final..."))
+                            self.after(0, lambda: self.prog_mgr_gen.enable_simulation(cap=0.99, rate=0.0001))
                             
                     percent_match = re.search(r'(\d+(?:\.\d+)?)%', line)
                     if percent_match:
@@ -410,6 +427,7 @@ class BuildProgressScreen(ctk.CTkFrame):
                     if "fatal_error" in line_lower or line_lower.startswith("[fatal_error]"):
                         # El script de WSL reportó un error crítico — mostrarlo de inmediato
                         error_details = line
+                        self.after(0, self.prog_mgr_gen.disable_simulation)
                         self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Error crítico en el proceso.", text_color="#FF0000"))
                         self.after(0, lambda err=error_details: msg_show_error(
                             "Error crítico",
@@ -432,6 +450,8 @@ class BuildProgressScreen(ctk.CTkFrame):
                 return
             
             if self.current_process.returncode == 0:
+                self.is_building = False
+                self.after(0, self.prog_mgr_gen.disable_simulation)
                 self.after(0, self.update_progress_generation, 1.0, "100,00")
                 self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Sistema Construido Exitosamente.", text_color="#00FF00"))
                 
@@ -459,6 +479,8 @@ class BuildProgressScreen(ctk.CTkFrame):
                             
                 self.after(800, on_success_actions)
             else:
+                self.is_building = False
+                self.after(0, self.prog_mgr_gen.disable_simulation)
                 self.after(0, self.update_progress_generation, 0.0, "0,00")
                 error_details = "\n".join(last_lines)
                 self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Error en la construcción.", text_color="#FF0000"))
@@ -467,9 +489,11 @@ class BuildProgressScreen(ctk.CTkFrame):
                 
         except Exception as e:
             if not self.is_cancelled:
+                self.is_building = False
                 self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Error inesperado.", text_color="#FF0000"))
                 self.after(0, lambda: msg_show_error("Error", str(e)))
             
         finally:
             if not self.is_cancelled:
+                self.is_building = False
                 self.after(0, self.set_btn_volver)

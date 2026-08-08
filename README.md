@@ -26,14 +26,14 @@
 <table>
   <tr>
     <td align="center"><img src="assets/AppScreeShots/app1.png" width="380" alt="Pantalla de inicio"/><br/><sub><b>Pantalla de inicio</b></sub></td>
-    <td align="center"><img src="assets/AppScreeShots/app2.png" width="380" alt="Menú principal"/><br/><sub><b>Menú principal</b></sub></td>
+    <td align="center"><img src="assets/AppScreeShots/app2.png" width="380" alt="Menú principal"/><br/><sub><b>Selección de distribución</b></sub></td>
   </tr>
   <tr>
-    <td align="center"><img src="assets/AppScreeShots/app3.png" width="380" alt="Selección de distribución"/><br/><sub><b>Selección de distribución</b></sub></td>
-    <td align="center"><img src="assets/AppScreeShots/app4.png" width="380" alt="Progreso de construcción"/><br/><sub><b>Progreso de construcción</b></sub></td>
+    <td align="center"><img src="assets/AppScreeShots/app3.png" width="380" alt="Selección de distribución"/><br/><sub><b>Información de la distribución</b></sub></td>
+    <td align="center"><img src="assets/AppScreeShots/app4.png" width="380" alt="Progreso de construcción"/><br/><sub><b>USB Flasher</b></sub></td>
   </tr>
   <tr>
-    <td align="center" colspan="2"><img src="assets/AppScreeShots/app5.png" width="380" alt="Flasheo de USB"/><br/><sub><b>Flasheo de USB</b></sub></td>
+    <td align="center" colspan="2"><img src="assets/AppScreeShots/app5.png" width="380" alt="Flasheo de USB"/><br/><sub><b>Documentación</b></sub></td>
   </tr>
 </table>
 

@@ -118,19 +118,22 @@ class UsbFlashScreen(ctk.CTkFrame):
                                   text_color="#008800", border_color="#008800", hover_color="#001100", state="normal")
         apply_glow_effect(self.btn_action, default_text="← Volver", hover_text="← Volver")
 
-    def cancel_flash(self):
-        msg = "¿Estás seguro que deseas cancelar el flasheo?\n\nADVERTENCIA: Si cancelas ahora, tu USB quedará corrupto e inutilizable hasta que lo vuelvas a formatear."
-        if msg_ask_yes_no("Confirmar Cancelación", msg):
-            self.btn_action.configure(state="disabled")
-            self.status_lbl.configure(text="Estado: Cancelando proceso de escritura...", text_color="#FFAA00")
-            try:
-                with open(self.cancel_flag, "w") as f:
-                    f.write("cancel")
-            except: pass
+    def cancel_flash(self, ask_confirm=True):
+        if ask_confirm:
+            msg = "¿Estás seguro que deseas cancelar el flasheo?\n\nADVERTENCIA: Si cancelas ahora, tu USB quedará corrupto e inutilizable hasta que lo vuelvas a formatear."
+            if not msg_ask_yes_no("Confirmar Cancelación", msg):
+                return
+                
+        self.btn_action.configure(state="disabled")
+        self.status_lbl.configure(text="Estado: Cancelando proceso de escritura...", text_color="#FFAA00")
+        try:
+            with open(self.cancel_flag, "w") as f:
+                f.write("cancel")
+        except: pass
 
     def load_drives(self):
-        self.combo_var.set("Buscando unidades...")
-        self.usb_combo.configure(values=["Buscando unidades..."])
+        self.after(0, lambda: self.combo_var.set("Buscando unidades..."))
+        self.after(0, lambda: self.usb_combo.configure(values=["Buscando unidades..."]))
         self.drives_info = []
         
         try:
@@ -154,16 +157,16 @@ class UsbFlashScreen(ctk.CTkFrame):
                                 self.drives_info.append({"num": num, "display": display_str})
                         
                         if values:
-                            self.usb_combo.configure(values=values)
-                            self.combo_var.set(values[0])
+                            self.after(0, lambda v=values: self.usb_combo.configure(values=v))
+                            self.after(0, lambda v=values[0]: self.combo_var.set(v))
                         else:
-                            self.combo_var.set("No se encontraron USBs")
-                            self.usb_combo.configure(values=["No se encontraron USBs"])
+                            self.after(0, lambda: self.combo_var.set("No se encontraron USBs"))
+                            self.after(0, lambda: self.usb_combo.configure(values=["No se encontraron USBs"]))
                     except Exception as e:
-                        self.combo_var.set("Error procesando USBs")
+                        self.after(0, lambda: self.combo_var.set("Error procesando USBs"))
                 else:
-                    self.combo_var.set("No se encontraron USBs")
-                    self.usb_combo.configure(values=["No se encontraron USBs"])
+                    self.after(0, lambda: self.combo_var.set("No se encontraron USBs"))
+                    self.after(0, lambda: self.usb_combo.configure(values=["No se encontraron USBs"]))
             else:
                 # LINUX NATIVE LOGIC
                 cmd = "lsblk -J -o NAME,SIZE,TYPE,RM,MODEL"
@@ -186,19 +189,19 @@ class UsbFlashScreen(ctk.CTkFrame):
                                 self.drives_info.append({"num": path, "display": display_str}) # Usamos la ruta como 'num'
                                 
                         if values:
-                            self.usb_combo.configure(values=values)
-                            self.combo_var.set(values[0])
+                            self.after(0, lambda v=values: self.usb_combo.configure(values=v))
+                            self.after(0, lambda v=values[0]: self.combo_var.set(v))
                         else:
-                            self.combo_var.set("No se encontraron USBs")
-                            self.usb_combo.configure(values=["No se encontraron USBs"])
+                            self.after(0, lambda: self.combo_var.set("No se encontraron USBs"))
+                            self.after(0, lambda: self.usb_combo.configure(values=["No se encontraron USBs"]))
                     except Exception as e:
-                        self.combo_var.set("Error procesando USBs (Linux)")
+                        self.after(0, lambda: self.combo_var.set("Error procesando USBs (Linux)"))
                 else:
-                    self.combo_var.set("No se encontraron USBs")
-                    self.usb_combo.configure(values=["No se encontraron USBs"])
+                    self.after(0, lambda: self.combo_var.set("No se encontraron USBs"))
+                    self.after(0, lambda: self.usb_combo.configure(values=["No se encontraron USBs"]))
                     
         except Exception as e:
-            self.combo_var.set("Error al buscar unidades")
+            self.after(0, lambda: self.combo_var.set("Error al buscar unidades"))
 
     def browse_iso(self):
         filename = filedialog.askopenfilename(
@@ -240,6 +243,7 @@ class UsbFlashScreen(ctk.CTkFrame):
                 os.remove(self.cancel_flag)
         except: pass
             
+        self.is_flashing = True
         self.btn_flash.configure(state="disabled")
         
         self.btn_action.configure(text="Cancelar", command=self.cancel_flash, 
@@ -288,6 +292,7 @@ class UsbFlashScreen(ctk.CTkFrame):
                 res = subprocess.run(cmd, shell=True, capture_output=True, text=True)
             
             if res.returncode != 0:
+                self.is_flashing = False
                 self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Flasheo cancelado o fallido.", text_color="#FF0000"))
                 self.after(0, lambda: self.btn_flash.configure(state="normal"))
                 self.after(0, self.set_btn_volver)
@@ -321,12 +326,14 @@ class UsbFlashScreen(ctk.CTkFrame):
                         self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: ¡Flasheo completado con éxito!", text_color="#00FF00"))
                         
                         def on_success():
+                            self.is_flashing = False
                             msg_show_info("Éxito", "El USB booteable ha sido creado correctamente. Ya puedes usarlo para instalar el sistema.")
                             self.controller.show_frame("OptionSelectionScreen")
                             
                         self.after(800, on_success)
                         done = True
                     elif st == "error":
+                        self.is_flashing = False
                         error_msg = err
                         done = True
                         
@@ -344,6 +351,7 @@ class UsbFlashScreen(ctk.CTkFrame):
             self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Error inesperado.", text_color="#FF0000"))
             self.after(0, lambda e=e: msg_show_error("Error", str(e)))
         finally:
+            self.is_flashing = False
             self.after(0, self.set_btn_volver)
             self.after(0, lambda: self.btn_flash.configure(state="normal"))
             try:

@@ -1,5 +1,5 @@
 import tkinter as tk
-from custom_messagebox import msg_show_error
+from custom_messagebox import msg_show_error, msg_ask_yes_no
 import sys
 
 # Worker hook para flasheo como Admin
@@ -72,13 +72,13 @@ class App(ctk.CTk):
         self.banner.grid(row=0, column=0, sticky="ew")
         
         from utils import apply_glow_effect
-        self.btn_global_home = ctk.CTkButton(self.banner, text="⌂ Menú Principal", command=lambda: self.show_frame("OptionSelectionScreen"),
+        self.btn_global_home = ctk.CTkButton(self.banner, text="⌂ Menú Principal", command=lambda: self.request_navigation("OptionSelectionScreen"),
                                       width=120, height=30, fg_color="transparent", text_color="#00FF00", 
                                       hover_color="#003300", font=ctk.CTkFont(family="Consolas", size=14, weight="bold"))
         self.btn_global_home.pack(side="left", padx=15, pady=5)
         apply_glow_effect(self.btn_global_home, default_text="⌂ Menú Principal", hover_text="⌂ Menú Principal")
 
-        self.btn_start_screen = ctk.CTkButton(self.banner, text="Pantalla de Inicio ⏻", command=lambda: self.show_frame("StartScreen"),
+        self.btn_start_screen = ctk.CTkButton(self.banner, text="Pantalla de Inicio ⏻", command=lambda: self.request_navigation("StartScreen"),
                                       width=120, height=30, fg_color="transparent", text_color="#00FF00", 
                                       hover_color="#003300", font=ctk.CTkFont(family="Consolas", size=14, weight="bold"))
         self.btn_start_screen.pack(side="right", padx=15, pady=5)
@@ -102,6 +102,26 @@ class App(ctk.CTk):
         self.show_frame("StartScreen")
         self.update_idletasks() # Forzar render
         self.deiconify() # Mostrar ventana ya lista
+
+    def request_navigation(self, page_name):
+        build_screen = self.frames.get("BuildProgressScreen")
+        if build_screen and getattr(build_screen, "is_building", False):
+            if not msg_ask_yes_no("Proceso activo", "Hay una construcción de ISO en curso.\n¿Estás seguro de que deseas cancelarla y salir?"):
+                return
+            build_screen.cancel_process(ask_confirm=False)
+            
+        flash_screen = self.frames.get("UsbFlashScreen")
+        if flash_screen and getattr(flash_screen, "is_flashing", False):
+            if not msg_ask_yes_no("Proceso activo", "Hay un flasheo de USB en curso.\nSi sales ahora, se cancelará y tu USB podría quedar corrupto.\n¿Estás seguro de que deseas salir?"):
+                return
+            flash_screen.cancel_flash(ask_confirm=False)
+            
+        wsl_screen = self.frames.get("WslInstallScreen")
+        if wsl_screen and getattr(wsl_screen, "is_installing", False):
+            msg_show_error("Proceso activo", "La instalación de WSL está en curso. Por favor espera a que termine.")
+            return
+
+        self.show_frame(page_name)
 
     def show_frame(self, page_name):
         frame = self.frames[page_name]
