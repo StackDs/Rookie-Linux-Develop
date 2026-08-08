@@ -9,7 +9,8 @@ import time
 import tempfile
 from tkinter import filedialog
 from custom_messagebox import msg_show_info, msg_show_error, msg_show_warning, msg_ask_yes_no
-from utils import apply_glow_effect, get_project_root, ProgressManager
+from custom_messagebox import msg_show_info, msg_show_error, msg_show_warning, msg_ask_yes_no
+from utils import apply_glow_effect, get_project_root, ProgressManager, native_file_dialog
 
 class UsbFlashScreen(ctk.CTkFrame):
     def __init__(self, parent, controller):
@@ -169,7 +170,7 @@ class UsbFlashScreen(ctk.CTkFrame):
                     self.after(0, lambda: self.usb_combo.configure(values=["No se encontraron USBs"]))
             else:
                 # LINUX NATIVE LOGIC
-                cmd = "lsblk -J -o NAME,SIZE,TYPE,RM,MODEL"
+                cmd = "lsblk -J -o NAME,SIZE,TYPE,RM,MODEL,TRAN"
                 result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
                 if result.stdout.strip():
                     try:
@@ -177,8 +178,10 @@ class UsbFlashScreen(ctk.CTkFrame):
                         devices = data.get("blockdevices", [])
                         values = []
                         for dev in devices:
-                            # Consideramos USBs si RM (removable) es true/1 o tipo disk (podria ser un externo)
-                            if dev.get("type") == "disk" and str(dev.get("rm", "0")) == "1":
+                            # Consideramos USBs si el transporte es 'usb' o si RM (removable) es true/1
+                            is_usb = (dev.get("tran") == "usb")
+                            is_removable = (str(dev.get("rm", "0")).lower() in ("1", "true"))
+                            if dev.get("type") == "disk" and (is_usb or is_removable):
                                 name = dev.get("name", "")
                                 size_str = dev.get("size", "0G")
                                 model = dev.get("model", "USB Drive")
@@ -204,7 +207,7 @@ class UsbFlashScreen(ctk.CTkFrame):
             self.after(0, lambda: self.combo_var.set("Error al buscar unidades"))
 
     def browse_iso(self):
-        filename = filedialog.askopenfilename(
+        filename = native_file_dialog(
             title="Seleccionar imagen ISO",
             filetypes=(("Archivos ISO", "*.iso"), ("Todos los archivos", "*.*"))
         )
@@ -250,7 +253,7 @@ class UsbFlashScreen(ctk.CTkFrame):
                                   text_color="#FF0000", border_color="#FF0000", hover_color="#330000")
         apply_glow_effect(self.btn_action, default_text="Cancelar", hover_text="Cancelar", color_base="#AA0000", color_glow="#FF0000")
         
-        self.status_lbl.configure(text="Estado: Preparando disco (diskpart)...", text_color="#FFAA00")
+        self.status_lbl.configure(text="Estado: Preparando disco...", text_color="#FFAA00")
         
         threading.Thread(target=self.flash_worker, args=(iso_path, target_num), daemon=True).start()
 
@@ -278,7 +281,7 @@ class UsbFlashScreen(ctk.CTkFrame):
                     args_list = f'"{worker_script}" --iso "{iso_path}" --drive {drive_num} --progress "{prog_file}"'
                     ps_cmd = f'Start-Process -FilePath "{python_exe}" -ArgumentList \'{args_list}\' -Verb RunAs -WindowStyle Hidden'
                 
-                res = subprocess.run(['powershell', '-NoProfile', '-Command', ps_cmd], capture_output=True, text=True, creationflags=0x08000000)
+                proc = subprocess.Popen(['powershell', '-NoProfile', '-Command', ps_cmd], creationflags=0x08000000)
             else:
                 # Linux Logic
                 if getattr(sys, 'frozen', False):
@@ -289,20 +292,21 @@ class UsbFlashScreen(ctk.CTkFrame):
                     worker_script = os.path.join(os.path.dirname(__file__), "flasher_worker_linux.py")
                     cmd = f'pkexec "{python_exe}" "{worker_script}" --iso "{iso_path}" --drive "{drive_num}" --progress "{prog_file}"'
                     
-                res = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+                proc = subprocess.Popen(cmd, shell=True)
             
-            if res.returncode != 0:
-                self.is_flashing = False
-                self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Flasheo cancelado o fallido.", text_color="#FF0000"))
-                self.after(0, lambda: self.btn_flash.configure(state="normal"))
-                self.after(0, self.set_btn_volver)
-                return
-                
             # Polling loop
             done = False
             error_msg = ""
             
             while not done:
+                # Check if process died prematurely
+                if proc.poll() is not None and proc.returncode != 0:
+                    self.is_flashing = False
+                    self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Flasheo cancelado o fallido.", text_color="#FF0000"))
+                    self.after(0, lambda: self.btn_flash.configure(state="normal"))
+                    self.after(0, self.set_btn_volver)
+                    return
+                    
                 time.sleep(0.1)
                 if not os.path.exists(prog_file):
                     continue
@@ -329,8 +333,9 @@ class UsbFlashScreen(ctk.CTkFrame):
                             self.is_flashing = False
                             msg_show_info("Éxito", "El USB booteable ha sido creado correctamente. Ya puedes usarlo para instalar el sistema.")
                             self.controller.show_frame("OptionSelectionScreen")
-                            
-                        self.after(800, on_success)
+
+                        # Esperar a que la animación llegue visualmente al 100% antes de mostrar el popup
+                        self.prog_manager.set_on_complete(on_success)
                         done = True
                     elif st == "error":
                         self.is_flashing = False

@@ -1,5 +1,5 @@
 import tkinter as tk
-from custom_messagebox import msg_show_error, msg_ask_yes_no
+from custom_messagebox import msg_show_error, msg_ask_yes_no, register_app_window
 import sys
 
 # Worker hook para flasheo como Admin
@@ -131,4 +131,5 @@ class App(ctk.CTk):
 
 if __name__ == "__main__":
     app = App()
+    register_app_window(app)  # Registrar ventana para centrar diálogos correctamente
     app.mainloop()

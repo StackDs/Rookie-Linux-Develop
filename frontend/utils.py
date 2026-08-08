@@ -2,6 +2,38 @@ import time
 import customtkinter as ctk
 import os
 import sys
+import subprocess
+from tkinter import filedialog
+
+def native_file_dialog(title="Seleccionar archivo", filetypes=(("Todos los archivos", "*.*"),)):
+    """Abre un diálogo de selección de archivos. En Linux intenta usar Zenity o Kdialog para una apariencia nativa."""
+    if sys.platform.startswith("linux"):
+        try:
+            # Intentar usar zenity (GNOME/GTK)
+            cmd = ["zenity", "--file-selection", f"--title={title}"]
+            for name, ext in filetypes:
+                cmd.append(f"--file-filter={name} | {ext}")
+                
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            if result.returncode == 0:
+                return result.stdout.strip()
+            elif result.returncode == 1:
+                return "" # Cancelado
+        except FileNotFoundError:
+            try:
+                # Intentar usar kdialog (KDE)
+                filter_str = " ".join([ext for name, ext in filetypes])
+                cmd = ["kdialog", "--title", title, "--getopenfilename", ".", filter_str]
+                result = subprocess.run(cmd, capture_output=True, text=True)
+                if result.returncode == 0:
+                    return result.stdout.strip()
+                elif result.returncode == 1:
+                    return ""
+            except FileNotFoundError:
+                pass # Si no hay ni zenity ni kdialog, caemos en tkinter
+                
+    # Fallback a Tkinter (Windows, macOS o Linux sin herramientas nativas)
+    return filedialog.askopenfilename(title=title, filetypes=filetypes)
 
 def get_project_root():
     """Retorna la raiz del proyecto de forma compatible con PyInstaller."""
@@ -55,6 +87,8 @@ class ProgressManager:
         self.simulating = False
         self.sim_cap = 0.99
         self.sim_rate = 0.0001
+        
+        self._on_complete = None  # Callback a disparar cuando la animación llega al target
 
     def update_progress(self, target_percent):
         self.target_progress = target_percent
@@ -68,6 +102,10 @@ class ProgressManager:
         if not self.is_animating:
             self.is_animating = True
             self.animate()
+
+    def set_on_complete(self, callback):
+        """Registra un callback que se ejecutará cuando la animación llegue al target."""
+        self._on_complete = callback
             
     def enable_simulation(self, cap=0.99, rate=0.00005):
         self.simulating = True
@@ -95,6 +133,7 @@ class ProgressManager:
     def reset(self, text=None):
         self.is_animating = False
         self.simulating = False
+        self._on_complete = None
         self.current_progress = 0.0
         self.target_progress = 0.0
         self.history = []
@@ -177,6 +216,11 @@ class ProgressManager:
         if abs(self.current_progress - self.target_progress) < 0.00001 and not self.simulating:
             self.current_progress = self.target_progress
             self.is_animating = False
+            # Disparar callback si la animación llegó al target
+            if self._on_complete is not None:
+                cb = self._on_complete
+                self._on_complete = None
+                self.root_widget.after(0, cb)
         else:
             self.root_widget.after(self.delay, self.animate)
 

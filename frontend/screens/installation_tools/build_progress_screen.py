@@ -476,8 +476,9 @@ class BuildProgressScreen(ctk.CTkFrame):
                                 msg_show_info("Ahorrar Espacio", "La imagen original (oficial) ha sido eliminada correctamente para liberar espacio.")
                     
                     self.controller.show_frame("OptionSelectionScreen")
-                            
-                self.after(800, on_success_actions)
+
+                # Esperar a que la animación llegue visualmente al 100% antes de mostrar el popup
+                self.prog_mgr_gen.set_on_complete(on_success_actions)
             else:
                 self.is_building = False
                 self.after(0, self.prog_mgr_gen.disable_simulation)
