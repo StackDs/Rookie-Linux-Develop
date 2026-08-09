@@ -7,6 +7,10 @@ echo "=========================================="
 echo "Instalando Comandos Personalizados"
 echo "=========================================="
 
+# Instalar el tren de la terminal (sl)
+echo "Instalando sl (Steam Locomotive)..."
+pkg_install sl
+
 # Crear el script doc-stack en el path global
 cat << 'EOF' > /usr/local/bin/doc-stack
 #!/bin/bash

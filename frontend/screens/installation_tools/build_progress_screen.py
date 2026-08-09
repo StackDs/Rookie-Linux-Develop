@@ -182,16 +182,17 @@ class BuildProgressScreen(ctk.CTkFrame):
         return True
 
     def ejecutar_script(self):
-        # 1. Verificar si WSL está disponible (Solo Windows)
+        # 1. Verificar si WSL está disponible y funcional (Solo Windows)
         if sys.platform == "win32":
             try:
-                res = subprocess.run(["wsl", "--status"], capture_output=True, text=True, creationflags=0x08000000)
-                if res.returncode != 0:
-                    raise Exception("WSL no instalado")
+                # Ejecutar un comando bash simple para asegurar que WSL y una distro están instalados
+                res = subprocess.run(["wsl", "-e", "bash", "-c", "echo wsl_ok"], capture_output=True, text=True, creationflags=0x08000000)
+                if res.returncode != 0 or "wsl_ok" not in res.stdout:
+                    raise Exception("WSL no instalado o sin distribución válida")
             except Exception:
                 msg_show_error(
                     "WSL Requerido", 
-                    "El Subsistema de Windows para Linux (WSL) no está instalado o no se detecta correctamente.\n\n"
+                    "El Subsistema de Windows para Linux (WSL) no está habilitado o no hay una distribución instalada correctamente.\n\n"
                     "Por favor, vuelve al menú de Opciones y utiliza la herramienta 'Instalar WSL'."
                 )
                 self.status_lbl.configure(text="Estado: Error de dependencia (WSL).", text_color="#FF0000")
