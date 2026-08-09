@@ -52,7 +52,7 @@ class WslInstallScreen(ctk.CTkFrame):
         apply_glow_effect(self.btn_install_wsl, default_text="1. Habilitar WSL", hover_text="1. Habilitar WSL")
         self.btn_install_wsl.grid(row=0, column=1, padx=10)
 
-        self.btn_install_distro = ctk.CTkButton(btn_frame, text="2. Instalar Ubuntu", command=self.start_install_distro,
+        self.btn_install_distro = ctk.CTkButton(btn_frame, text="2. Instalar Distro", command=self.start_install_distro,
                                    height=45, width=190, corner_radius=5,
                                    font=ctk.CTkFont(family="Consolas", size=15, weight="bold"), cursor="hand2",
                                    fg_color="#004400", border_width=2, border_color="#00FF00",
@@ -96,7 +96,7 @@ class WslInstallScreen(ctk.CTkFrame):
             except Exception:
                 msg_show_error(
                     "WSL No Habilitado",
-                    "Primero debes habilitar WSL y REINICIAR tu equipo antes de intentar instalar Ubuntu."
+                    "Primero debes habilitar WSL y REINICIAR tu equipo antes de intentar instalar distro auxiliar."
                 )
                 return
 
@@ -139,12 +139,12 @@ class WslInstallScreen(ctk.CTkFrame):
                     "Fase 1 Completada",
                     "WSL y la Plataforma de Máquina Virtual han sido habilitadas.\n\n"
                     "¡DEBES REINICIAR TU PC AHORA!\n\n"
-                    "Después de reiniciar, vuelve a abrir el programa y usa el botón '2. Instalar Ubuntu' para finalizar."
+                    "Después de reiniciar, vuelve a abrir el programa y usa el botón '2. Instala una distro auxiliar' para finalizar."
                 )
             else:
                 msg_show_info(
                     "Instalación Exitosa",
-                    "Ubuntu se ha instalado correctamente dentro de WSL.\n\n"
+                    "Una distribución auxiliar se ha instalado correctamente dentro de WSL.\n\n"
                     "El sistema ya está listo para construir las imágenes."
                 )
         self.after(800, show_popup)
