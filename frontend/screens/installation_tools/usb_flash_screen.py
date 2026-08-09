@@ -239,7 +239,11 @@ class UsbFlashScreen(ctk.CTkFrame):
             
         iso_name = os.path.basename(iso_path)
         
-        msg = f"ATENCIÓN: Vas a formatear y sobrescribir el siguiente disco:\n\n{selected}\n\nCon la imagen:\n{iso_name}\n\nTODOS LOS DATOS EN EL USB SE PERDERÁN.\n¿Estás absolutamente seguro de continuar?"
+        msg = (
+            f"ATENCIÓN: Vas a sobrescribir el siguiente disco:\n\n{selected}\n\nCon la imagen:\n{iso_name}\n\n"
+            f"TODOS LOS DATOS EN EL USB SE PERDERÁN.\n\n"
+            f"¿Estás absolutamente seguro de continuar?"
+        )
         if not msg_ask_yes_no("Peligro de pérdida de datos", msg, width=600, height=450):
             return
             
@@ -255,10 +259,9 @@ class UsbFlashScreen(ctk.CTkFrame):
                                   text_color="#FF0000", border_color="#FF0000", hover_color="#330000")
         apply_glow_effect(self.btn_action, default_text="Cancelar", hover_text="Cancelar", color_base="#AA0000", color_glow="#FF0000")
         
-        self.status_lbl.configure(text="Estado: Preparando disco...", text_color="#FFAA00")
-        
-        # Activar simulación para que la barra nunca se quede quieta durante esperas del Kernel (fsync)
-        self.prog_manager.enable_simulation(cap=0.99, rate=0.0003)
+        self.status_lbl.configure(text="Estado: Esperando permisos de Administrador...", text_color="#FFAA00")
+        # La simulación de barra NO arranca aquí: esperamos a que el proceso
+        # elevado confirme que realmente inició (primer estado en el archivo JSON).
         
         threading.Thread(target=self.flash_worker, args=(iso_path, target_num), daemon=True).start()
 
@@ -303,29 +306,54 @@ class UsbFlashScreen(ctk.CTkFrame):
             # Polling loop
             done = False
             error_msg = ""
-            
+            wait_start = time.time()
+            MAX_WAIT_FOR_FILE = 60
+            simulation_started = False  # La simulación solo arranca cuando el proceso confirma inicio
+
             while not done:
-                # Check if process died prematurely
-                if proc.poll() is not None and proc.returncode != 0:
-                    self.is_flashing = False
-                    self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Flasheo cancelado o fallido.", text_color="#FF0000"))
-                    self.after(0, lambda: self.btn_flash.configure(state="normal"))
-                    self.after(0, self.set_btn_volver)
-                    return
-                    
-                time.sleep(0.1)
+                # En Windows, PowerShell Start-Process es asíncrono:
+                # siempre retorna 0 inmediatamente después de lanzar el proceso elevado.
+                # Por eso NO usamos proc.poll() para detectar errores en Windows.
+                # En Linux sí podemos depender del código de salida.
+                if sys.platform != "win32":
+                    if proc.poll() is not None and proc.returncode != 0:
+                        self.is_flashing = False
+                        self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Flasheo cancelado o fallido.", text_color="#FF0000"))
+                        self.after(0, lambda: self.btn_flash.configure(state="normal"))
+                        self.after(0, self.set_btn_volver)
+                        return
+
+                time.sleep(0.15)
+
                 if not os.path.exists(prog_file):
+                    # Si pasa demasiado tiempo sin que aparezca el archivo de progreso,
+                    # significa que el proceso elevado nunca arrancó (UAC rechazado, etc.)
+                    if time.time() - wait_start > MAX_WAIT_FOR_FILE:
+                        self.is_flashing = False
+                        self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: El proceso de flasheo no respondió.", text_color="#FF0000"))
+                        self.after(0, lambda: msg_show_error("Error", "El proceso de escritura no pudo iniciarse.\n\nPosibles causas:\n• Se rechazó el permiso de Administrador (UAC)\n• El antivirus bloqueó el proceso\n\nVuelve a intentarlo y acepta el permiso de Administrador."))
+                        self.after(0, self.set_btn_volver)
+                        self.after(0, lambda: self.btn_flash.configure(state="normal"))
                     continue
-                    
+
+                # El archivo ya existe: reiniciar el temporizador para no hacer timeout falso
+                wait_start = time.time()
+
                 try:
                     with open(prog_file, "r") as f:
                         data = json.load(f)
-                        
+
                     st = data.get("status", "")
                     pct = data.get("percent", 0.0)
                     txt = data.get("text", "0")
                     err = data.get("error", "")
-                    
+
+                    # Arrancar la simulación la primera vez que llegue cualquier estado válido
+                    # (esto garantiza que el proceso elevado ya recibió los permisos UAC)
+                    if not simulation_started and st in ("cleaning", "writing"):
+                        simulation_started = True
+                        self.after(0, lambda: self.prog_manager.enable_simulation(cap=0.99, rate=0.0003))
+
                     if st == "cleaning":
                         self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Preparando y limpiando disco...", text_color="#FFAA00"))
                     elif st == "writing":
@@ -335,13 +363,12 @@ class UsbFlashScreen(ctk.CTkFrame):
                         self.prog_manager.disable_simulation()
                         self.after(0, self.update_progress, 1.0, "100,00")
                         self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: ¡Flasheo completado con éxito!", text_color="#00FF00"))
-                        
+
                         def on_success():
                             self.is_flashing = False
                             msg_show_info("Éxito", "El USB booteable ha sido creado correctamente. Ya puedes usarlo para instalar el sistema.")
                             self.controller.show_frame("OptionSelectionScreen")
 
-                        # Esperar a que la animación llegue visualmente al 100% antes de mostrar el popup
                         self.prog_manager.set_on_complete(on_success)
                         done = True
                     elif st == "error":
@@ -349,11 +376,10 @@ class UsbFlashScreen(ctk.CTkFrame):
                         self.is_flashing = False
                         error_msg = err
                         done = True
-                        
+
                 except json.JSONDecodeError:
-                    # File might be partially written, just ignore this cycle
-                    pass
-                except Exception as e:
+                    pass  # El archivo puede estar siendo escrito, ignorar este ciclo
+                except Exception:
                     pass
                     
             if error_msg:

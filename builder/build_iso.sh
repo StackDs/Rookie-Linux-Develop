@@ -228,7 +228,7 @@ if [[ "$ISO_DISTRO" == popos* ]] || [[ "$ISO_DISTRO" == pop* ]] || [ "$ISO_DISTR
     
     # 5. Reempaquetar squashfs
     echo "=> [5/6] Reempaquetando squashfs (esto puede tardar varios minutos)..."
-    safe_run stdbuf -o0 mksquashfs "$SQUASH_WORK/root" "$SQUASH_WORK/filesystem.squashfs" -comp xz -b 1M -mem 1G 2>/dev/null
+    safe_run stdbuf -o0 mksquashfs "$SQUASH_WORK/root" "$SQUASH_WORK/filesystem.squashfs" -comp xz -b 1M
     rm -rf "$SQUASH_WORK/root"
     sync; echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
 
@@ -300,7 +300,7 @@ elif [ "$ISO_DISTRO" = "fedora" ]; then
     
     # 8. Reempaquetar squashfs.img
     echo "=> [8/8] Reempaquetando squashfs.img (esto puede tardar varios minutos)..."
-    safe_run stdbuf -o0 mksquashfs "$SQUASH_WORK/squashfs_root" "$SQUASH_WORK/squashfs.img" -comp xz -b 1M -mem 1G 2>/dev/null
+    safe_run stdbuf -o0 mksquashfs "$SQUASH_WORK/squashfs_root" "$SQUASH_WORK/squashfs.img" -comp xz -b 1M
     rm -rf "$SQUASH_WORK/squashfs_root"
     sync; echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
 fi

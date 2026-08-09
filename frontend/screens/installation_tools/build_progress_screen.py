@@ -359,9 +359,9 @@ class BuildProgressScreen(ctk.CTkFrame):
             self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Modificando e inyectando código en la ISO..."))
             self.after(0, self.update_progress_download, 1.0, "100,00")
             
-            current_subphase = "generating"
+            current_subphase = "init"
             base_percent = 0.0
-            scale_percent = 1.0
+            scale_percent = 0.0
             
             last_lines = []
             char_buffer = []
@@ -387,27 +387,34 @@ class BuildProgressScreen(ctk.CTkFrame):
                         
                     line_lower = line.lower()
                     
-                    if "desempaquetando squashfs" in line_lower:
+                    if "extrayendo" in line_lower and "squashfs" in line_lower:
+                        current_phase = "generating"
+                        current_subphase = "extracting_squashfs"
+                        base_percent = 0.0
+                        scale_percent = 0.10
+                        self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Extrayendo sistema de archivos (1/4)..."))
+                        self.after(0, lambda: self.prog_mgr_gen.enable_simulation(cap=0.09, rate=0.0001))
+                    elif "desempaquetando squashfs" in line_lower:
                         current_phase = "generating"
                         current_subphase = "unpacking"
-                        base_percent = 0.0
+                        base_percent = 0.10
                         scale_percent = 0.25
-                        self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Desempaquetando sistema de archivos base (1/3)..."))
-                        self.after(0, lambda: self.prog_mgr_gen.enable_simulation(cap=0.24, rate=0.0001))
+                        self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Desempaquetando sistema de archivos base (2/4)..."))
+                        self.after(0, lambda: self.prog_mgr_gen.enable_simulation(cap=0.34, rate=0.0001))
                     elif "reempaquetando squashfs" in line_lower:
                         current_phase = "generating"
                         current_subphase = "repacking"
-                        base_percent = 0.25
-                        scale_percent = 0.50
-                        self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Comprimiendo nuevo sistema de archivos (2/3)..."))
-                        self.after(0, lambda: self.prog_mgr_gen.enable_simulation(cap=0.74, rate=0.00005)) # mksquashfs tarda mucho, simulación más lenta
+                        base_percent = 0.35
+                        scale_percent = 0.45
+                        self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Comprimiendo nuevo sistema de archivos (3/4)..."))
+                        self.after(0, lambda: self.prog_mgr_gen.enable_simulation(cap=0.79, rate=0.00005))
                     elif "generando nueva iso" in line_lower:
                         current_phase = "generating"
                         current_subphase = "generating"
-                        if "pop" in distro_env.lower():
-                            base_percent = 0.75
-                            scale_percent = 0.25
-                            self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Empaquetando y exportando ISO final (3/3)..."))
+                        if distro_env.lower() in ["mint", "fedora"] or "pop" in distro_env.lower():
+                            base_percent = 0.80
+                            scale_percent = 0.20
+                            self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Empaquetando y exportando ISO final (4/4)..."))
                             self.after(0, lambda: self.prog_mgr_gen.enable_simulation(cap=0.99, rate=0.0001))
                         else:
                             base_percent = 0.0
