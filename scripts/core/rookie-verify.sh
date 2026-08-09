@@ -13,13 +13,6 @@ echo "apariencia de tu nuevo entorno..."
 echo "=========================================="
 echo ""
 
-if [ -f /opt/rookie-scripts/scripts/verify_installation.sh ]; then
-    echo "-> Ejecutando scripts de verificación..." | tee -a "$LOG"
-    bash /opt/rookie-scripts/scripts/verify_installation.sh 2>&1 | tee -a "$LOG"
-else
-    echo "[ERROR] No se encontró verify_installation.sh" | tee -a "$LOG"
-fi
-
 echo ""
 echo "=========================================="
 echo " Configurando Apariencia "
@@ -28,6 +21,17 @@ if [ -f /opt/rookie-scripts/scripts/system_utils/appearance.sh ]; then
     sudo bash /opt/rookie-scripts/scripts/system_utils/appearance.sh 2>&1 | tee -a "$LOG"
 else
     echo "[ERROR] No se encontró appearance.sh" | tee -a "$LOG"
+fi
+
+echo ""
+echo "=========================================="
+echo " Verificando Instalación "
+echo "=========================================="
+if [ -f /opt/rookie-scripts/scripts/verify_installation.sh ]; then
+    echo "-> Ejecutando scripts de verificación..." | tee -a "$LOG"
+    bash /opt/rookie-scripts/scripts/verify_installation.sh 2>&1 | tee -a "$LOG"
+else
+    echo "[ERROR] No se encontró verify_installation.sh" | tee -a "$LOG"
 fi
 
 echo ""

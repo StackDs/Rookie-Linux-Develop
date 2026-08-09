@@ -127,13 +127,20 @@ XDG Autostart ejecuta rookie-firstboot.desktop
 Abre terminal con rookie-terminal-wrapper.sh
        │
        ▼
+Ejecuta rookie-firstboot.sh (Inicia loop keep-alive de sudo)
+       │
+       ▼
 Ejecuta install.sh (instala IDEs, lenguajes, etc.)
        │
        ▼
-verify_installation.sh confirma que todo está OK
+Se elimina el .desktop para que no vuelva a ejecutarse
        │
        ▼
-Se elimina el .desktop para que no vuelva a ejecutarse
+Ejecuta rookie-verify.sh en la MISMA terminal
+       │
+       ├──► appearance.sh (Aplica fondos y temas oscuros)
+       │
+       └──► verify_installation.sh (Confirma que todo está OK)
 ```
 
 ---

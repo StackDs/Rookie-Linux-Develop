@@ -31,6 +31,7 @@ class DocumentationScreen(ctk.CTkFrame):
         self.tabview.add("Bases de Datos")
         self.tabview.add("Librerías y Frameworks")
         self.tabview.add("Ofimática")
+        self.tabview.add("Tutoriales")
         
         def create_link(parent, text, url, row, col=0):
             btn = ctk.CTkButton(parent, text=f"🔗 {text}", 
@@ -129,6 +130,12 @@ class DocumentationScreen(ctk.CTkFrame):
         create_link(tab_daily, "OBS Studio Wiki", "https://obsproject.com/wiki/", 0, 1)
         create_link(tab_daily, "VLC Media Player", "https://wiki.videolan.org/Documentation:Documentation/", 1, 1)
         create_link(tab_daily, "JFLAP", "https://www.jflap.org/tutorial/", 2, 1)
+        
+        # --- Tutoriales ---
+        tab_tutorials = self.tabview.tab("Tutoriales")
+        tab_tutorials.grid_columnconfigure((0,1), weight=1)
+        
+        create_link(tab_tutorials, "Dual Boot Pop!_OS con Windows", "https://www.vojtechstruhar.com/blog/037-how-to-dualboot-popos-and-windows/", 0, 0)
         
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
         btn_frame.grid(row=2, column=0, pady=(10, 20))

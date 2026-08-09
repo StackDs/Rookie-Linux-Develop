@@ -10,7 +10,7 @@ echo "=========================================="
 # 1. Copiar el fondo de pantalla al sistema
 echo "-> Copiando wallpaper al sistema..."
 mkdir -p /usr/share/backgrounds
-cp "$SCRIPT_DIR/../assets/wallpaper.png" /usr/share/backgrounds/rookie-wallpaper.png
+cp "$SCRIPT_DIR/../../assets/wallpaper.png" /usr/share/backgrounds/rookie-wallpaper.png
 chmod 644 /usr/share/backgrounds/rookie-wallpaper.png
 
 # 2. Registrar el wallpaper en el catalogo GNOME (necesario para Ubuntu/Pop! con GNOME/Mint-GNOME)

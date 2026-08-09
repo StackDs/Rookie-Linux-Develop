@@ -152,6 +152,11 @@ elif [ "$ISO_DISTRO" = "fedora" ]; then
         mcopy -D o -i "$EXTRACT_DIR/boot_images/eltorito_img2_uefi.img" "$EXTRACT_DIR/efi_grub.cfg" ::/EFI/BOOT/GRUB.CFG || true
     fi
 elif [ "$ISO_DISTRO" = "mint" ]; then
+    echo "=> Extrayendo configuracion GRUB original de la ISO (Mint)..."
+    xorriso -osirrox on -indev "$ISO_PATH" -extract /boot/grub/grub.cfg "$EXTRACT_DIR/grub.cfg" 2>/dev/null || true
+    xorriso -osirrox on -indev "$ISO_PATH" -extract /boot/grub/loopback.cfg "$EXTRACT_DIR/loopback.cfg" 2>/dev/null || true
+    chmod +w "$EXTRACT_DIR/grub.cfg" "$EXTRACT_DIR/loopback.cfg" 2>/dev/null || true
+
     echo "=> Modificando menu de arranque GRUB..."
     if [ -f "$EXTRACT_DIR/grub.cfg" ]; then
         sed -i 's/"Start Linux Mint[^"]*"/"Instalador Automatico de Rookie Linux"/g' "$EXTRACT_DIR/grub.cfg" || true

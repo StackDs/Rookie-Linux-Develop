@@ -164,8 +164,6 @@ fi
 echo ""
 echo -e "\e[1;36m====================================================\e[0m"
 echo "Verificación finalizada."
-echo "Presiona Enter para cerrar esta ventana..."
-read
 
 # Registrar que ya se verificó para no mostrar de nuevo al reiniciar
 mkdir -p "$HOME/.config"
