@@ -57,7 +57,7 @@ class WslInstallScreen(ctk.CTkFrame):
                                    font=ctk.CTkFont(family="Consolas", size=15, weight="bold"), cursor="hand2",
                                    fg_color="#004400", border_width=2, border_color="#00FF00",
                                    hover_color="#007700", text_color="#FFFFFF")
-        apply_glow_effect(self.btn_install_distro, default_text="2. Instalar Ubuntu", hover_text="2. Instalar Ubuntu")
+        apply_glow_effect(self.btn_install_distro, default_text="2. Instalar Distro", hover_text="2. Instalar Distro")
         self.btn_install_distro.grid(row=0, column=2, padx=10)
         
         self.is_installing = False

@@ -132,7 +132,7 @@ class App(ctk.CTk):
         icon_path = os.path.join(get_project_root(), "assets", "Utils", "icon.ico")
         if os.path.exists(icon_path):
             try:
-                self.iconbitmap(icon_path)
+                self.iconbitmap(default=icon_path)
             except: pass
             
         self.resizable(False, False)

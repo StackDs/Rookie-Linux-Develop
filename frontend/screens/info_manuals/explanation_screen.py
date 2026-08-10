@@ -52,7 +52,9 @@ class ExplanationScreen(ctk.CTkFrame):
             "     virtual, que es un emulador de hardware que permite ejecutar\n"
             "     otro sistema operativo dentro de Windows.\n"
             "  3. Instalación limpia: Consiste en reemplazar Windows por Linux.\n\n"
-            "> Todos estos conceptos serán explicados detalladamente más adelante." 
+            "> Todos estos conceptos serán explicados detalladamente más adelante."
+            "> Documentación y tutoriales disponibles en el respectivo apartado de la app."
+            "> Esperando acción del usuario..."
         )
         
         self.typing_job = None

@@ -13,7 +13,7 @@ def force_remove_tree(path):
     if os.name == 'nt':
         try:
             subprocess.run(
-                ["taskkill", "/F", "/IM", "Rookie-Linux-Builder.exe"],
+                ["taskkill", "/F", "/IM", "Rookie-Linux.exe"],
                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
             )
         except Exception:
@@ -42,10 +42,10 @@ def main():
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     os.chdir(project_root)
     
-    print("Iniciando empaquetado de Rookie Linux Builder para WINDOWS...")
+    print("Iniciando empaquetado de Rookie Linux para WINDOWS...")
     
-    if os.path.exists("Rookie-Linux-Builder.spec"):
-        os.remove("Rookie-Linux-Builder.spec")
+    if os.path.exists("Rookie-Linux.spec"):
+        os.remove("Rookie-Linux.spec")
         
     if os.name == 'nt':
         print("Entorno Windows detectado. Compilando nativamente...")
@@ -57,7 +57,7 @@ def main():
             sys.executable, "-m", "PyInstaller", 
             "--noconfirm",
             "--windowed",
-            "--name", "Rookie-Linux-Builder",
+            "--name", "Rookie-Linux",
             "--icon", "assets/Utils/icon.ico",
             "--hidden-import", "PIL._tkinter_finder",
             "--collect-all", "customtkinter",
@@ -75,7 +75,7 @@ def main():
             "wine pyinstaller --noconfirm --windowed --collect-all customtkinter "
             "--collect-all PIL "
             "--hidden-import PIL._tkinter_finder "
-            "--icon assets/Utils/icon.ico --name Rookie-Linux-Builder frontend/main.py"
+            "--icon assets/Utils/icon.ico --name Rookie-Linux frontend/main.py"
         )
         subprocess.run([
             "sudo", "docker", "run", "--rm", 
@@ -88,7 +88,7 @@ def main():
         # Corregir permisos: Docker crea los archivos como 'root'
         uid = os.getuid()
         gid = os.getgid()
-        subprocess.run(["sudo", "chown", "-R", f"{uid}:{gid}", "build", "dist", "Rookie-Linux-Builder.spec"], check=False)
+        subprocess.run(["sudo", "chown", "-R", f"{uid}:{gid}", "build", "dist", "Rookie-Linux.spec"], check=False)
     
     # 3. Preparar directorio de distribucion en la raiz
     dist_dir = os.path.join(project_root, "Rookie Linux Develop Win x64")
@@ -96,7 +96,7 @@ def main():
     force_remove_tree(dist_dir)
     
     # Mover la carpeta compilada (que ahora tiene todas las DLLs)
-    shutil.move("dist/Rookie-Linux-Builder", dist_dir)
+    shutil.move("dist/Rookie-Linux", dist_dir)
     
     # Copiar carpetas necesarias
     folders_to_copy = ["assets", "builder", "templates", "configs", "scripts"]
@@ -133,8 +133,8 @@ def main():
     force_remove_tree(dist_dir)
     force_remove_tree("build")
     force_remove_tree("dist")
-    if os.path.exists("Rookie-Linux-Builder.spec"):
-        os.remove("Rookie-Linux-Builder.spec")
+    if os.path.exists("Rookie-Linux.spec"):
+        os.remove("Rookie-Linux.spec")
         
     print(f"¡Exito! Se ha creado el paquete en la raíz del proyecto.")
     print(f"Las carpetas residuales han sido limpiadas.")

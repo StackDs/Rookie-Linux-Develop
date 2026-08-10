@@ -47,10 +47,9 @@ class InstructionsScreen(ctk.CTkFrame):
             "    opción para 'flashearla' (grabarla) de forma segura en una\n"
             "    memoria USB. Luego podrás usar ese USB para instalar Linux\n"
             "    en tu computadora. Una vez que se instale el sistema, se\n"
-            "    ejecutará automáticamente. El script de bienvenida te pedirá\n"
+            "    ejecutará automáticamente un script de bienvenida que te pedirá\n"
             "    iniciar sesión, y de ahí en adelante, se instalarán todas\n"
             "    las herramientas.\n\n"
-            
             "> Si tienes dudas, consulta la documentación oficial en el repositorio.\n"
             "> Esperando acción del usuario..."
         )
