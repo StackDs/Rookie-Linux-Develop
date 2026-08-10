@@ -113,7 +113,7 @@ def main():
     # 4. Crear el archivo RAR final en la carpeta 'app release'
     release_dir = os.path.join(project_root, "app release")
     os.makedirs(release_dir, exist_ok=True)
-    rar_filename = os.path.join(release_dir, "Rookie Linux Develop Windows.rar")
+    rar_filename = os.path.join(release_dir, "Rookie Linux Develop Windows x64.rar")
     
     print(f"Creando {rar_filename}...")
     

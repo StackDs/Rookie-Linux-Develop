@@ -159,10 +159,12 @@ elif [ "$ISO_DISTRO" = "mint" ]; then
 
     echo "=> Modificando menu de arranque GRUB..."
     if [ -f "$EXTRACT_DIR/grub.cfg" ]; then
-        sed -i 's/"Start Linux Mint[^"]*"/"Instalador Automatico de Rookie Linux"/g' "$EXTRACT_DIR/grub.cfg" || true
+        sed -E -i 's/"Start Linux Mint[^"]*\(compatibility mode\)"/"Instalador Automatico (Safe Graphics)"/g' "$EXTRACT_DIR/grub.cfg" || true
+        sed -E -i 's/"Start Linux Mint[^"]*"/"Instalador Automatico de Rookie Linux"/g' "$EXTRACT_DIR/grub.cfg" || true
     fi
     if [ -f "$EXTRACT_DIR/loopback.cfg" ]; then
-        sed -i 's/"Start Linux Mint[^"]*"/"Instalador Automatico de Rookie Linux"/g' "$EXTRACT_DIR/loopback.cfg" || true
+        sed -E -i 's/"Start Linux Mint[^"]*\(compatibility mode\)"/"Instalador Automatico (Safe Graphics)"/g' "$EXTRACT_DIR/loopback.cfg" || true
+        sed -E -i 's/"Start Linux Mint[^"]*"/"Instalador Automatico de Rookie Linux"/g' "$EXTRACT_DIR/loopback.cfg" || true
     fi
     
     echo "=> Extrayendo y modificando ISOLINUX (Legacy)..."
@@ -180,7 +182,9 @@ elif [[ "$ISO_DISTRO" == popos* ]] || [[ "$ISO_DISTRO" == pop* ]]; then
     
     if [ -f "$EXTRACT_DIR/grub.cfg" ]; then
         sed -i 's/"Pop_OS"/"Rookie Linux"/g' "$EXTRACT_DIR/grub.cfg" || true
+        sed -i 's/"Install Pop_OS (Safe Graphics)"/"Instalador de Rookie Linux (Safe Graphics)"/g' "$EXTRACT_DIR/grub.cfg" || true
         sed -i 's/"Install Pop_OS"/"Instalador de Rookie Linux"/g' "$EXTRACT_DIR/grub.cfg" || true
+        sed -i 's/"Try or Install Pop_OS (Safe Graphics)"/"Instalador de Rookie Linux (Safe Graphics)"/g' "$EXTRACT_DIR/grub.cfg" || true
         sed -i 's/"Try or Install Pop_OS"/"Instalador de Rookie Linux"/g' "$EXTRACT_DIR/grub.cfg" || true
     fi
 fi
