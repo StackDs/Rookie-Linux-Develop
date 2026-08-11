@@ -33,7 +33,12 @@
     <td align="center"><img src="assets/AppScreeShots/app4.png" width="380" alt="Progreso de construcción"/><br/><sub><b>USB Flasher</b></sub></td>
   </tr>
   <tr>
-    <td align="center" colspan="2"><img src="assets/AppScreeShots/app5.png" width="380" alt="Flasheo de USB"/><br/><sub><b>Documentación</b></sub></td>
+    <td align="center"><img src="assets/AppScreeShots/app5.png" width="380" alt="Flasheo de USB"/><br/><sub><b>Flasheo de USB</b></sub></td>
+    <td align="center"><img src="assets/AppScreeShots/app6.png" width="380" alt="Descarga de la ISO"/><br/><sub><b>Descarga de la ISO</b></sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="assets/AppScreeShots/app7.png" width="380" alt="Construcción de la ISO"/><br/><sub><b>Construcción de la ISO</b></sub></td>
+    <td align="center"><img src="assets/AppScreeShots/app9.png" width="380" alt="Distro Custom"/><br/><sub><b>Distro Custom</b></sub></td>
   </tr>
 </table>
 
