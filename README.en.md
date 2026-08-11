@@ -63,6 +63,13 @@ With a couple of clicks, the tool downloads an official Linux distribution, auto
 
 ---
 
+## 📦 What software is installed?
+
+Rookie Linux Develop automatically installs and configures over 40 essential development tools, libraries, and applications. 
+If you want to see the complete list of everything that is injected into your system, visit the **[Script Catalog (Installed Software)](docs/en/reference/script-catalog.md)** in our documentation.
+
+---
+
 ## 🐧 Supported Distributions
 
 | Distribution | Version | Status | Installer |
@@ -135,6 +142,8 @@ app release/
 ```
 
 Unzip and run the `Rookie-Linux-Builder` binary directly.
+
+> 🛡️ **Note for Windows users:** Windows Defender or SmartScreen may block the application as it is from an unknown origin (not being commercially signed). The application is 100% safe; if this happens, click on **"More info"** and then **"Run anyway"**. In some cases, it may be necessary to disable "Smart App Control" in Windows Defender.
 
 ---
 

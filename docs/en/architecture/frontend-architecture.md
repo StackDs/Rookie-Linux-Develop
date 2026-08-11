@@ -20,6 +20,11 @@ The `main.py` file contains the main `App` class that inherits from `ctk.CTk` (t
 
 5. **Top banner**: A persistent frame with quick navigation buttons to "Main Menu" and "Start Screen".
 
+### Fatal Error Logger (System Crash Capture)
+To prevent silent crashes (especially when running the compiled Windows binary with `--windowed`, where there is no console), `main.py` implements a global logging system before any heavy imports:
+- Redirects `sys.stdout` and `sys.stderr` through a proxy class (`_LoggerWriter`) to a local file `rookie_error.log`.
+- Overrides `sys.excepthook` and the global Tkinter handler (`tk.Tk.report_callback_exception`) with the `_fatal_error_handler` function, which saves the complete traceback to disk and triggers a critical messagebox (using CustomTkinter/Tkinter) before aborting the process.
+
 ---
 
 ## Screen Communication Pattern

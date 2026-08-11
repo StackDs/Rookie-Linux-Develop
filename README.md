@@ -63,6 +63,13 @@ Con un par de clics, la herramienta descarga una distribución oficial de Linux,
 
 ---
 
+## 📦 ¿Qué software se instala?
+
+Rookie Linux Develop instala y configura automáticamente más de 40 herramientas, librerías y aplicaciones esenciales para el desarrollo. 
+Si deseas ver la lista completa de todo lo que se inyecta en tu sistema, visita el **[Catálogo de Scripts (Software Instalado)](docs/es/referencia/catalogo-de-scripts.md)** en nuestra documentación.
+
+---
+
 ## 🐧 Distribuciones soportadas
 
 | Distribución | Versión | Estado | Instalador |
@@ -135,6 +142,8 @@ app release/
 ```
 
 Descomprime y ejecuta el binario `Rookie-Linux-Builder` directamente.
+
+> 🛡️ **Nota para usuarios de Windows:** Windows Defender o SmartScreen pueden bloquear la aplicación por ser de origen desconocido (al no estar firmada comercialmente). La aplicación es 100% segura; si esto ocurre, haz clic en **"Más información"** y luego en **"Ejecutar de todas formas"**. En algunos casos, puede ser necesario desactivar el "Control inteligente de aplicaciones" de Windows Defender.
 
 ---
 

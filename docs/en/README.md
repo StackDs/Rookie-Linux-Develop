@@ -52,6 +52,7 @@ docs/
 - [Add a Distribution](./guides/adding-distro.md) — Add Ubuntu, Fedora, etc.
 - [Add Installation Scripts](./guides/adding-scripts.md) — New tools in the ISO
 - [USB Management](./guides/usb-management.md) — How the flasher works on Linux and Windows
+- [WSL Installation](./guides/wsl-installation.md) — Two-phase installation flow for Windows
 
 ### 📋 Reference
 - [Supported Distros](./reference/supported-distros.md) — Table of versions and ISOs

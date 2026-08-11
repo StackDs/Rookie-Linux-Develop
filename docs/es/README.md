@@ -52,6 +52,7 @@ docs/
 - [Agregar una distribución](./guias/como-agregar-una-distro.md) — Añadir Ubuntu, Fedora, etc.
 - [Agregar scripts de instalación](./guias/como-agregar-scripts.md) — Nuevas herramientas en la ISO
 - [Manejo del USB](./guias/manejo-de-usb.md) — Cómo funciona el flasheador en Linux y Windows
+- [Instalación de WSL](./guias/instalacion-wsl.md) — Flujo de instalación en dos fases para Windows
 
 ### 📋 Referencia
 - [Distros soportadas](./referencia/distros-soportadas.md) — Tabla de versiones e ISOs
