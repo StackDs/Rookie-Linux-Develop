@@ -61,9 +61,8 @@ class DistroInfoScreen(ctk.CTkFrame):
                 "Destaca por su facilidad de uso, su enorme catálogo de software y su gran comunidad que facilita "
                 "encontrar ayuda. Es ideal tanto para principiantes como para usuarios avanzados, ofreciendo "
                 "soporte a largo plazo (LTS) y una amplia compatibilidad de hardware.\n\n"
-                "⏱️ Tiempo est. de instalación: ~25-35 minutos (incluye scripts)\n"
-                "💾 Espacio requerido en Disco: Mínimo 25 GB\n"
-                "🔌 Espacio requerido en USB: Mínimo 8 GB"
+                "💾 Espacio requerido en Disco: Mínimo 26 GB\n"
+                "🔌 Espacio usado por la ISO: 6.5 GB\n"
             ),
             "Linux Mint": (
                 "> Analizando: Linux Mint\n\n"
@@ -73,9 +72,8 @@ class DistroInfoScreen(ctk.CTkFrame):
                 "Incluye numerosas herramientas listas para usar, excelente rendimiento y acceso a los mismos "
                 "repositorios de Ubuntu, siendo ideal para dar nueva vida a equipos antiguos o para el uso diario "
                 "sin complicaciones.\n\n"
-                "⏱️ Tiempo est. de instalación: ~25-35 minutos (incluye scripts)\n"
-                "💾 Espacio requerido en Disco: Mínimo 20 GB\n"
-                "🔌 Espacio requerido en USB: Mínimo 4 GB (Se recomiendan 8 GB)"
+                "💾 Espacio requerido en Disco: Mínimo 25 GB\n"
+                "🔌 Espacio usado por la ISO: 2.7 GB"
             ),
             "Fedora": (
                 "> Analizando: Fedora Linux\n\n"
@@ -99,9 +97,8 @@ class DistroInfoScreen(ctk.CTkFrame):
                 "⚠️ Nota sobre Dual Boot: Hacer un dual boot con Windows es un poco complicado ya que Pop!_OS requiere "
                 "una partición EFI más grande de la que Windows crea por defecto. Las instrucciones para realizar este "
                 "procedimiento las encuentras en la sección de Tutoriales de la documentación.\n\n"
-                "⏱️ Tiempo est. de instalación: ~25-35 minutos (incluye scripts)\n"
-                "💾 Espacio requerido en Disco: Mínimo 20 GB\n"
-                "🔌 Espacio requerido en USB: Mínimo 8 GB"
+                "💾 Espacio requerido en Disco: Mínimo 26 GB\n"
+                "🔌 Espacio usado por la ISO: 3.9 GB"
             )
         }
         

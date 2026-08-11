@@ -83,14 +83,26 @@ if command -v cosmic-settings >/dev/null 2>&1 || [ -d /usr/lib/cosmic ]; then
 
     # Formato RON de Cosmic para el fondo de pantalla (aplica a todas las pantallas)
     cat << 'EOF' > "$COSMIC_BG_DIR/all"
-Some(Entry(source: Path("/usr/share/backgrounds/rookie-wallpaper.png"), filter: Lanczos, scaling_mode: Zoom, rotation_frequency: 3600, color: None, colors: None, same_on_all: true, output: All))
+(
+    filter_by_theme: false,
+    filter_method: Lanczos,
+    output: "all",
+    rotation_frequency: 300,
+    sampling_method: Alphanumeric,
+    scaling_mode: Zoom,
+    source: Path("/usr/share/backgrounds/rookie-wallpaper.png"),
+)
 EOF
     chmod 644 "$COSMIC_BG_DIR/all"
+
+    echo "true" > "$COSMIC_BG_DIR/same-on-all"
+    chmod 644 "$COSMIC_BG_DIR/same-on-all"
 
     # Tambien aplicar a root por si el script de verify corre como root
     ROOT_COSMIC_DIR="/root/.config/cosmic/com.system76.CosmicBackground/v1"
     mkdir -p "$ROOT_COSMIC_DIR"
     cp "$COSMIC_BG_DIR/all" "$ROOT_COSMIC_DIR/all"
+    cp "$COSMIC_BG_DIR/same-on-all" "$ROOT_COSMIC_DIR/same-on-all"
 
     # Aplicar al usuario actual (SUDO_USER) porque el usuario ya fue creado
     if [ -n "$SUDO_USER" ] && [ "$SUDO_USER" != "root" ]; then
@@ -99,6 +111,7 @@ EOF
             USER_COSMIC_DIR="$USER_HOME/.config/cosmic/com.system76.CosmicBackground/v1"
             mkdir -p "$USER_COSMIC_DIR"
             cp "$COSMIC_BG_DIR/all" "$USER_COSMIC_DIR/all"
+            cp "$COSMIC_BG_DIR/same-on-all" "$USER_COSMIC_DIR/same-on-all"
             chown -R "$SUDO_USER:$SUDO_USER" "$USER_HOME/.config/cosmic"
         fi
     fi
