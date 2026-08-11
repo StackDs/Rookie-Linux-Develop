@@ -25,15 +25,20 @@
 
 <table>
   <tr>
-    <td align="center"><img src="assets/AppScreeShots/app1.png" width="380" alt="Home Screen"/><br/><sub><b>Home Screen</b></sub></td>
-    <td align="center"><img src="assets/AppScreeShots/app2.png" width="380" alt="Main Menu"/><br/><sub><b>Distribution Selection</b></sub></td>
+    <td align="center"><img src="assets/AppScreeShots/app1.png" width="380" alt="Home screen"/><br/><sub><b>Pantalla de inicio</b></sub></td>
+    <td align="center"><img src="assets/AppScreeShots/app2.png" width="380" alt="Main menu"/><br/><sub><b>Selección de distribución</b></sub></td>
   </tr>
   <tr>
-    <td align="center"><img src="assets/AppScreeShots/app3.png" width="380" alt="Distribution Selection"/><br/><sub><b>Distribution Information</b></sub></td>
-    <td align="center"><img src="assets/AppScreeShots/app4.png" width="380" alt="Build Progress"/><br/><sub><b>USB Flasher</b></sub></td>
+    <td align="center"><img src="assets/AppScreeShots/app3.png" width="380" alt="Distribution selection"/><br/><sub><b>Información de la distribución</b></sub></td>
+    <td align="center"><img src="assets/AppScreeShots/app4.png" width="380" alt="Build progress"/><br/><sub><b>USB Flasher</b></sub></td>
   </tr>
   <tr>
-    <td align="center" colspan="2"><img src="assets/AppScreeShots/app5.png" width="380" alt="USB Flashing"/><br/><sub><b>Documentation</b></sub></td>
+    <td align="center"><img src="assets/AppScreeShots/app5.png" width="380" alt="USB flashing"/><br/><sub><b>Flasheo de USB</b></sub></td>
+    <td align="center"><img src="assets/AppScreeShots/app6.png" width="380" alt="ISO download"/><br/><sub><b>Descarga de la ISO</b></sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="assets/AppScreeShots/app7.png" width="380" alt="ISO building"/><br/><sub><b>Construcción de la ISO</b></sub></td>
+    <td align="center"><img src="assets/AppScreeShots/app9.png" width="380" alt="Custom Distro"/><br/><sub><b>Distro Custom</b></sub></td>
   </tr>
 </table>
 
