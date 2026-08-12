@@ -147,11 +147,11 @@ class WslMainInstallScreen(ctk.CTkFrame):
                 res = subprocess.run(["wsl", "--status"], capture_output=True, text=True, creationflags=0x08000000)
                 if res.returncode == 0:
                     wsl_installed = True
-                    out = res.stdout
-                    if "WSL 2" in out or "Versión predeterminada: 2" in out:
+                    out = res.stdout.replace('\x00', '')
+                    if "WSL 2" in out or "Versión predeterminada: 2" in out or "Default Version: 2" in out:
                         wsl2_avail = True
                         default_version = "WSL 2"
-                    elif "Versión predeterminada: 1" in out:
+                    elif "Versión predeterminada: 1" in out or "Default Version: 1" in out:
                         default_version = "WSL 1"
                     
                 res_l = subprocess.run(["wsl", "-l", "-v"], capture_output=True, text=True, creationflags=0x08000000)
@@ -367,7 +367,8 @@ class WslMainInstallScreen(ctk.CTkFrame):
                 pass
                 
             if success:
-                self.after(0, lambda d=distro: self.update_progress(d, status="✓ Instalada (Falta Configurar)", percentage=1.0, color="#00FF00", show_form=True))
+                self.after(0, lambda d=distro: self.update_progress(d, status="✓ Instalada", percentage=1.0, color="#00FF00", show_form=False))
+                self.after(0, lambda d=distro: msg_show_info("Instalación Completa", f"La distribución {d} ha sido instalada.\n\nSi no se abrió automáticamente, ábrela desde el Menú de Inicio o con el comando: wsl en el CMD, ahí podrás configurar tu usuario y contraseña."))
             else:
                 self.after(0, lambda d=distro: self.update_progress(d, status="✗ Error de instalación", percentage=0.0, color="#FF0000"))
                 
@@ -391,26 +392,7 @@ class WslMainInstallScreen(ctk.CTkFrame):
         prog.pack(fill="x", padx=10, pady=(0, 10))
         prog.set(0)
         
-        # Formulario (oculto por defecto)
-        form = ctk.CTkFrame(card, fg_color="#001100", corner_radius=5)
-        
-        ctk.CTkLabel(form, text="Usuario:", text_color="#00E676", font=ctk.CTkFont(family="Consolas", size=12)).pack(anchor="w", padx=10, pady=(5,0))
-        entry_user = ctk.CTkEntry(form, fg_color="#000000", text_color="#FFFFFF", border_color="#004400")
-        entry_user.pack(fill="x", padx=10, pady=(0,5))
-        
-        ctk.CTkLabel(form, text="Contraseña:", text_color="#00E676", font=ctk.CTkFont(family="Consolas", size=12)).pack(anchor="w", padx=10)
-        entry_pass = ctk.CTkEntry(form, fg_color="#000000", text_color="#FFFFFF", border_color="#004400", show="*")
-        entry_pass.pack(fill="x", padx=10, pady=(0,5))
-        
-        ctk.CTkLabel(form, text="Confirmar:", text_color="#00E676", font=ctk.CTkFont(family="Consolas", size=12)).pack(anchor="w", padx=10)
-        entry_conf = ctk.CTkEntry(form, fg_color="#000000", text_color="#FFFFFF", border_color="#004400", show="*")
-        entry_conf.pack(fill="x", padx=10, pady=(0,10))
-        
-        btn_save = ctk.CTkButton(form, text="Configurar Usuario", fg_color="#004400", hover_color="#007700",
-                                 command=lambda d=distro, u=entry_user, p=entry_pass, c=entry_conf, b=card: self.setup_user(d, u, p, c, b))
-        btn_save.pack(pady=(0, 10))
-        
-        card.pack_info = {"lbl_status": lbl_status, "prog": prog, "form": form}
+        card.pack_info = {"lbl_status": lbl_status, "prog": prog}
         setattr(self, f"card_{distro.replace(' ', '_')}", card)
         
     def update_progress(self, distro, status, percentage, color, show_form=False):
@@ -419,57 +401,5 @@ class WslMainInstallScreen(ctk.CTkFrame):
             card.pack_info["lbl_status"].configure(text=status, text_color=color)
             card.pack_info["prog"].set(percentage)
             card.pack_info["prog"].configure(progress_color=color)
-            if show_form:
-                card.pack_info["form"].pack(fill="x", padx=10, pady=(0, 10))
 
-    def setup_user(self, distro, entry_user, entry_pass, entry_conf, card):
-        user = entry_user.get().strip()
-        pwd = entry_pass.get()
-        conf = entry_conf.get()
-        
-        if not user or not pwd:
-            msg_show_error("Error", "Debes ingresar usuario y contraseña.")
-            return
-        if pwd != conf:
-            msg_show_error("Error", "Las contraseñas no coinciden.")
-            return
-        import re
-        if not re.match(r'^[a-z_][a-z0-9_-]*$', user):
-            msg_show_error("Error", "El nombre de usuario contiene caracteres inválidos. Usa solo minúsculas y números.")
-            return
-            
-        def worker():
-            try:
-                if sys.platform == "win32":
-                    script = (
-                        f"useradd -m -s /bin/bash '{user}'; "
-                        f"usermod -aG sudo '{user}' 2>/dev/null; "
-                        f"usermod -aG wheel '{user}' 2>/dev/null; "
-                        f"chpasswd; "
-                        f"mkdir -p /etc; "
-                        f"echo -e '[user]\\ndefault={user}' > /etc/wsl.conf"
-                    )
-                    cflags = 0x08000000
-                    cmd = ['wsl', '-d', distro, '-u', 'root', '--', 'bash', '-c', script]
-                    input_data = f"{user}:{pwd}\n"
-                    
-                    res = subprocess.run(cmd, input=input_data, capture_output=True, text=True, creationflags=cflags)
-                    if res.returncode != 0:
-                        raise Exception(res.stderr or res.stdout or "Error desconocido al configurar usuario en WSL.")
-                        
-                    # Reiniciar la instancia para que tome el nuevo /etc/wsl.conf
-                    subprocess.run(['wsl', '-t', distro], creationflags=cflags)
-                else:
-                    time.sleep(1) # Simulación en Linux nativo
-                
-                # Ocultar campos de texto sensibles (limpiarlos)
-                self.after(0, lambda: entry_pass.delete(0, 'end'))
-                self.after(0, lambda: entry_conf.delete(0, 'end'))
-                
-                self.after(0, lambda: card.pack_info["lbl_status"].configure(text="✓ Lista para usar", text_color="#00FF00"))
-                self.after(0, lambda: card.pack_info["form"].pack_forget())
-                self.after(0, lambda: msg_show_info("Éxito", f"Usuario '{user}' configurado correctamente para {distro}."))
-            except Exception as e:
-                self.after(0, lambda: msg_show_error("Error", f"Fallo en configuración: {str(e)}"))
-                
-        threading.Thread(target=worker, daemon=True).start()
+

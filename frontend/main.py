@@ -66,8 +66,11 @@ sys.excepthook = _fatal_error_handler
 
 import tkinter as tk
 
-def _tk_error_handler(exc_type, exc_value, exc_tb):
-    _fatal_error_handler(exc_type, exc_value, exc_tb)
+def _tk_error_handler(*args):
+    if len(args) == 4:
+        _fatal_error_handler(args[1], args[2], args[3])
+    elif len(args) == 3:
+        _fatal_error_handler(args[0], args[1], args[2])
 
 tk.Tk.report_callback_exception = _tk_error_handler
 # Importar utils UI sólo después del logger
