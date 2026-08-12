@@ -376,6 +376,7 @@ class WslMainInstallScreen(ctk.CTkFrame):
         self.after(0, self.load_distros)
             
     def create_progress_card(self, distro):
+        from utils import ProgressManager
         card = ctk.CTkFrame(self.scroll_progress, fg_color="#002200", corner_radius=8)
         card.pack(fill="x", pady=5)
         
@@ -388,18 +389,37 @@ class WslMainInstallScreen(ctk.CTkFrame):
         lbl_status = ctk.CTkLabel(header, text="○ En espera", font=ctk.CTkFont(family="Consolas", size=12), text_color="#AAAAAA")
         lbl_status.pack(side="right")
         
+        info_frame = ctk.CTkFrame(card, fg_color="transparent", height=15)
+        info_frame.pack(fill="x", padx=10, pady=(0, 2))
+        
+        lbl_perc = ctk.CTkLabel(info_frame, text="", font=ctk.CTkFont(family="Consolas", size=11), text_color="#00FF00")
+        lbl_perc.pack(side="left")
+        
+        lbl_eta = ctk.CTkLabel(info_frame, text="", font=ctk.CTkFont(family="Consolas", size=11), text_color="#AAAAAA")
+        lbl_eta.pack(side="right")
+        
         prog = ctk.CTkProgressBar(card, progress_color="#00FF00", fg_color="#001100")
         prog.pack(fill="x", padx=10, pady=(0, 10))
         prog.set(0)
         
-        card.pack_info = {"lbl_status": lbl_status, "prog": prog}
+        mgr = ProgressManager(self, prog, lbl_perc, "Progreso: ", eta_label=lbl_eta)
+        mgr.reset()
+        
+        card.pack_info = {"lbl_status": lbl_status, "prog": prog, "mgr": mgr}
         setattr(self, f"card_{distro.replace(' ', '_')}", card)
         
     def update_progress(self, distro, status, percentage, color, show_form=False):
         card = getattr(self, f"card_{distro.replace(' ', '_')}", None)
         if card:
             card.pack_info["lbl_status"].configure(text=status, text_color=color)
-            card.pack_info["prog"].set(percentage)
+            mgr = card.pack_info["mgr"]
+            if percentage >= 1.0:
+                mgr.disable_simulation()
+                mgr.update_progress(1.0)
+            elif percentage == 0.0:
+                mgr.reset()
+            else:
+                mgr.enable_simulation(cap=0.95, rate=0.0001)
             card.pack_info["prog"].configure(progress_color=color)
 
 

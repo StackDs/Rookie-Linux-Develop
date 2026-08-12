@@ -77,27 +77,37 @@ class ProgressManager:
         self.step = step
         self.delay = delay
         
+        # Desactivamos el output en consola para usar rich internamente
+        try:
+            from rich.console import Console
+            from rich.progress import Progress
+            self._devnull = open(os.devnull, "w")
+            self.rich_console = Console(file=self._devnull)
+            self.rich_progress = Progress(console=self.rich_console)
+            self.task_id = self.rich_progress.add_task("progress", total=100.0)
+            self.has_rich = True
+        except ImportError:
+            self.has_rich = False
+        
         self.current_progress = 0.0
         self.target_progress = 0.0
         self.is_animating = False
-        
-        self.history = []
-        self.last_eta_update = 0
         
         self.simulating = False
         self.sim_cap = 0.99
         self.sim_rate = 0.0001
         
-        self._on_complete = None  # Callback a disparar cuando la animación llega al target
+        self._on_complete = None
+
+    def __del__(self):
+        if getattr(self, "has_rich", False):
+            try:
+                self._devnull.close()
+            except:
+                pass
 
     def update_progress(self, target_percent):
         self.target_progress = target_percent
-        
-        # Guardar historial para ETA
-        current_time = time.time()
-        self.history.append((current_time, target_percent))
-        # Mantener solo los últimos 15 segundos
-        self.history = [(t, p) for t, p in self.history if current_time - t <= 15]
         
         if not self.is_animating:
             self.is_animating = True
@@ -136,8 +146,11 @@ class ProgressManager:
         self._on_complete = None
         self.current_progress = 0.0
         self.target_progress = 0.0
-        self.history = []
-        self.last_eta_update = 0
+        
+        if self.has_rich:
+            self.rich_progress.update(self.task_id, completed=0.0)
+            self.rich_progress.reset(self.task_id, total=100.0)
+            
         self.progress_bar.set(0.0)
         if text:
             self.label_widget.configure(text=text)
@@ -152,15 +165,10 @@ class ProgressManager:
                 self.target_progress += self.sim_rate
                 if self.target_progress > self.sim_cap:
                     self.target_progress = self.sim_cap
-                
-                # Mantener el ETA actualizado usando el progreso simulado
-                current_time = time.time()
-                self.history.append((current_time, self.target_progress))
-                self.history = [(t, p) for t, p in self.history if current_time - t <= 15]
 
         diff = self.target_progress - self.current_progress
         
-        # Exponential smoothing para un incremento fluido y constante de los decimales
+        # Exponential smoothing para un incremento fluido
         step = diff * 0.02
         min_step = 0.0001 
         
@@ -176,47 +184,40 @@ class ProgressManager:
                 self.current_progress = self.target_progress
 
         self.progress_bar.set(self.current_progress)
-        val = self.current_progress * 100.0
-        text_val = f"{val:.2f}".replace('.', ',')
-        self.label_widget.configure(text=f"{self.label_prefix}{text_val}%")
         
-        # Calcular y actualizar ETA
-        if self.eta_label and self.history:
-            current_time = time.time()
-            if current_time - self.last_eta_update > 1.0: # Actualizar ETA cada 1 segundo visualmente
-                old_t, old_p = self.history[0]
-                dt = current_time - old_t
-                dp = self.target_progress - old_p
-                
-                if dt > 3 and dp > 0: # Solo estimar si tenemos al menos 3 seg de historial y hemos avanzado
-                    rate = dp / dt
-                    if rate > 0:
-                        remaining_p = 1.0 - self.target_progress
-                        eta_seconds = int(remaining_p / rate)
-                        
-                        mins, secs = divmod(eta_seconds, 60)
-                        hours, mins = divmod(mins, 60)
-                        
-                        if hours > 0:
-                            eta_str = f"Faltan ~{hours:02d}:{mins:02d}:{secs:02d}"
-                        else:
-                            eta_str = f"Faltan ~{mins:02d}:{secs:02d}"
-                            
-                        self.eta_label.configure(text=eta_str)
-                elif dt > 1 and dp == 0 and self.target_progress > 0 and self.target_progress < 1.0:
-                    pass # Evitar que el ETA desaparezca si se congela un momento
+        if self.has_rich:
+            # Backend rich para cálculos
+            self.rich_progress.update(self.task_id, completed=self.current_progress * 100.0)
+            task = self.rich_progress.tasks[self.task_id]
+            
+            val = task.percentage if task.percentage is not None else (self.current_progress * 100.0)
+            text_val = f"{val:.2f}".replace('.', ',')
+            self.label_widget.configure(text=f"{self.label_prefix}{text_val}%")
+            
+            if self.eta_label:
+                # Solo mostrar ETA si se ha avanzado un mínimo razonable
+                if task.time_remaining is not None and self.current_progress > 0.01 and self.current_progress < 0.99:
+                    eta_seconds = int(task.time_remaining)
+                    mins, secs = divmod(eta_seconds, 60)
+                    hours, mins = divmod(mins, 60)
+                    if hours > 0:
+                        eta_str = f"Faltan ~{hours:02d}:{mins:02d}:{secs:02d}"
+                    else:
+                        eta_str = f"Faltan ~{mins:02d}:{secs:02d}"
+                    self.eta_label.configure(text=eta_str)
                 else:
-                    if self.target_progress >= 0.999:
+                    if self.target_progress >= 0.99:
                         self.eta_label.configure(text="")
                     elif not self.eta_label.cget("text"):
-                        self.eta_label.configure(text="Calculando...")
-                        
-                self.last_eta_update = current_time
+                        self.eta_label.configure(text="Calculando ETA...")
+        else:
+            val = self.current_progress * 100.0
+            text_val = f"{val:.2f}".replace('.', ',')
+            self.label_widget.configure(text=f"{self.label_prefix}{text_val}%")
         
         if abs(self.current_progress - self.target_progress) < 0.00001 and not self.simulating:
             self.current_progress = self.target_progress
             self.is_animating = False
-            # Disparar callback si la animación llegó al target
             if self._on_complete is not None:
                 cb = self._on_complete
                 self._on_complete = None

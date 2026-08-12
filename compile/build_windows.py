@@ -50,7 +50,7 @@ def main():
     if os.name == 'nt':
         print("Entorno Windows detectado. Compilando nativamente...")
         # 1. Instalar dependencias
-        subprocess.run([sys.executable, "-m", "pip", "install", "pyinstaller", "customtkinter==5.2.2", "pillow"], check=False)
+        subprocess.run([sys.executable, "-m", "pip", "install", "pyinstaller", "customtkinter==5.2.2", "pillow", "rich"], check=False)
         
         # 2. Construir el ejecutable
         subprocess.run([
@@ -60,6 +60,7 @@ def main():
             "--name", "Rookie-Linux",
             "--icon", "assets/Utils/icon.ico",
             "--hidden-import", "PIL._tkinter_finder",
+            "--hidden-import", "rich",
             "--collect-all", "customtkinter",
             "--collect-all", "PIL",
             "frontend/main.py"
@@ -71,10 +72,11 @@ def main():
         # 1 y 2. Instalar dependencias y compilar en el MISMO contenedor
         print("Instalando dependencias y compilando con PyInstaller (Windows via Docker)...")
         docker_command = (
-            "wine python -m pip install pyinstaller customtkinter==5.2.2 pillow && "
+            "wine python -m pip install pyinstaller customtkinter==5.2.2 pillow rich && "
             "wine pyinstaller --noconfirm --windowed --collect-all customtkinter "
             "--collect-all PIL "
             "--hidden-import PIL._tkinter_finder "
+            "--hidden-import rich "
             "--icon assets/Utils/icon.ico --name Rookie-Linux frontend/main.py"
         )
         subprocess.run([

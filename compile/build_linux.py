@@ -45,7 +45,7 @@ def main():
     print("Iniciando empaquetado de Rookie Linux Builder para LINUX...")
     
     # 1. Instalar dependencias si faltan
-    subprocess.run([sys.executable, "-m", "pip", "install", "pyinstaller", "customtkinter", "pillow", "--break-system-packages"], check=False)
+    subprocess.run([sys.executable, "-m", "pip", "install", "pyinstaller", "customtkinter", "pillow", "rich", "--break-system-packages"], check=False)
     
     # 2. Construir el ejecutable con PyInstaller (Nativo)
     print("Compilando con PyInstaller nativamente para Linux...")
@@ -55,6 +55,7 @@ def main():
         "--windowed",
         "--name", "Rookie-Linux-Builder",
         "--hidden-import", "PIL._tkinter_finder",
+        "--hidden-import", "rich",
         "--collect-all", "customtkinter",
         "frontend/main.py"
     ], check=True)
