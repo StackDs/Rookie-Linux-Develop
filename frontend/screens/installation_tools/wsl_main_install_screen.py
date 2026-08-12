@@ -3,7 +3,7 @@ import subprocess
 import threading
 import sys
 import time
-from custom_messagebox import msg_show_info, msg_show_error
+from custom_messagebox import msg_show_info, msg_show_error, msg_ask_yes_no
 from utils import apply_glow_effect
 
 class WslMainInstallScreen(ctk.CTkFrame):
@@ -79,8 +79,14 @@ class WslMainInstallScreen(ctk.CTkFrame):
             
         self.btn_fix_wsl = ctk.CTkButton(self.status_container, text="Habilitar / Instalar WSL", command=self.install_wsl,
                                          height=45, width=280, fg_color="#004400", hover_color="#007700", border_color="#00FF00", border_width=2, text_color="#FFFFFF", font=ctk.CTkFont(family="Consolas", size=16, weight="bold"), state="disabled")
-        self.btn_fix_wsl.pack(pady=(30, 20))
+        self.btn_fix_wsl.pack(pady=(30, 10))
         apply_glow_effect(self.btn_fix_wsl, default_text="Habilitar / Instalar WSL", hover_text="Habilitar / Instalar WSL")
+        
+        self.install_wsl_status_lbl = ctk.CTkLabel(self.status_container, text="", font=ctk.CTkFont(family="Consolas", size=14, weight="bold"), text_color="#FFAA00")
+        self.install_wsl_status_lbl.pack(pady=(0, 5))
+        
+        self.install_wsl_progress = ctk.CTkProgressBar(self.status_container, mode="indeterminate", width=280, progress_color="#00FF00", fg_color="#002200")
+        # Not packed initially
 
     def setup_distros_tab(self):
         # Dos paneles: Izquierda (lista), Derecha (Progreso/Config)
@@ -176,6 +182,8 @@ class WslMainInstallScreen(ctk.CTkFrame):
                 self.btn_fix_wsl.configure(state="normal")
             else:
                 self.btn_fix_wsl.configure(state="disabled", fg_color="#002200", text="WSL ya está habilitado", text_color="#008800")
+                self.install_wsl_status_lbl.configure(text="")
+                self.install_wsl_progress.pack_forget()
             
         self.after(0, update_ui)
         
@@ -221,12 +229,18 @@ class WslMainInstallScreen(ctk.CTkFrame):
                 # 2. Obtener distribuciones online (wsl -l -o)
                 res_o = subprocess.run(["wsl", "-l", "-o"], capture_output=True, text=True, creationflags=0x08000000)
                 if res_o.returncode == 0:
-                    lines = res_o.stdout.split('\n')[1:] # Saltar cabecera
+                    lines = res_o.stdout.split('\n')
+                    start_parsing = False
                     for line in lines:
                         line = line.replace('\x00', '').strip()
-                        if line:
+                        if not line:
+                            continue
+                        if line.startswith("NAME"):
+                            start_parsing = True
+                            continue
+                        if start_parsing:
                             parts = line.split()
-                            if parts and parts[0] != "NAME":
+                            if parts:
                                 available_distros.append(parts[0])
             except Exception as e:
                 pass
@@ -275,6 +289,9 @@ class WslMainInstallScreen(ctk.CTkFrame):
             "Se requerirán permisos de Administrador y podría ser necesario un reinicio del equipo al finalizar."
         )
         self.btn_fix_wsl.configure(state="disabled", text="Instalando...")
+        self.install_wsl_status_lbl.configure(text="Habilitando WSL, por favor espera... (Puede tardar varios minutos)", text_color="#FFAA00")
+        self.install_wsl_progress.pack(pady=(0, 20))
+        self.install_wsl_progress.start()
         
         def worker():
             try:
@@ -283,12 +300,16 @@ class WslMainInstallScreen(ctk.CTkFrame):
                 res = subprocess.run(['powershell', '-Command', ps_cmd], creationflags=cflags)
                 
                 if res.returncode == 0:
+                    self.after(0, lambda: self.install_wsl_status_lbl.configure(text="¡Instalación exitosa! Requiere reinicio.", text_color="#00FF00"))
                     self.after(0, lambda: msg_show_info("WSL Habilitado", "La instalación de WSL base fue exitosa. DEBES REINICIAR el sistema para aplicar los cambios antes de instalar distribuciones."))
                 else:
+                    self.after(0, lambda: self.install_wsl_status_lbl.configure(text="Error al habilitar WSL.", text_color="#FF0000"))
                     self.after(0, lambda: msg_show_error("Error", "No se pudo habilitar WSL. Revisa los permisos."))
             except Exception as e:
+                self.after(0, lambda: self.install_wsl_status_lbl.configure(text="Error inesperado.", text_color="#FF0000"))
                 self.after(0, lambda e=e: msg_show_error("Error", str(e)))
             finally:
+                self.after(0, self.install_wsl_progress.stop)
                 self.after(0, self.load_wsl_status)
                 
         threading.Thread(target=worker, daemon=True).start()
@@ -297,6 +318,14 @@ class WslMainInstallScreen(ctk.CTkFrame):
         selected = [d for d, var in self.distro_vars.items() if var.get()]
         if not selected:
             msg_show_error("Selección vacía", "Por favor, selecciona al menos una distribución disponible para instalar.")
+            return
+            
+        distros_str = "\n".join([f"- {d}" for d in selected])
+        confirm = msg_ask_yes_no(
+            "Confirmar Instalación",
+            f"¿Estás seguro de que deseas instalar las siguientes distribuciones?\n\n{distros_str}\n\nEsto puede tardar varios minutos y requerirá descargar datos de internet."
+        )
+        if not confirm:
             return
             
         for widget in self.scroll_progress.winfo_children():
@@ -404,14 +433,34 @@ class WslMainInstallScreen(ctk.CTkFrame):
         if pwd != conf:
             msg_show_error("Error", "Las contraseñas no coinciden.")
             return
+        import re
+        if not re.match(r'^[a-z_][a-z0-9_-]*$', user):
+            msg_show_error("Error", "El nombre de usuario contiene caracteres inválidos. Usa solo minúsculas y números.")
+            return
             
         def worker():
             try:
-                # El comando real requiere ejecutar comandos en la distro instalada para añadir el usuario.
-                # Ya que WSL --install --no-launch no pide datos interactivos, la distro se crea como 'root' por defecto.
-                # Tendremos que crear el usuario y agregarlo a sudoers, o forzar la inicialización predeterminada (complejo headless).
-                # Por el momento simularemos la configuración.
-                time.sleep(1)
+                if sys.platform == "win32":
+                    script = (
+                        f"useradd -m -s /bin/bash '{user}'; "
+                        f"usermod -aG sudo '{user}' 2>/dev/null; "
+                        f"usermod -aG wheel '{user}' 2>/dev/null; "
+                        f"chpasswd; "
+                        f"mkdir -p /etc; "
+                        f"echo -e '[user]\\ndefault={user}' > /etc/wsl.conf"
+                    )
+                    cflags = 0x08000000
+                    cmd = ['wsl', '-d', distro, '-u', 'root', '--', 'bash', '-c', script]
+                    input_data = f"{user}:{pwd}\n"
+                    
+                    res = subprocess.run(cmd, input=input_data, capture_output=True, text=True, creationflags=cflags)
+                    if res.returncode != 0:
+                        raise Exception(res.stderr or res.stdout or "Error desconocido al configurar usuario en WSL.")
+                        
+                    # Reiniciar la instancia para que tome el nuevo /etc/wsl.conf
+                    subprocess.run(['wsl', '-t', distro], creationflags=cflags)
+                else:
+                    time.sleep(1) # Simulación en Linux nativo
                 
                 # Ocultar campos de texto sensibles (limpiarlos)
                 self.after(0, lambda: entry_pass.delete(0, 'end'))
@@ -419,7 +468,7 @@ class WslMainInstallScreen(ctk.CTkFrame):
                 
                 self.after(0, lambda: card.pack_info["lbl_status"].configure(text="✓ Lista para usar", text_color="#00FF00"))
                 self.after(0, lambda: card.pack_info["form"].pack_forget())
-                self.after(0, lambda: msg_show_info("Éxito", f"Usuario {user} configurado correctamente para {distro}."))
+                self.after(0, lambda: msg_show_info("Éxito", f"Usuario '{user}' configurado correctamente para {distro}."))
             except Exception as e:
                 self.after(0, lambda: msg_show_error("Error", f"Fallo en configuración: {str(e)}"))
                 
