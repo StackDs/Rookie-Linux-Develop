@@ -111,6 +111,8 @@ from screens.installation_tools.usb_flash_screen import UsbFlashScreen
 from screens.linux_concepts.basic_concepts_screen import BasicConceptsScreen
 from screens.info_manuals.bitlocker_screen import BitlockerScreen
 from screens.installation_tools.wsl_install_screen import WslInstallScreen
+from screens.installation_tools.wsl_app_install_screen import WslAppInstallScreen
+from screens.installation_tools.wsl_main_install_screen import WslMainInstallScreen
 from screens.info_manuals.instructions_screen import InstructionsScreen
 from screens.linux_concepts.virtual_machine_screen import VirtualMachineScreen
 from screens.linux_concepts.clean_installation_screen import CleanInstallationScreen
@@ -166,7 +168,7 @@ class App(ctk.CTk):
         self.container.grid_columnconfigure(0, weight=1)
         
         self.frames = {}
-        for F in (StartScreen, OptionSelectionScreen, InfoScreen, ExplanationScreen, DistroSelectionScreen, DistroInfoScreen, BuildProgressScreen, UsbFlashScreen, BasicConceptsScreen, BitlockerScreen, WslInstallScreen, InstructionsScreen, VirtualMachineScreen, CleanInstallationScreen, DocumentationScreen, AboutScreen):
+        for F in (StartScreen, OptionSelectionScreen, InfoScreen, ExplanationScreen, DistroSelectionScreen, DistroInfoScreen, BuildProgressScreen, UsbFlashScreen, BasicConceptsScreen, BitlockerScreen, WslInstallScreen, WslAppInstallScreen, WslMainInstallScreen, InstructionsScreen, VirtualMachineScreen, CleanInstallationScreen, DocumentationScreen, AboutScreen):
             page_name = F.__name__
             frame = F(parent=self.container, controller=self)
             self.frames[page_name] = frame
@@ -187,7 +189,7 @@ class App(ctk.CTk):
                 return
             flash_screen.cancel_flash(ask_confirm=False)
             
-        wsl_screen = self.frames.get("WslInstallScreen")
+        wsl_screen = self.frames.get("WslAppInstallScreen")
         if wsl_screen and getattr(wsl_screen, "is_installing", False):
             msg_show_error("Proceso activo", "La instalación de WSL está en curso. Por favor espera a que termine.")
             return
