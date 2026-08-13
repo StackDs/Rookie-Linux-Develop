@@ -168,9 +168,9 @@ class ProgressManager:
 
         diff = self.target_progress - self.current_progress
         
-        # Exponential smoothing para un incremento fluido
-        step = diff * 0.02
-        min_step = 0.0001 
+        # Suavizado exponencial ajustado para reducir el efecto "onda" (bloqueo y avance rápido)
+        step = diff * 0.05
+        min_step = 0.0005 
         
         if diff > 0:
             if step < min_step: step = min_step
@@ -186,8 +186,8 @@ class ProgressManager:
         self.progress_bar.set(self.current_progress)
         
         if self.has_rich:
-            # Backend rich para cálculos
-            self.rich_progress.update(self.task_id, completed=self.current_progress * 100.0)
+            # Backend rich para cálculos: usamos target_progress para que el ETA refleje datos reales, no la animación
+            self.rich_progress.update(self.task_id, completed=self.target_progress * 100.0)
             task = self.rich_progress.tasks[self.task_id]
             
             val = task.percentage if task.percentage is not None else (self.current_progress * 100.0)

@@ -2,6 +2,7 @@ import customtkinter as ctk
 import os
 from PIL import Image
 from utils import apply_glow_effect, get_project_root
+from custom_messagebox import msg_ask_yes_no
 
 class DistroInfoScreen(ctk.CTkFrame):
     def __init__(self, parent, controller):
@@ -117,13 +118,19 @@ class DistroInfoScreen(ctk.CTkFrame):
         apply_glow_effect(self.btn_volver, default_text="←    Volver", hover_text="←       Volver")
         self.btn_volver.pack(side="left", padx=15)
         
-        self.btn_ejecutar = ctk.CTkButton(btn_frame, text="Confirmar y Generar", command=lambda: self.controller.show_frame("BuildProgressScreen"),
+        self.btn_ejecutar = ctk.CTkButton(btn_frame, text="Confirmar y Generar", command=self.confirm_and_generate,
                                      height=45, width=220, corner_radius=5,
                                      font=ctk.CTkFont(family="Consolas", size=15, weight="bold"), cursor="hand2",
                                      fg_color="transparent", border_width=2, border_color="#008800",
                                      hover_color="#001100", text_color="#008800")
         apply_glow_effect(self.btn_ejecutar, default_text="Confirmar y Generar", hover_text="Confirmar y Generar")
         self.btn_ejecutar.pack(side="left", padx=15)
+
+    def confirm_and_generate(self):
+        distro = self.controller.frames["DistroSelectionScreen"].distro_var.get()
+        msg = f"¿Estás seguro de que deseas comenzar la construcción de la imagen ISO para {distro}?\n\nEste proceso puede tomar varios minutos y requerirá descargar archivos de internet."
+        if msg_ask_yes_no("Confirmación de Construcción", msg):
+            self.controller.show_frame("BuildProgressScreen")
 
     def load_images(self, distro):
         folder = self.folder_map.get(distro, "Ubuntu")

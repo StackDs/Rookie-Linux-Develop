@@ -209,7 +209,7 @@ if [[ "$ISO_DISTRO" == popos* ]] || [[ "$ISO_DISTRO" == pop* ]] || [ "$ISO_DISTR
     
     # 2. Desempaquetar squashfs
     echo "=> [2/6] Desempaquetando squashfs (esto puede tardar varios minutos)..."
-    safe_run stdbuf -o0 unsquashfs -d "$SQUASH_WORK/root" "$SQUASH_WORK/filesystem.squashfs" 2>/dev/null
+    safe_run stdbuf -o0 unsquashfs -percentage -d "$SQUASH_WORK/root" "$SQUASH_WORK/filesystem.squashfs" 2>/dev/null
     rm -f "$SQUASH_WORK/filesystem.squashfs"
     sync; echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
     
@@ -237,7 +237,7 @@ if [[ "$ISO_DISTRO" == popos* ]] || [[ "$ISO_DISTRO" == pop* ]] || [ "$ISO_DISTR
     
     # 5. Reempaquetar squashfs
     echo "=> [5/6] Reempaquetando squashfs (esto puede tardar varios minutos)..."
-    safe_run stdbuf -o0 mksquashfs "$SQUASH_WORK/root" "$SQUASH_WORK/filesystem.squashfs" -comp xz -b 1M
+    safe_run stdbuf -o0 mksquashfs "$SQUASH_WORK/root" "$SQUASH_WORK/filesystem.squashfs" -comp xz -b 1M -percentage
     rm -rf "$SQUASH_WORK/root"
     sync; echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
 
@@ -254,7 +254,7 @@ elif [ "$ISO_DISTRO" = "fedora" ]; then
     
     # 2. Desempaquetar squashfs.img para obtener rootfs.img
     echo "=> [2/8] Desempaquetando squashfs.img..."
-    safe_run stdbuf -o0 unsquashfs -d "$SQUASH_WORK/squashfs_root" "$SQUASH_WORK/squashfs.img" 2>/dev/null
+    safe_run stdbuf -o0 unsquashfs -percentage -d "$SQUASH_WORK/squashfs_root" "$SQUASH_WORK/squashfs.img" 2>/dev/null
     rm -f "$SQUASH_WORK/squashfs.img"
     sync; echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
     
@@ -309,7 +309,7 @@ elif [ "$ISO_DISTRO" = "fedora" ]; then
     
     # 8. Reempaquetar squashfs.img
     echo "=> [8/8] Reempaquetando squashfs.img (esto puede tardar varios minutos)..."
-    safe_run stdbuf -o0 mksquashfs "$SQUASH_WORK/squashfs_root" "$SQUASH_WORK/squashfs.img" -comp xz -b 1M
+    safe_run stdbuf -o0 mksquashfs "$SQUASH_WORK/squashfs_root" "$SQUASH_WORK/squashfs.img" -comp xz -b 1M -percentage
     rm -rf "$SQUASH_WORK/squashfs_root"
     sync; echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
 fi

@@ -2,6 +2,10 @@ import sys
 import os
 import traceback
 
+# Deshabilitar AT-SPI en Linux para evitar cuelgues (hangs) en el primer inicio de Tkinter
+if sys.platform.startswith("linux"):
+    os.environ["NO_AT_BRIDGE"] = "1"
+
 # =============================================================================
 # LOGGER DE ERRORES FATALES (debe estar antes de cualquier import que pueda fallar)
 # Cuando el .exe corra en modo --windowed, cualquier excepción se pierde

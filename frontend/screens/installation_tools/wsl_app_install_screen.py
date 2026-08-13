@@ -3,7 +3,7 @@ import subprocess
 import threading
 import sys
 import time
-from custom_messagebox import msg_show_info, msg_show_error
+from custom_messagebox import msg_show_info, msg_show_error, msg_ask_yes_no
 from utils import apply_glow_effect
 
 class WslAppInstallScreen(ctk.CTkFrame):
@@ -77,6 +77,9 @@ class WslAppInstallScreen(ctk.CTkFrame):
         self.controller.show_frame("WslInstallScreen")
 
     def start_install_wsl(self):
+        if not msg_ask_yes_no("Confirmación", "¿Deseas habilitar WSL y la Plataforma de Máquina Virtual?\n\nEsto requerirá permisos de Administrador y reiniciar tu equipo al finalizar."):
+            return
+            
         self.is_installing = True
         self.btn_install_wsl.configure(state="disabled")
         self.btn_install_distro.configure(state="disabled")
@@ -98,6 +101,9 @@ class WslAppInstallScreen(ctk.CTkFrame):
                     "Primero debes habilitar WSL y REINICIAR tu equipo antes de intentar instalar distro auxiliar."
                 )
                 return
+
+        if not msg_ask_yes_no("Confirmación", "¿Deseas instalar una distribución base (Ubuntu) para que el entorno de WSL sea funcional?\n\nEsto tomará varios minutos."):
+            return
 
         self.is_installing = True
         self.btn_install_wsl.configure(state="disabled")
@@ -146,6 +152,7 @@ class WslAppInstallScreen(ctk.CTkFrame):
                     "Una distribución auxiliar se ha instalado correctamente dentro de WSL.\n\n"
                     "El sistema ya está listo para construir las imágenes."
                 )
+            self.controller.show_frame("OptionSelectionScreen")
         self.after(800, show_popup)
 
     def install_failed(self, err_msg):

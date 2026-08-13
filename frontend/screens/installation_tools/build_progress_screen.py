@@ -277,20 +277,29 @@ class BuildProgressScreen(ctk.CTkFrame):
             self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Descargando imagen oficial de la ISO..."))
             
             last_lines = []
-            for line in iter(self.current_process.stdout.readline, ''):
-                if not line or self.is_cancelled:
+            char_buffer = []
+            while True:
+                if self.is_cancelled:
                     break
-                
-                last_lines.append(line.strip())
-                if len(last_lines) > 5:
-                    last_lines.pop(0)
-                    
-                percent_match = re.search(r'(\d+(?:\.\d+)?)%', line)
-                if percent_match:
-                    percent_val = float(percent_match.group(1)) / 100.0
-                    val = float(percent_match.group(1))
-                    text_val = f"{val:.2f}".replace('.', ',')
-                    self.after(0, self.update_progress_download, percent_val, text_val)
+                char = self.current_process.stdout.read(1)
+                if not char:
+                    break
+                if char == '\r' or char == '\n':
+                    line = ''.join(char_buffer).strip()
+                    char_buffer = []
+                    if not line:
+                        continue
+                    last_lines.append(line)
+                    if len(last_lines) > 5:
+                        last_lines.pop(0)
+                    percent_match = re.search(r'(\d+(?:\.\d+)?)%', line)
+                    if percent_match:
+                        percent_val = float(percent_match.group(1)) / 100.0
+                        val = float(percent_match.group(1))
+                        text_val = f"{val:.2f}".replace('.', ',')
+                        self.after(0, self.update_progress_download, percent_val, text_val)
+                else:
+                    char_buffer.append(char)
                     
             self.current_process.stdout.close()
             self.current_process.wait()
@@ -360,9 +369,32 @@ class BuildProgressScreen(ctk.CTkFrame):
             self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Modificando e inyectando código en la ISO..."))
             self.after(0, self.update_progress_download, 1.0, "100,00")
             
+            current_phase = "processing"
             current_subphase = "init"
-            self.dynamic_pass = 1
-            self.last_raw_percent = 0.0
+            
+            if distro_env == "ubuntu":
+                phases = {
+                    "generating": {"start": 0.0, "weight": 1.0, "label": "Empaquetando ISO final"}
+                }
+                current_subphase = "generating"
+                self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Empaquetando ISO final..."))
+            elif distro_env == "fedora":
+                phases = {
+                    "extracting_squashfs": {"start": 0.0, "weight": 0.15, "label": "Extrayendo imagen base"},
+                    "unpacking": {"start": 0.15, "weight": 0.20, "label": "Desempaquetando sistema"},
+                    "repacking": {"start": 0.35, "weight": 0.50, "label": "Comprimiendo nuevo sistema"},
+                    "generating": {"start": 0.85, "weight": 0.15, "label": "Exportando ISO"}
+                }
+            else:
+                phases = {
+                    "extracting_squashfs": {"start": 0.0, "weight": 0.15, "label": "Extrayendo squashfs"},
+                    "unpacking": {"start": 0.15, "weight": 0.20, "label": "Desempaquetando squashfs"},
+                    "repacking": {"start": 0.35, "weight": 0.50, "label": "Reempaquetando squashfs"},
+                    "generating": {"start": 0.85, "weight": 0.15, "label": "Exportando ISO"}
+                }
+                
+            total_phases_count = len(phases)
+            phase_keys = list(phases.keys())
             
             last_lines = []
             char_buffer = []
@@ -388,56 +420,54 @@ class BuildProgressScreen(ctk.CTkFrame):
                         
                     line_lower = line.lower()
                     
-                    if "extrayendo" in line_lower and "squashfs" in line_lower:
-                        current_phase = "generating"
+                    phase_changed = False
+                    if "extrayendo" in line_lower and ("squashfs" in line_lower or "imagen" in line_lower):
                         current_subphase = "extracting_squashfs"
-                        self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Extrayendo sistema de archivos..."))
-                        self.after(0, lambda: self.prog_mgr_gen.enable_simulation(cap=0.15, rate=0.0001))
+                        phase_changed = True
                     elif "desempaquetando squashfs" in line_lower:
-                        current_phase = "generating"
                         current_subphase = "unpacking"
-                        self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Desempaquetando sistema de archivos base..."))
-                        self.after(0, lambda: self.prog_mgr_gen.enable_simulation(cap=0.40, rate=0.0001))
+                        phase_changed = True
                     elif "reempaquetando squashfs" in line_lower:
-                        current_phase = "generating"
                         current_subphase = "repacking"
-                        self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Comprimiendo nuevo sistema de archivos..."))
-                        self.after(0, lambda: self.prog_mgr_gen.enable_simulation(cap=0.85, rate=0.00005))
+                        phase_changed = True
                     elif "generando nueva iso" in line_lower:
-                        current_phase = "generating"
                         current_subphase = "generating"
-                        self.status_lbl.after(0, lambda: self.status_lbl.configure(text="Estado: Empaquetando y exportando ISO final..."))
-                        self.after(0, lambda: self.prog_mgr_gen.enable_simulation(cap=0.99, rate=0.0001))
+                        phase_changed = True
+                        
+                    if phase_changed and current_subphase in phases:
+                        phase_info = phases[current_subphase]
+                        current_pass_idx = phase_keys.index(current_subphase) + 1
+                        
+                        if total_phases_count > 1:
+                            status_text = f"Estado: {phase_info['label']} ({current_pass_idx}/{total_phases_count})..."
+                        else:
+                            status_text = f"Estado: {phase_info['label']}..."
+                            
+                        self.status_lbl.after(0, lambda t=status_text: self.status_lbl.configure(text=t))
+                        
+                        if current_subphase in ["extracting_squashfs", "unpacking", "repacking"]:
+                            phase_end = phase_info["start"] + phase_info["weight"]
+                            rate = 0.00003 if current_subphase == "repacking" else 0.00015
+                            self.after(0, lambda c=phase_end, r=rate: self.prog_mgr_gen.enable_simulation(cap=c, rate=r))
+                        else:
+                            self.after(0, self.prog_mgr_gen.disable_simulation)
                             
                     percent_match = re.search(r'(\d+(?:\.\d+)?)%', line)
-                    if percent_match:
+                    if not percent_match and re.match(r'^\d+$', line.strip()):
+                        percent_match = re.match(r'^(\d+)$', line.strip())
+                        
+                    if percent_match and current_subphase in phases:
                         raw_percent = float(percent_match.group(1)) / 100.0
                         
-                        # Detectar reinicios de porcentaje de herramientas como xorriso (que bajan de ej. 99% a 5%)
-                        if (self.last_raw_percent - raw_percent) > 0.4:
-                            self.dynamic_pass += 1
-                        self.last_raw_percent = raw_percent
+                        phase_start = phases[current_subphase]["start"]
+                        phase_weight = phases[current_subphase]["weight"]
                         
-                        # Se estiman unas 7 pasadas en distribuciones pesadas. 
-                        # Si superan las 7, las "clampamos" para no pasarnos del 100% total.
-                        total_passes = 7
-                        current_pass = min(self.dynamic_pass, total_passes)
-                        
-                        # Calculamos el porcentaje real escalando la pasada actual
-                        actual_percent = ((current_pass - 1) + raw_percent) / total_passes
+                        actual_percent = phase_start + (raw_percent * phase_weight)
                         
                         val = actual_percent * 100.0
                         text_val = f"{val:.2f}".replace('.', ',')
                         
-                        if current_phase == "generating":
-                            self.after(0, self.update_progress_generation, actual_percent, text_val)
-                            
-                            # Actualizar dinámicamente el contador (ej. 3/7) en el status
-                            current_text = self.status_lbl.cget("text")
-                            if "Estado:" in current_text:
-                                base_text = re.sub(r'\s*\(\d+/\d+\)\.\.\.', '...', current_text)
-                                new_text = base_text.replace("...", f" ({current_pass}/{total_passes})...")
-                                self.status_lbl.after(0, lambda t=new_text: self.status_lbl.configure(text=t))
+                        self.after(0, self.update_progress_generation, actual_percent, text_val)
                             
                     if "fatal_error" in line_lower or line_lower.startswith("[fatal_error]"):
                         # El script de WSL reportó un error crítico — mostrarlo de inmediato

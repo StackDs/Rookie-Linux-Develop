@@ -283,11 +283,13 @@ class WslMainInstallScreen(ctk.CTkFrame):
         self.after(0, update_ui)
 
     def install_wsl(self):
-        msg_show_info(
+        if not msg_ask_yes_no(
             "Habilitar WSL", 
             "El sistema intentará habilitar WSL e instalará los componentes básicos.\n\n"
-            "Se requerirán permisos de Administrador y podría ser necesario un reinicio del equipo al finalizar."
-        )
+            "Se requerirán permisos de Administrador y podría ser necesario un reinicio del equipo al finalizar.\n\n"
+            "¿Deseas continuar?"
+        ):
+            return
         self.btn_fix_wsl.configure(state="disabled", text="Instalando...")
         self.install_wsl_status_lbl.configure(text="Habilitando WSL, por favor espera... (Puede tardar varios minutos)", text_color="#FFAA00")
         self.install_wsl_progress.pack(pady=(0, 20))
