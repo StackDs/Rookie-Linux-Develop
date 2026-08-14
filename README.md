@@ -103,7 +103,6 @@ La forma más sencilla de utilizar la herramienta sin conocimientos de programac
 
 ### 1. Requisitos Básicos
 - **Windows:** WSL instalado y habilitado (la propia app te guía y permite instalarlo con un clic).
-- **Linux:** Paquetes `xorriso` y `squashfs-tools` (`sudo apt install xorriso squashfs-tools`).
 - **Espacio en disco:** Necesitarás ~15 GB libres temporalmente para descargar y generar la nueva imagen ISO.
 
 ### 2. Descargar la aplicación
