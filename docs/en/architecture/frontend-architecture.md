@@ -78,7 +78,9 @@ App (main.py)
     └── installation_tools/
         ├── BuildProgressScreen       Download + ISO build progress
         ├── UsbFlashScreen            USB selector + flash progress
-        └── WslInstallScreen          WSL installer (Windows only)
+        ├── WslInstallScreen          WSL installation mode selection menu (Windows only)
+        ├── WslAppInstallScreen       WSL Installation (App Mode)
+        └── WslMainInstallScreen      WSL installation and distribution management dashboard (Main Mode)
 ```
 
 ---

@@ -1,44 +1,48 @@
 # WSL (Windows Subsystem for Linux) Installer
 
-This guide explains how the built-in WSL installation flow (in the `WslInstallScreen`) works for Windows users who need to build ISOs.
+This guide explains how the built-in WSL installation flow works for Windows users. Due to the evolution of the application, the installation system has been split into two distinct modes accessible from the `WslInstallScreen` screen.
 
 ---
 
 ## Why a WSL Installer?
 
-Rookie Linux Develop requires Linux-exclusive tools (`xorriso` and `squashfs-tools`) to manipulate and rebuild the ISO image. To allow Windows users to generate the ISO directly from their primary operating system, the application automates the installation and configuration of a Linux subsystem (Ubuntu) using WSL (Windows Subsystem for Linux).
+Rookie Linux Develop requires Linux-exclusive tools (`xorriso`, `squashfs-tools`, etc.) to manipulate and rebuild the ISO image. To allow Windows users to generate the ISO natively without complex virtual machines, the application relies on a Linux subsystem using WSL.
 
-## Installation Architecture: The Two-Phase Flow
+## The Two Installation Modes
 
-Installing WSL on a clean Windows system requires a mandatory operating system reboot after enabling the underlying features (Virtual Machine Platform). Therefore, the installation process was split into two sequential phases, entirely controlled by the frontend:
+The system now offers two approaches, separated into two independent screens:
 
-### Phase 1: Feature Enablement
-1. The user clicks on "Install WSL".
-2. The application silently and interactively executes the command:
+### Mode 1: Install to use the app (`WslAppInstallScreen`)
+This is a simplified flow, ideal for users who just want to build their Rookie Linux ISO image and don't care about using Linux on Windows for other things.
+It is divided into two manual steps (due to the need to restart):
+
+1. **Phase 1: Enable WSL**: Silently and interactively executes the command:
    ```powershell
    wsl --install --no-distribution
    ```
-3. Immediately after, PowerShell is invoked to enable the "VirtualMachinePlatform" feature:
-   ```powershell
-   Enable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform -NoRestart
-   ```
-4. The application informs the user that **they must restart their PC** and provides a button to do it immediately or postpone it.
+   After this, the app warns via a dialog box that **the PC must be restarted**.
 
-### Phase 2: Distribution Installation (Post-Reboot)
-Once the user restarts their machine and reopens the application:
-1. The installation screen checks the WSL status by running `wsl --status`.
-2. If it detects that the features are already enabled but there is no default system, it automatically starts the second phase, which downloads and installs the "Ubuntu" distribution:
+2. **Phase 2: Install Distro (Post-Restart)**: Once restarted, the user uses this second step to install the base distribution (Ubuntu) necessary for the backend operations without launching annoying consoles.
    ```powershell
-   wsl --install -d Ubuntu
+   wsl --install -d Ubuntu --no-launch
    ```
-3. Finally, the application executes commands inside the new WSL environment to update repositories (`apt update`) and install the key dependencies for the app (`xorriso` and `squashfs-tools`).
+
+The installations feature confirmation windows to alert about the need for administrator permissions and the time required.
+
+### Mode 2: WSL as main system (`WslMainInstallScreen`)
+This is an advanced dashboard for users who want to explore WSL further.
+
+1. **System Status**: Asynchronously displays whether WSL, WSL 2, and virtualization are enabled on the system, detecting the default version via `wsl --status`.
+2. **Global Enablement**: Allows you to install WSL with one click.
+3. **Distribution Management**: Dynamically scans (`wsl -l -o` and `wsl -l -v`) to list all available distributions and those already installed.
+4. Allows selecting one or multiple distributions and queuing them for visual installation with interactive progress bars based on simulation and threads.
 
 ---
 
-## Automatic Validation and Monitoring
+## Automatic Validations and Monitoring
 
-To ensure the installation does not fail or hang, the system runs real-time checks:
+To ensure a smooth installation, both screens implement modern mechanisms:
 
-- **Command Detection:** Before starting, it verifies if the `wsl` command is available in the user's `PATH`.
-- **Status Monitoring (`is_wsl_installed()`):** It runs continuous polling that checks if the default distribution is configured and responds to basic commands.
-- **Asynchronous Execution (Background Threads):** All PowerShell and WSL commands are executed in a separate thread (`threading.Thread`). This captures `stdout` and `stderr` through `subprocess.Popen`, avoiding blocking the graphical interface (GUI) of `CustomTkinter` and allowing real-time console printing on the screen.
+- **Confirmation windows (msg_ask_yes_no)**: Prevent destructive actions or accidental installations.
+- **Automatic redirection**: After completing the processes in App Mode, the user is returned to the main menu to avoid empty interactions.
+- **Asynchronous Execution (Background Threads)**: All PowerShell commands (with `RunAs` or `Start-Process`) are executed in a separate thread, preventing the `CustomTkinter` GUI from freezing during lengthy installations.

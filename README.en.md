@@ -9,7 +9,7 @@
 ### *Your first Linux system, ready for programming from the first boot.*
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue?style=for-the-badge&logo=python&logoColor=white)
-![Status](https://img.shields.io/badge/Status-In%20Development-orange?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-v1.0-brightgreen?style=for-the-badge)
 ![Linux](https://img.shields.io/badge/Platform-Linux-informational?style=for-the-badge&logo=linux&logoColor=white)
 ![Windows](https://img.shields.io/badge/Platform-Windows-informational?style=for-the-badge&logo=windows&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
@@ -25,20 +25,31 @@
 
 <table>
   <tr>
-    <td align="center"><img src="assets/AppScreeShots/app1.png" width="380" alt="Home screen"/><br/><sub><b>Pantalla de inicio</b></sub></td>
-    <td align="center"><img src="assets/AppScreeShots/app2.png" width="380" alt="Main menu"/><br/><sub><b>Selección de distribución</b></sub></td>
+    <td align="center"><img src="assets/AppScreeShots/screen_start_v1.png" width="380" alt="Home Screen"/><br/><sub><b>System Welcome</b></sub></td>
+    <td align="center"><img src="assets/AppScreeShots/screen_main_menu_v2.png" width="380" alt="Main Menu"/><br/><sub><b>Main Menu</b></sub></td>
   </tr>
   <tr>
-    <td align="center"><img src="assets/AppScreeShots/app3.png" width="380" alt="Distribution selection"/><br/><sub><b>Información de la distribución</b></sub></td>
-    <td align="center"><img src="assets/AppScreeShots/app4.png" width="380" alt="Build progress"/><br/><sub><b>USB Flasher</b></sub></td>
+    <td align="center"><img src="assets/AppScreeShots/screen_distro_selection.png" width="380" alt="Distribution Selection"/><br/><sub><b>Distro Selection</b></sub></td>
+    <td align="center"><img src="assets/AppScreeShots/screen_distro_info_v1.png" width="380" alt="Distribution Information"/><br/><sub><b>Distro Details</b></sub></td>
   </tr>
   <tr>
-    <td align="center"><img src="assets/AppScreeShots/app5.png" width="380" alt="USB flashing"/><br/><sub><b>Flasheo de USB</b></sub></td>
-    <td align="center"><img src="assets/AppScreeShots/app6.png" width="380" alt="ISO download"/><br/><sub><b>Descarga de la ISO</b></sub></td>
+    <td align="center"><img src="assets/AppScreeShots/screen_wsl_mode_selection.png" width="380" alt="WSL Mode Selector"/><br/><sub><b>WSL Mode Selection</b></sub></td>
+    <td align="center"><img src="assets/AppScreeShots/screen_wsl_app_installer.png" width="380" alt="WSL App Mode Installer"/><br/><sub><b>WSL Installer (App Mode)</b></sub></td>
   </tr>
   <tr>
-    <td align="center"><img src="assets/AppScreeShots/app7.png" width="380" alt="ISO building"/><br/><sub><b>Construcción de la ISO</b></sub></td>
-    <td align="center"><img src="assets/AppScreeShots/app9.png" width="380" alt="Custom Distro"/><br/><sub><b>Distro Custom</b></sub></td>
+    <td align="center"><img src="assets/AppScreeShots/screen_wsl_main_dashboard.png" width="380" alt="WSL Main Dashboard"/><br/><sub><b>WSL Dashboard (Main Mode)</b></sub></td>
+    <td align="center"><img src="assets/AppScreeShots/screen_documentation.png" width="380" alt="Documentation"/><br/><sub><b>Integrated Documentation</b></sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="assets/AppScreeShots/screen_iso_download.png" width="380" alt="ISO Download"/><br/><sub><b>ISO Download</b></sub></td>
+    <td align="center"><img src="assets/AppScreeShots/screen_iso_building.png" width="380" alt="ISO Building"/><br/><sub><b>ISO Packaging</b></sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="assets/AppScreeShots/screen_usb_flasher.png" width="380" alt="USB Flasher"/><br/><sub><b>USB Flasher</b></sub></td>
+    <td align="center"><img src="assets/AppScreeShots/screen_usb_flashing.png" width="380" alt="Flashing progress"/><br/><sub><b>Flashing in Progress</b></sub></td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2"><img src="assets/AppScreeShots/screen_distro_custom_result.png" width="380" alt="Final Result"/><br/><sub><b>Result: Custom Distro</b></sub></td>
   </tr>
 </table>
 
@@ -86,59 +97,17 @@ If you want to see the complete list of everything that is injected into your sy
 
 ---
 
-## 📋 Prerequisites
+## 🚀 Download and Execution (For users)
 
-### To run the application (GUI)
+The easiest way to use the tool without programming knowledge is by using the pre-compiled executables.
 
-| Requirement | Minimum Version |
-|---|---|
-| Python | 3.10+ |
-| Tkinter | Included with Python (`python3-tk`) |
-| pip | Included with Python |
+### 1. Basic Requirements
+- **Windows:** WSL installed and enabled (the app itself guides you and lets you install it with one click).
+- **Linux:** `xorriso` and `squashfs-tools` packages (`sudo apt install xorriso squashfs-tools`).
+- **Disk space:** You will need ~15 GB of temporary free space to download and generate the new ISO image.
 
-### To build ISOs
-
-| Platform | Additional Requirement |
-|---|---|
-| **Linux** | `xorriso`, `squashfs-tools` (`sudo apt install xorriso squashfs-tools`) |
-| **Windows** | WSL installed and enabled (the app guides you) |
-
-### Recommended disk space
-
-- **ISO download**: ~3–6 GB per distribution.
-- **Custom ISO build**: ~10–15 GB temporary in `/tmp`.
-- **Resulting ISO**: ~3–5 GB in the `output/` folder.
-
----
-
-## 🚀 Installation and execution
-
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/your-username/Rookie-Linux-Develop.git
-cd Rookie-Linux-Develop
-```
-
-### 2. Install Python dependencies
-
-```bash
-pip install customtkinter pillow
-```
-
-> On Linux, if you don't have Tkinter: `sudo apt install python3-tk`
-
-### 3. Run the application
-
-```bash
-python3 frontend/main.py
-```
-
-> ⚠️ **Important:** Always run from the project root (`Rookie-Linux-Develop/`), not from inside `frontend/`.
-
-### Using the compiled executables (without Python)
-
-Download the package from the `app release/` folder corresponding to your system:
+### 2. Download the application
+Download the package from the **Releases** tab on GitHub or go to the `app release/` folder in the source code:
 
 ```
 app release/
@@ -146,7 +115,8 @@ app release/
 └── Rookie Linux Develop Win x64.rar ← For Windows
 ```
 
-Unzip and run the `Rookie-Linux-Builder` binary directly.
+### 3. Run
+Unzip the file and run the `Rookie-Linux-Builder` binary directly (no installation required).
 
 > 🛡️ **Note for Windows users:** Windows Defender or SmartScreen may block the application as it is from an unknown origin (not being commercially signed). The application is 100% safe; if this happens, click on **"More info"** and then **"Run anyway"**. In some cases, it may be necessary to disable "Smart App Control" in Windows Defender.
 
@@ -173,6 +143,46 @@ Step 4 → Connect your USB and go to "Mount image on USB"
 ```
 
 > 💡 **Tip:** The first boot of the installed system will take a few minutes while all tools are automatically installed. This only happens once.
+
+---
+
+## ⚠️ Known Issues and Notes
+
+- **Inconsistent Progress Bar Percentages:** Because the tool reads and interprets real-time text output (`stdout`) from multiple background subprocesses (such as `xorriso`, `wget`, or WSL installations), it is possible that **the visual percentage may temporarily decrease** or "jump" erratically. This is merely a graphical anomaly; the background process continues to work correctly and safely.
+
+---
+
+## 🛠️ For Developers (Source Code)
+
+If you want to modify the application, contribute to the code, or simply run it natively with Python:
+
+### Prerequisites
+| Requirement | Minimum Version |
+|---|---|
+| Python | 3.10+ |
+| Tkinter | Included with Python (`python3-tk` on Linux) |
+| pip | Included with Python |
+
+### 1. Clone the repository
+```bash
+git clone https://github.com/your-username/Rookie-Linux-Develop.git
+cd Rookie-Linux-Develop
+```
+
+### 2. Install dependencies
+```bash
+pip install customtkinter pillow rich
+```
+
+### 3. Run the application
+```bash
+python3 frontend/main.py
+```
+> ⚠️ **Important:** Always run from the project root (`Rookie-Linux-Develop/`), never from inside the `frontend/` folder.
+
+### 📦 Note about the compiled executable size (Linux)
+If you run the scripts in the `compile/` folder to generate your own binary with PyInstaller on Linux, you will notice that the resulting size is around **500 MB**. 
+This is because PyInstaller, for safety and portability, automatically bundles the Python interpreter, `customtkinter` assets, and **all dynamic system libraries (.so)** (like X11, Wayland, Tcl/Tk, Cairo, Pango, libstdc++) needed to render graphical interfaces. This ensures the application can run properly on any distribution (Fedora, Arch, Mint) without the user missing dependencies.
 
 ---
 

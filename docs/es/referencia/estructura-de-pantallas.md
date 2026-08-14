@@ -32,6 +32,8 @@ frontend/
         ├── build_progress_screen.py
         ├── usb_flash_screen.py
         ├── wsl_install_screen.py
+        ├── wsl_app_install_screen.py
+        ├── wsl_main_install_screen.py
         ├── flasher_worker_linux.py
         └── flasher_worker_windows.py
 ```
@@ -107,7 +109,7 @@ frontend/
 - **Propósito**: Información detallada de la distro seleccionada con capturas de pantalla y texto animado.
 - **Navega a**: `DistroSelectionScreen` (← Volver), `BuildProgressScreen` (Confirmar y Generar)
 - **`on_show()`**: Sí — carga las imágenes y anima el texto si la distro cambió respecto a la última visita.
-- **Notas**: Las imágenes soportan zoom. Guarda `self.last_distro` para detectar cambios.
+- **Notas**: Las imágenes soportan zoom. Guarda `self.last_distro` para detectar cambios. Incluye un diálogo de confirmación `msg_ask_yes_no` antes de iniciar el proceso de generación de imagen para prevenir descargas no intencionales.
 
 #### `BasicConceptsScreen`
 - **Propósito**: Qué es el Dual Boot. Incluye imagen explicativa.
@@ -142,11 +144,21 @@ frontend/
 - **Notas**: Lanza un proceso worker elevado (`pkexec` / `RunAs`) para escribir en el disco. El progreso se comunica via archivo JSON temporal.
 
 #### `WslInstallScreen`
-- **Propósito**: Instala WSL (Windows Subsystem for Linux). Solo relevante en Windows.
+- **Propósito**: Menú de selección de modo de instalación de WSL (Solo relevante en Windows).
+- **Navega a**: `OptionSelectionScreen` (← Volver), `WslAppInstallScreen` (Modo App), `WslMainInstallScreen` (Modo Main)
+- **`on_show()`**: No.
+
+#### `WslAppInstallScreen`
+- **Propósito**: Instala un subsistema WSL básico y una distribución auxiliar (Ubuntu) para poder compilar imágenes ISO dentro de la herramienta.
 - **Navega a**: `OptionSelectionScreen` (← Volver)
 - **`on_show()`**: Sí — resetea el estado de la instalación.
+- **Notas**: Incluye diálogos de confirmación antes de requerir permisos de administrador. Redirige automáticamente al menú al terminar con éxito.
 
----
+#### `WslMainInstallScreen`
+- **Propósito**: Tablero completo para instalar WSL y gestionar cualquier distribución de Linux disponible en la tienda de Microsoft como sistema principal.
+- **Navega a**: `OptionSelectionScreen` (← Volver)
+- **`on_show()`**: Sí — escanea de forma asíncrona el estado actual de WSL y las distribuciones instaladas.
+- **Notas**: Usa pestañas (`CTkTabview`) para separar el estado del entorno y la gestión de distribuciones. Cuenta con diálogos de confirmación integrados.-
 
 ### Workers (no son pantallas)
 
@@ -188,6 +200,10 @@ StartScreen
                      │                              └─[Éxito]→ OptionSelectionScreen
                      │
                      ├─[WSL (Windows)]─────────→ WslInstallScreen
+                     │                              ├─[App Mode]→ WslAppInstallScreen
+                     │                              │                └─[Éxito/Volver]→ OptionSelectionScreen
+                     │                              └─[Main Mode]→ WslMainInstallScreen
+                     │                                               └─[Volver]→ OptionSelectionScreen
                      │   [WSL (Linux)] → Popup informativo
                      │
                      ├─[Documentación]─────────→ DocumentationScreen

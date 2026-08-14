@@ -1,44 +1,48 @@
 # Instalador de WSL (Windows Subsystem for Linux)
 
-Esta guía explica cómo funciona el flujo de instalación de WSL integrado en la aplicación (pantalla `WslInstallScreen`) para los usuarios de Windows que necesitan construir ISOs.
+Esta guía explica cómo funciona el flujo de instalación de WSL integrado en la aplicación para los usuarios de Windows. Debido a la evolución de la aplicación, el sistema de instalación se ha dividido en dos modos distintos accesibles desde la pantalla `WslInstallScreen`.
 
 ---
 
 ## ¿Por qué un instalador de WSL?
 
-Rookie Linux Develop requiere herramientas exclusivas de Linux (`xorriso` y `squashfs-tools`) para manipular y reconstruir la imagen ISO. Para permitir que los usuarios de Windows generen la ISO directamente desde su sistema operativo principal, la aplicación instala y configura de forma automatizada un subsistema Linux (Ubuntu) usando WSL (Windows Subsystem for Linux).
+Rookie Linux Develop requiere herramientas exclusivas de Linux (`xorriso`, `squashfs-tools`, etc.) para manipular y reconstruir la imagen ISO. Para permitir que los usuarios de Windows generen la ISO de manera nativa sin máquinas virtuales complejas, la aplicación se apoya en un subsistema Linux usando WSL. 
 
-## Arquitectura de la Instalación: El Flujo en Dos Fases
+## Los Dos Modos de Instalación
 
-Instalar WSL en un sistema Windows limpio requiere un reinicio obligatorio del sistema operativo después de habilitar las características subyacentes (Plataforma de máquina virtual). Por lo tanto, el proceso de instalación se dividió en dos fases secuenciales, controladas enteramente por el frontend:
+El sistema ahora ofrece dos enfoques, separados en dos pantallas independientes:
 
-### Fase 1: Habilitación de características
-1. El usuario hace clic en "Instalar WSL".
-2. La aplicación ejecuta de forma silenciosa e interactiva el comando:
+### Modo 1: Instalación para usar la app (`WslAppInstallScreen`)
+Este es un flujo simplificado, ideal para usuarios que solo quieren construir su imagen ISO de Rookie Linux y no les interesa usar Linux en Windows para otras cosas.
+Se divide en dos pasos manuales (debido a la necesidad de reiniciar):
+
+1. **Fase 1: Habilitar WSL**: Ejecuta de forma silenciosa e interactiva el comando:
    ```powershell
    wsl --install --no-distribution
    ```
-3. Acto seguido, se invoca PowerShell para habilitar la característica "VirtualMachinePlatform":
-   ```powershell
-   Enable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform -NoRestart
-   ```
-4. La aplicación informa al usuario que **debe reiniciar su PC** y le proporciona un botón para hacerlo inmediatamente o posponerlo.
+   Tras esto, la app advierte mediante un cuadro de diálogo que **se debe reiniciar la PC**.
 
-### Fase 2: Instalación de la distribución (Post-Reinicio)
-Una vez que el usuario reinicia su máquina y vuelve a abrir la aplicación:
-1. La pantalla de instalación verifica el estado de WSL ejecutando `wsl --status`.
-2. Si detecta que las características ya están activadas pero no hay sistema, inicia automáticamente la segunda fase, que descarga e instala la distribución "Ubuntu":
+2. **Fase 2: Instalar Distro (Post-Reinicio)**: Una vez reiniciado, el usuario usa este segundo paso para instalar la distribución base (Ubuntu) necesaria para las operaciones del backend sin lanzar consolas molestas.
    ```powershell
-   wsl --install -d Ubuntu
+   wsl --install -d Ubuntu --no-launch
    ```
-3. Finalmente, la aplicación ejecuta comandos dentro del nuevo entorno WSL para actualizar repositorios (`apt update`) e instalar las dependencias clave para la app (`xorriso` y `squashfs-tools`).
+
+Las instalaciones cuentan con ventanas de confirmación para alertar sobre la necesidad de permisos de administrador y el tiempo requerido.
+
+### Modo 2: WSL como sistema principal (`WslMainInstallScreen`)
+Este es un panel de control avanzado para usuarios que desean explorar WSL más a fondo. 
+
+1. **Estado del Sistema**: Muestra de forma asíncrona si WSL, WSL 2 y la virtualización están habilitados en el sistema, detectando la versión predeterminada mediante `wsl --status`.
+2. **Habilitación Global**: Permite instalar WSL con un clic.
+3. **Gestión de Distribuciones**: Escanea dinámicamente (`wsl -l -o` y `wsl -l -v`) para listar todas las distribuciones disponibles y aquellas ya instaladas. 
+4. Permite seleccionar una o múltiples distribuciones y ponerlas en cola de instalación visual con barras de progreso interactivas basadas en simulación e hilos (threads).
 
 ---
 
 ## Validaciones Automáticas y Monitoreo
 
-Para asegurar que la instalación no falle o se quede colgada, el sistema ejecuta verificaciones en tiempo real:
+Para asegurar que la instalación sea fluida, ambas pantallas implementan mecanismos modernos:
 
-- **Detección de comandos:** Antes de empezar, verifica si el comando `wsl` está disponible en el `PATH` del usuario.
-- **Monitoreo de estado (`is_wsl_installed()`)**: Ejecuta un polling continuo que revisa si la distribución predeterminada está configurada y si responde a comandos básicos.
-- **Ejecución asíncrona (Background Threads):** Todos los comandos de PowerShell y WSL se ejecutan en un thread separado (`threading.Thread`). Esto captura `stdout` y `stderr` mediante `subprocess.Popen`, evitando bloquear la interfaz gráfica (GUI) de `CustomTkinter` y permitiendo imprimir una consola en tiempo real en la pantalla.
+- **Ventanas de confirmación (msg_ask_yes_no)**: Previenen acciones destructivas o instalaciones accidentales.
+- **Redirección automática**: Tras completar los procesos en el Modo App, el usuario es devuelto al menú principal para evitar interacciones vacías.
+- **Ejecución asíncrona (Background Threads)**: Todos los comandos de PowerShell (con `RunAs` o `Start-Process`) se ejecutan en un thread separado, evitando que la GUI de `CustomTkinter` se congele durante instalaciones prolongadas.

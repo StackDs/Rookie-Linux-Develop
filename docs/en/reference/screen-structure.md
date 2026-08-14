@@ -32,6 +32,8 @@ frontend/
         ├── build_progress_screen.py
         ├── usb_flash_screen.py
         ├── wsl_install_screen.py
+        ├── wsl_app_install_screen.py
+        ├── wsl_main_install_screen.py
         ├── flasher_worker_linux.py
         └── flasher_worker_windows.py
 ```
@@ -107,7 +109,7 @@ frontend/
 - **Purpose**: Detailed information of the selected distro with screenshots and animated text.
 - **Navigates to**: `DistroSelectionScreen` (← Back), `BuildProgressScreen` (Confirm and Generate)
 - **`on_show()`**: Yes — loads images and animates text if the distro changed since the last visit.
-- **Notes**: Images support zooming. Saves `self.last_distro` to detect changes.
+- **Notes**: Images support zooming. Saves `self.last_distro` to detect changes. Includes a `msg_ask_yes_no` confirmation dialog before initiating the image generation process to prevent unintended downloads.
 
 #### `BasicConceptsScreen`
 - **Purpose**: What is Dual Boot. Includes explanatory image.
@@ -142,9 +144,21 @@ frontend/
 - **Notes**: Launches an elevated worker process (`pkexec` / `RunAs`) to write to disk. Progress is communicated via a temporary JSON file.
 
 #### `WslInstallScreen`
-- **Purpose**: Installs WSL (Windows Subsystem for Linux). Relevant only on Windows.
+- **Purpose**: WSL installation mode selection menu (Relevant only on Windows).
+- **Navigates to**: `OptionSelectionScreen` (← Back), `WslAppInstallScreen` (App Mode), `WslMainInstallScreen` (Main Mode)
+- **`on_show()`**: No.
+
+#### `WslAppInstallScreen`
+- **Purpose**: Installs a basic WSL subsystem and an auxiliary distribution (Ubuntu) to be able to compile ISO images within the tool.
 - **Navigates to**: `OptionSelectionScreen` (← Back)
 - **`on_show()`**: Yes — resets installation state.
+- **Notes**: Includes confirmation dialogs before requiring administrator permissions. Automatically redirects to the menu upon successful completion.
+
+#### `WslMainInstallScreen`
+- **Purpose**: Comprehensive dashboard to install WSL and manage any Linux distribution available in the Microsoft Store as your primary system.
+- **Navigates to**: `OptionSelectionScreen` (← Back)
+- **`on_show()`**: Yes — asynchronously scans the current WSL status and installed distributions.
+- **Notes**: Uses tabs (`CTkTabview`) to separate environment status and distribution management. Features integrated confirmation dialogs.
 
 ---
 
@@ -188,6 +202,10 @@ StartScreen
                    │                            └─[Success]→ OptionSelectionScreen
                    │
                    ├─[WSL (Windows)]───────→ WslInstallScreen
+                   │                            ├─[App Mode]→ WslAppInstallScreen
+                   │                            │                └─[Success/Back]→ OptionSelectionScreen
+                   │                            └─[Main Mode]→ WslMainInstallScreen
+                   │                                             └─[Back]→ OptionSelectionScreen
                    │ [WSL (Linux)] → Informative popup
                    │
                    ├─[Documentation]───────→ DocumentationScreen
